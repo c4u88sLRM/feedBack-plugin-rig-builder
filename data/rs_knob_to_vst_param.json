@@ -1036,9 +1036,6 @@
  },
  "Pedal_ShaverPhaser": {
   "shaverphaser": {
-   "_static": {
-    "Resonance": 0.38
-   },
    "Rate": {
     "param": "Rate",
     "scale": 0.01
@@ -1046,16 +1043,6 @@
    "Depth": {
     "param": "Depth",
     "scale": 0.01
-   },
-   "Mix": {
-    "param": "Resonance",
-    "scale": 0.01,
-    "_hint": "PH-1R has no Mix knob; if a song exposes RS Mix, reuse it as the real Resonance control."
-   },
-   "Feedback": {
-    "param": "Resonance",
-    "scale": 0.01,
-    "_hint": "Alias for PH-1R Resonance."
    }
   },
   "khs phaser": {
@@ -1095,9 +1082,6 @@
    }
   },
   "ph-1": {
-   "_static": {
-    "Resonance": 0.38
-   },
    "Rate": {
     "param": "Rate",
     "scale": 0.01
@@ -1105,16 +1089,6 @@
    "Depth": {
     "param": "Depth",
     "scale": 0.01
-   },
-   "Mix": {
-    "param": "Resonance",
-    "scale": 0.01,
-    "_hint": "PH-1R has no Mix knob; if a song exposes RS Mix, reuse it as the real Resonance control."
-   },
-   "Feedback": {
-    "param": "Resonance",
-    "scale": 0.01,
-    "_hint": "Alias for PH-1R Resonance."
    }
   }
  },
@@ -1187,48 +1161,46 @@
  "Bass_Pedal_BassPhase": {
   "bassphase": {
    "Rate": {
-    "param": "Speed",
+    "param": "Rate",
     "scale": 0.01,
-    "_hint": "RS Rate 0-100 \u2192 PH99 Speed 0..1."
+    "_hint": "RS Rate 0-100 \u2192 LFO speed 0..1."
    },
    "Depth": {
     "param": "Depth",
     "scale": 0.01,
-    "_hint": "RS Depth 0-100 \u2192 PH99 Depth 0..1."
+    "_hint": "RS Depth 0-100 \u2192 sweep depth + regeneration 0..1."
    },
    "Mix": {
-    "param": "Feedback",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "PH99 has no Mix knob; RS Mix maps to the real Feedback control."
+    "_hint": "RS Mix 0-100 \u2192 dry/wet notch blend 0..1."
    },
    "Filter": {
-    "param": "Level",
-    "scale": 0.005,
-    "offset": 0.45,
-    "_hint": "PH99 has no Filter knob; RS Filter maps to a bounded Level range so presets do not go silent."
+    "param": "Filter",
+    "scale": 0.01,
+    "_hint": "RS Filter 0-100 \u2192 sweep centre frequency 0..1."
    }
   },
   "phase 99": {
    "Rate": {
-    "param": "Speed",
+    "param": "Rate",
     "scale": 0.01,
-    "_hint": "RS Rate 0-100 \u2192 PH99 Speed 0..1."
+    "_hint": "RS Rate 0-100 \u2192 LFO speed 0..1."
    },
    "Depth": {
     "param": "Depth",
     "scale": 0.01,
-    "_hint": "RS Depth 0-100 \u2192 PH99 Depth 0..1."
+    "_hint": "RS Depth 0-100 \u2192 sweep depth + regeneration 0..1."
    },
    "Mix": {
-    "param": "Feedback",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "PH99 has no Mix knob; RS Mix maps to the real Feedback control."
+    "_hint": "RS Mix 0-100 \u2192 dry/wet notch blend 0..1."
    },
    "Filter": {
-    "param": "Level",
-    "scale": 0.005,
-    "offset": 0.45,
-    "_hint": "PH99 has no Filter knob; RS Filter maps to a bounded Level range so presets do not go silent."
+    "param": "Filter",
+    "scale": 0.01,
+    "_hint": "RS Filter 0-100 \u2192 sweep centre frequency 0..1."
    }
   }
  },
@@ -1239,9 +1211,9 @@
     "scale": 0.01
    },
    "Mix": {
-    "param": "Depth",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Mix is the depth/intensity control for the bundled Colorsound Tremola."
+    "_hint": "the game Tremolo Mix is the depth/intensity control for the bundled Colorsound-style tremolo."
    }
   },
   "bertom_freetremolo": {
@@ -1327,18 +1299,18 @@
  "Pedal_MultiTrem": {
   "multitrem": {
    "Speed": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Depth",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Multi Trem Mix is the TR-2 Depth control."
+    "_hint": "the game Multi Trem Mix is tremolo depth."
    },
    "Waveform": {
-    "param": "Wave",
+    "param": "Waveform",
     "scale": 0.5,
-    "_hint": "RS Waveform 0/1/2 maps to the TR-2 Wave control."
+    "_hint": "RS Waveform 0/1/2 maps to triangle/rounded/square."
    }
   },
   "bertom_freetremolo": {
@@ -1370,18 +1342,18 @@
   },
   "tr-2": {
    "Speed": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Depth",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Multi Trem Mix is the TR-2 Depth control."
+    "_hint": "the game Multi Trem Mix is tremolo depth."
    },
    "Waveform": {
-    "param": "Wave",
+    "param": "Waveform",
     "scale": 0.5,
-    "_hint": "RS Waveform 0/1/2 maps to the TR-2 Wave control."
+    "_hint": "RS Waveform 0/1/2 maps to triangle/rounded/square."
    }
   }
  },
@@ -1610,19 +1582,16 @@
  "Pedal_OmniMod": {
   "omnimod": {
    "Rate": {
-    "param": "Speed",
+    "param": "Rate",
     "scale": 0.01
    },
    "Depth": {
-    "param": "Intensity",
+    "param": "Depth",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Volume",
+    "param": "Mix",
     "scale": 0.01
-   },
-   "_static": {
-    "Mode": 0.0
    }
   },
   "khs chorus": {
@@ -1641,33 +1610,25 @@
   },
   "unimod": {
    "Rate": {
-    "param": "Speed",
+    "param": "Rate",
     "scale": 0.01
    },
    "Depth": {
-    "param": "Intensity",
+    "param": "Depth",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Volume",
+    "param": "Mix",
     "scale": 0.01
-   },
-   "_static": {
-    "Mode": 0.0
    }
   }
  },
  "Pedal_AnalogueDelay": {
-	  "analogdelay": {
-	   "_static": {
-	    "Drive": 0.36,
-	    "Output": 0.68
-	   },
-	   "Time": {
-	    "param": "Time",
-	    "scale": 0.0010416666666666667,
-	    "offset": -0.041666666666666664,
-	    "_hint": "RS Time is milliseconds. FM104 Time is normalized across the real-ish 40-1000 ms BBD range."
+  "analogdelay": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. AnalogDelay stores it as ms / 2000 and reconstructs the actual delay time internally."
    },
    "Feedback": {
     "param": "Feedback",
@@ -1678,16 +1639,11 @@
     "scale": 0.01
    }
   },
-	  "fm104": {
-	   "_static": {
-	    "Drive": 0.36,
-	    "Output": 0.68
-	   },
-	   "Time": {
-	    "param": "Time",
-	    "scale": 0.0010416666666666667,
-	    "offset": -0.041666666666666664,
-	    "_hint": "RS Time is milliseconds. FM104 Time is normalized across the real-ish 40-1000 ms BBD range."
+  "fm104": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. AnalogDelay stores it as ms / 2000 and reconstructs the actual delay time internally."
    },
    "Feedback": {
     "param": "Feedback",
@@ -1700,137 +1656,111 @@
   }
  },
  "Pedal_ValveEcho": {
-	  "valveecho": {
-	   "_static": {
-	    "Tone": 0.55,
-	    "Heads": 1.0
-	   },
-	   "Time": {
-	    "param": "Drum Speed",
-	    "scale": 0.0014492753623188406,
-	    "offset": -0.10144927536231885,
-	    "_hint": "RS Time is milliseconds. ValveEcho maps it to Binson drum speed over roughly 70-760 ms."
-	   },
-	   "Feedback": {
-	    "param": "Swell",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Echo Volume",
-	    "scale": 0.01
-	   }
-	  },
-	  "valve echo": {
-	   "_static": {
-	    "Tone": 0.55,
-	    "Heads": 1.0
-	   },
-	   "Time": {
-	    "param": "Drum Speed",
-	    "scale": 0.0014492753623188406,
-	    "offset": -0.10144927536231885,
-	    "_hint": "RS Time is milliseconds. ValveEcho maps it to Binson drum speed over roughly 70-760 ms."
-	   },
-	   "Feedback": {
-	    "param": "Swell",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Echo Volume",
-	    "scale": 0.01
+  "valveecho": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. ValveEcho stores it as ms / 2000 and reconstructs a Binson-style multi-head delay internally."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
+   }
+  },
+  "valve echo": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. ValveEcho stores it as ms / 2000 and reconstructs a Binson-style multi-head delay internally."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
    }
   }
  },
  "Pedal_NPNDelay": {
-	  "npndelay": {
-	   "Time": {
-	    "param": "Repeat Rate",
-	    "scale": -0.0035714285714285713,
-	    "offset": 1.0714285714285714,
-	    "_hint": "RS Time is milliseconds. DM-2 Repeat Rate is reverse-normalized: clockwise is faster/shorter delay over 20-300 ms."
-	   },
-	   "Feedback": {
-	    "param": "Intensity",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Echo",
-	    "scale": 0.01
-	   }
-	  },
-	  "dm-2": {
-	   "Time": {
-	    "param": "Repeat Rate",
-	    "scale": -0.0035714285714285713,
-	    "offset": 1.0714285714285714,
-	    "_hint": "RS Time is milliseconds. DM-2 Repeat Rate is reverse-normalized: clockwise is faster/shorter delay over 20-300 ms."
-	   },
-	   "Feedback": {
-	    "param": "Intensity",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Echo",
-	    "scale": 0.01
+  "npndelay": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. NpnDelay stores it as ms / 2000 and clamps internally to a DM-2 style 20-420 ms range so the game presets around 396 ms survive."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
+   }
+  },
+  "dm-2": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. NpnDelay stores it as ms / 2000 and clamps internally to a DM-2 style 20-420 ms range so the game presets around 396 ms survive."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
    }
   }
  },
  "Pedal_NoFiEcho": {
-	  "nofiecho": {
-	   "_static": {
-	    "Range": 0.5,
-	    "Mode": 1.0
-	   },
-	   "Time": {
-	    "param": "Delay Time",
-	    "scale": 0.00038910505836575876,
-	    "offset": -0.011673151750972763,
-	    "_hint": "RS Time is milliseconds. DE7 Delay Time is normalized over the full 30-2600 ms range; Range stays editable."
-	   },
-	   "Feedback": {
-	    "param": "Repeat",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Delay Level",
-	    "scale": 0.01
-	   }
-	  },
-	  "no fi echo": {
-	   "_static": {
-	    "Range": 0.5,
-	    "Mode": 1.0
-	   },
-	   "Time": {
-	    "param": "Delay Time",
-	    "scale": 0.00038910505836575876,
-	    "offset": -0.011673151750972763,
-	    "_hint": "RS Time is milliseconds. DE7 Delay Time is normalized over the full 30-2600 ms range; Range stays editable."
-	   },
-	   "Feedback": {
-	    "param": "Repeat",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Delay Level",
-	    "scale": 0.01
+  "nofiecho": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. NoFiEcho stores it as ms / 2000 and reconstructs the actual echo time internally."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
+   }
+  },
+  "no fi echo": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005,
+    "_hint": "RS Time is milliseconds. NoFiEcho stores it as ms / 2000 and reconstructs the actual echo time internally."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
    }
   }
  },
  "Pedal_OilCanEcho": {
-	  "oilcanecho": {
-	   "_static": {
-	    "Tone": 0.48
-	   },
-	   "Time": {
-	    "param": "Time",
-	    "scale": 0.0018181818181818182,
-	    "offset": -0.12727272727272726
-	   },
-	   "Feedback": {
-	    "param": "Sustain",
-	    "scale": 0.01
-	   },
+  "oilcanecho": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
    "Mix": {
     "param": "Mix",
     "scale": 0.01
@@ -1850,18 +1780,14 @@
     "scale": 0.01
    }
   },
-	  "oil can echo": {
-	   "_static": {
-	    "Tone": 0.48
-	   },
-	   "Time": {
-	    "param": "Time",
-	    "scale": 0.0018181818181818182,
-	    "offset": -0.12727272727272726
-	   },
-	   "Feedback": {
-	    "param": "Sustain",
-	    "scale": 0.01
+  "oil can echo": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
    },
    "Mix": {
     "param": "Mix",
@@ -1870,11 +1796,10 @@
   }
  },
  "Pedal_CosmicEcho": {
-	  "cosmicecho": {
-	   "Time": {
-	    "param": "Delay Length",
-	    "scale": 0.001607717041800643,
-	    "offset": -0.045016077170418006
+  "cosmicecho": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005
    },
    "Feedback": {
     "param": "Feedback",
@@ -1899,11 +1824,10 @@
     "scale": 0.01
    }
   },
-	  "galaxy echo": {
-	   "Time": {
-	    "param": "Delay Length",
-	    "scale": 0.001607717041800643,
-	    "offset": -0.045016077170418006
+  "galaxy echo": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0005
    },
    "Feedback": {
     "param": "Feedback",
@@ -1916,29 +1840,29 @@
   }
  },
  "Pedal_ModDelay": {
-	  "moddelay": {
-	   "Time": {
-	    "param": "Delay Time",
-	    "scale": 0.0011363636363636363,
-	    "offset": -0.022727272727272728,
-	    "_hint": "RS Time is observed 20-900 ms. DL9 Delay Time is normalized: (ms - 20) / 880."
-	   },
-	   "Feedback": {
-	    "param": "Regen",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Delay Level",
-	    "scale": 0.01
-	   },
-	   "Rate": {
-	    "param": "Speed",
-	    "scale": 0.2857142857142857,
-	    "_hint": "RS Rate is observed 0-3.5 Hz. DL9 Speed stores it normalized: Hz / 3.5."
-	   },
-	   "Depth": {
-	    "param": "Width",
-	    "scale": 0.01
+  "moddelay": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0011363636363636363,
+    "offset": -0.022727272727272728,
+    "_hint": "RS Time is observed 20-900 ms. ModDelay stores it normalized: (ms - 20) / 880."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
+   },
+   "Rate": {
+    "param": "Rate",
+    "scale": 0.2857142857142857,
+    "_hint": "RS Rate is observed 0-3.5 Hz. ModDelay stores it normalized: Hz / 3.5."
+   },
+   "Depth": {
+    "param": "Depth",
+    "scale": 0.01
    }
   },
   "khs delay": {
@@ -1955,29 +1879,29 @@
     "scale": 0.01
    }
   },
-	  "dl9": {
-	   "Time": {
-	    "param": "Delay Time",
-	    "scale": 0.0011363636363636363,
-	    "offset": -0.022727272727272728,
-	    "_hint": "RS Time is observed 20-900 ms. DL9 Delay Time is normalized: (ms - 20) / 880."
-	   },
-	   "Feedback": {
-	    "param": "Regen",
-	    "scale": 0.01
-	   },
-	   "Mix": {
-	    "param": "Delay Level",
-	    "scale": 0.01
-	   },
-	   "Rate": {
-	    "param": "Speed",
-	    "scale": 0.2857142857142857,
-	    "_hint": "RS Rate is observed 0-3.5 Hz. DL9 Speed stores it normalized: Hz / 3.5."
-	   },
-	   "Depth": {
-	    "param": "Width",
-	    "scale": 0.01
+  "dl9": {
+   "Time": {
+    "param": "Time",
+    "scale": 0.0011363636363636363,
+    "offset": -0.022727272727272728,
+    "_hint": "RS Time is observed 20-900 ms. ModDelay stores it normalized: (ms - 20) / 880."
+   },
+   "Feedback": {
+    "param": "Feedback",
+    "scale": 0.01
+   },
+   "Mix": {
+    "param": "Mix",
+    "scale": 0.01
+   },
+   "Rate": {
+    "param": "Rate",
+    "scale": 0.2857142857142857,
+    "_hint": "RS Rate is observed 0-3.5 Hz. ModDelay stores it normalized: Hz / 3.5."
+   },
+   "Depth": {
+    "param": "Depth",
+    "scale": 0.01
    }
   }
  },
@@ -4610,25 +4534,22 @@
  "Pedal_TremOle": {
   "tremole": {
    "Sens": {
-    "param": "Depth",
+    "param": "Sens",
     "scale": 0.01,
-    "_hint": "Rocksmith Sens controls Dyna-Trem dynamic depth sensitivity."
+    "_hint": "the game Sens controls detector drive for the envelope tremolo."
    },
    "Attack": {
-    "param": "Rate",
+    "param": "Attack",
     "scale": 0.01
    },
    "Release": {
-    "param": "Shape",
+    "param": "Release",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Level",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Mix maps to the output Level because Depth is already driven by Sens."
-   },
-   "_static": {
-    "Mode": 0.33
+    "_hint": "the game Mix controls tremolo depth."
    }
   },
   "mtremolo": {
@@ -4650,25 +4571,22 @@
   },
   "dyna-trem": {
    "Sens": {
-    "param": "Depth",
+    "param": "Sens",
     "scale": 0.01,
-    "_hint": "Rocksmith Sens controls Dyna-Trem dynamic depth sensitivity."
+    "_hint": "the game Sens controls detector drive for the envelope tremolo."
    },
    "Attack": {
-    "param": "Rate",
+    "param": "Attack",
     "scale": 0.01
    },
    "Release": {
-    "param": "Shape",
+    "param": "Release",
     "scale": 0.01
    },
    "Mix": {
-    "param": "Level",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Mix maps to the output Level because Depth is already driven by Sens."
-   },
-   "_static": {
-    "Mode": 0.33
+    "_hint": "the game Mix controls tremolo depth."
    }
   }
  },
@@ -4679,13 +4597,9 @@
     "scale": 0.01
    },
    "Mix": {
-    "param": "Intensity",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "RS Mix drives the real Uni-Vibe Intensity pot."
-   },
-   "_static": {
-    "Volume": 0.62,
-    "Mode": 0.0
+    "_hint": "RS Mix controls the chorus/vibe dry-phase blend and modulation depth."
    }
   },
   "mvibrato": {
@@ -4712,39 +4626,35 @@
     "scale": 0.01
    },
    "Mix": {
-    "param": "Intensity",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "RS Mix drives the real Uni-Vibe Intensity pot."
-   },
-   "_static": {
-    "Volume": 0.62,
-    "Mode": 0.0
+    "_hint": "RS Mix controls the chorus/vibe dry-phase blend and modulation depth."
    }
   }
  },
  "Pedal_MultiVibe": {
   "multivibe": {
    "Speed": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01
    },
    "Rate": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01,
     "_hint": "Alias for any extracted rows that use Rate instead of Speed."
    },
    "Mix": {
-    "param": "Depth",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Mix drives the real VB-2 Depth pot."
+    "_hint": "the game Multi Vib Mix controls wet/depth intensity."
    },
    "Waveform": {
-    "param": "Rise Time",
+    "param": "Waveform",
     "scale": 1.0,
-    "_hint": "Rocksmith Waveform drives the VB-2 Rise Time pot."
+    "_hint": "the game Waveform is selector-like here; value 1 selects the stronger VB-2 LFO/rise character."
    },
    "Wave": {
-    "param": "Rise Time",
+    "param": "Waveform",
     "scale": 1.0,
     "_hint": "Alias for any extracted rows that use Wave instead of Waveform."
    }
@@ -4769,26 +4679,26 @@
   },
   "vb-2": {
    "Speed": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01
    },
    "Rate": {
-    "param": "Rate",
+    "param": "Speed",
     "scale": 0.01,
     "_hint": "Alias for any extracted rows that use Rate instead of Speed."
    },
    "Mix": {
-    "param": "Depth",
+    "param": "Mix",
     "scale": 0.01,
-    "_hint": "Rocksmith Mix drives the real VB-2 Depth pot."
+    "_hint": "the game Multi Vib Mix controls wet/depth intensity."
    },
    "Waveform": {
-    "param": "Rise Time",
+    "param": "Waveform",
     "scale": 1.0,
-    "_hint": "Rocksmith Waveform drives the VB-2 Rise Time pot."
+    "_hint": "the game Waveform is selector-like here; value 1 selects the stronger VB-2 LFO/rise character."
    },
    "Wave": {
-    "param": "Rise Time",
+    "param": "Waveform",
     "scale": 1.0,
     "_hint": "Alias for any extracted rows that use Wave instead of Waveform."
    }
@@ -4810,14 +4720,13 @@
     "scale": 0.01
    },
    "Mix": {
-    "param": "Tone",
-    "scale": 0.01,
-    "_hint": "Rocksmith Mix is reused as the SV-1 Tone pot."
+    "param": "Mix",
+    "scale": 0.01
    },
    "Wave": {
-    "param": "Sweep",
+    "param": "Wave",
     "scale": 0.01,
-    "_hint": "Rocksmith Wave drives the SV-1 Sweep pot."
+    "_hint": "the game Wave shapes the Supervibe LFO and sharper rotary/vibe character."
    }
   },
   "mvibrato": {
@@ -4853,14 +4762,13 @@
     "scale": 0.01
    },
    "Mix": {
-    "param": "Tone",
-    "scale": 0.01,
-    "_hint": "Rocksmith Mix is reused as the SV-1 Tone pot."
+    "param": "Mix",
+    "scale": 0.01
    },
    "Wave": {
-    "param": "Sweep",
+    "param": "Wave",
     "scale": 0.01,
-    "_hint": "Rocksmith Wave drives the SV-1 Sweep pot."
+    "_hint": "the game Wave shapes the Supervibe LFO and sharper rotary/vibe character."
    }
   }
  },
@@ -5485,10 +5393,20 @@
     "scale": 0.01,
     "_hint": "RS Mix 0-100 \u2192 RCE-10 wet/effect level 0..1."
    },
+   "LoFilter": {
+    "param": "Low Cut",
+    "scale": 0.01,
+    "_hint": "RS LoFilter 0-100 \u2192 extra wet low-cut before the RCE-10 effect EQ."
+   },
    "HiFilter": {
     "param": "Effect EQ",
     "scale": 0.01,
-    "_hint": "RS HiFilter 0-100 \u2192 RCE-10 EQ/brightness 0..1 (the RCE-10's single tone pot)."
+    "_hint": "RS HiFilter 0-100 \u2192 RCE-10 effect EQ/brightness 0..1."
+   },
+   "Stereo": {
+    "param": "Stereo",
+    "scale": 0.01,
+    "_hint": "RS Stereo 0-100 \u2192 L/R spread 0..1."
    },
    "Delay": {
     "param": "Pre Delay",

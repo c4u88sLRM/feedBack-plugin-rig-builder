@@ -13,19 +13,19 @@ enum MarshallSupervibeParamId
 static const char* const kMarshallSupervibeNames[kParamCount] = {
     "Rate",
     "Depth",
-    "Tone",
-    "Sweep",
+    "Mix",
+    "Wave",
 };
 
 static const char* const kMarshallSupervibeSymbols[kParamCount] = {
     "rate",
     "depth",
-    "tone",
-    "sweep",
+    "mix",
+    "wave",
 };
 
 static const float kMarshallSupervibeMin[kParamCount] = { 0.0f, 0.0f, 0.0f, 0.0f };
 static const float kMarshallSupervibeMax[kParamCount] = { 1.0f, 1.0f, 1.0f, 1.0f };
-static const float kMarshallSupervibeDef[kParamCount] = { 0.24f, 0.56f, 0.62f, 0.52f };
+static const float kMarshallSupervibeDef[kParamCount] = { 0.24f, 0.42f, 0.75f, 0.70f };
 
 #endif // MARSHALL_SUPERVIBE_PARAMS_H

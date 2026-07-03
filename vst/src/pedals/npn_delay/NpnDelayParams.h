@@ -3,30 +3,30 @@
 
 enum NpnDelayParamId
 {
-    kRepeatRate = 0,
-    kEcho,
-    kIntensity,
+    kTime = 0,
+    kFeedback,
+    kMix,
     kParamCount
 };
 
 static const char* const kNpnDelayNames[kParamCount] = {
-    "Repeat Rate",
-    "Echo",
-    "Intensity",
+    "Time",
+    "Feedback",
+    "Mix",
 };
 
 static const char* const kNpnDelaySymbols[kParamCount] = {
-    "repeat_rate",
-    "echo",
-    "intensity",
+    "time",
+    "feedback",
+    "mix",
 };
 
 static const float kNpnDelayMin[kParamCount] = { 0.0f, 0.0f, 0.0f };
 static const float kNpnDelayMax[kParamCount] = { 1.0f, 1.0f, 1.0f };
 static const float kNpnDelayDef[kParamCount] = {
-    1.0f - (220.0f - 20.0f) / (300.0f - 20.0f),
-    0.24f,
+    220.0f / 2000.0f,
     0.30f,
+    0.24f,
 };
 
 #endif // NPN_DELAY_PARAMS_H

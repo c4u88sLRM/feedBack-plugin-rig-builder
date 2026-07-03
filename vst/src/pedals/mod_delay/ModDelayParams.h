@@ -3,28 +3,28 @@
 
 enum ModDelayParamId
 {
-    kDelayTime = 0,
-    kRegen,
-    kDelayLevel,
-    kSpeed,
-    kWidth,
+    kTime = 0,
+    kFeedback,
+    kMix,
+    kRate,
+    kDepth,
     kParamCount
 };
 
 static const char* const kModDelayNames[kParamCount] = {
-    "Delay Time",
-    "Regen",
-    "Delay Level",
-    "Speed",
-    "Width",
+    "Time",
+    "Feedback",
+    "Mix",
+    "Rate",
+    "Depth",
 };
 
 static const char* const kModDelaySymbols[kParamCount] = {
-    "delay_time",
-    "regen",
-    "delay_level",
-    "speed",
-    "width",
+    "time",
+    "feedback",
+    "mix",
+    "rate",
+    "depth",
 };
 
 static const float kModDelayMin[kParamCount] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };

@@ -3,13 +3,12 @@
  * Pedal_MarshallSupervibe.
  *
  * Local reference: pedals/marshall super vibe.pdf. The schematic shows TL072
- * input/mix stages, J202/BC550 switching/bias support, an MN3007 BBD clocked
- * by MN3101, direct and delay paths, and control-board Rate, Depth, Tone and
- * Sweep pots. Rocksmith Mix/Wave are mapped to Tone/Sweep.
+ * input/mix stages, an MN3007 BBD clocked by MN3101, direct and delay paths,
+ * and control-board pots for sweep/rate, depth, tone and wave-like shaping.
+ * the game exposes Rate, Depth, Mix and Wave.
  */
 #include "DistrhoPlugin.hpp"
 #include "MarshallSupervibeParams.h"
-#include "../_shared/ChorusComponents.h"
 #include <cmath>
 #include <vector>
 
@@ -121,8 +120,8 @@ class MarshallSupervibeCore
     float sampleRate = 48000.0f;
     float rate = kMarshallSupervibeDef[kRate];
     float depth = kMarshallSupervibeDef[kDepth];
-    float tone = kMarshallSupervibeDef[kMix];
-    float sweep = kMarshallSupervibeDef[kWave];
+    float mix = kMarshallSupervibeDef[kMix];
+    float wave = kMarshallSupervibeDef[kWave];
     float phaseOffset = 0.0f;
 
     DelayBuffer delay;
@@ -137,20 +136,17 @@ class MarshallSupervibeCore
     float compY = 0.0f;
     float feedback = 0.0f;
     float dc = 0.0f;
-    float clockNoise = 0.0f;
 
     float hpA = 0.0f;
     float inputA = 0.0f;
     float bbdA = 0.0f;
     float airA = 0.0f;
     float compA = 0.0f;
-    float noiseA = 0.0f;
-    rbmod::NoiseSource noise;
 
     float currentRateHz() const
     {
         const float r = clamp01(rate);
-        return 0.10f + 5.95f * std::pow(r, 1.92f);
+        return 0.10f + 6.10f * std::pow(r, 1.46f);
     }
 
     void updateFilters()
@@ -161,12 +157,11 @@ class MarshallSupervibeCore
         hpA = hpRc / (hpRc + dt);
 
         const float d = smoothstep(depth);
-        const float t = smoothstep(tone);
-        inputA = onePoleCoeffHz(7200.0f - 900.0f * d, sampleRate);
-        bbdA = onePoleCoeffHz(2600.0f + 2700.0f * t - 900.0f * d, sampleRate);
-        airA = onePoleCoeffHz(1350.0f + 4700.0f * t, sampleRate);
+        const float w = smoothstep(wave);
+        inputA = onePoleCoeffHz(7200.0f - 1100.0f * d, sampleRate);
+        bbdA = onePoleCoeffHz(3900.0f + 1100.0f * w - 1150.0f * d, sampleRate);
+        airA = onePoleCoeffHz(2100.0f + 2400.0f * w, sampleRate);
         compA = onePoleCoeffHz(18.0f, sampleRate);
-        noiseA = onePoleCoeffHz(5200.0f, sampleRate);
     }
 
     float highPass(float x)
@@ -192,7 +187,7 @@ class MarshallSupervibeCore
         const float triangle = 1.0f - 4.0f * std::fabs(phase - 0.5f);
         const float skewPhase = phase < 0.63f ? phase / 0.63f : (1.0f - phase) / 0.37f;
         const float skew = 2.0f * smoothstep(skewPhase) - 1.0f;
-        const float w = smoothstep(sweep);
+        const float w = smoothstep(wave);
 
         if (w < 0.55f)
         {
@@ -216,8 +211,7 @@ public:
         for (int i = 0; i < 2; ++i)
             phaseStages[i].reset();
         lfoPhase = phaseOffset;
-        hpX1 = hpY1 = inputY = bbdY = airY = compY = feedback = dc = clockNoise = 0.0f;
-        noise.seed(0x5356314du);
+        hpX1 = hpY1 = inputY = bbdY = airY = compY = feedback = dc = 0.0f;
         updateFilters();
     }
 
@@ -241,13 +235,12 @@ public:
 
     void setMix(float v)
     {
-        tone = clamp01(v);
-        updateFilters();
+        mix = clamp01(v);
     }
 
     void setWave(float v)
     {
-        sweep = clamp01(v);
+        wave = clamp01(v);
         updateFilters();
     }
 
@@ -258,8 +251,8 @@ public:
             lfoPhase -= std::floor(lfoPhase);
 
         const float d = 0.06f + 0.94f * smoothstep(depth);
-        const float t = smoothstep(tone);
-        const float w = smoothstep(sweep);
+        const float m = mix <= 0.0001f ? 0.0f : clamp01(0.06f + 0.98f * mix);
+        const float w = smoothstep(wave);
 
         const float lfo = lfoAt(lfoPhase);
         const float wobble = 0.86f * lfo + 0.14f * std::sin(kTwoPi * (lfoPhase * 2.0f + 0.18f));
@@ -268,12 +261,12 @@ public:
         x = lowPass(x, inputY, inputA);
         x = softClip(x * (1.025f + 0.075f * d)) * 0.965f;
 
-        const float baseMs = 3.2f + 9.2f * w;
-        const float widthMs = 0.30f + 6.20f * d;
+        const float baseMs = 5.2f + 4.5f * (1.0f - w);
+        const float widthMs = 0.42f + 6.70f * d;
         float delayMs = baseMs + widthMs * wobble;
         delayMs = std::fmax(1.55f, std::fmin(24.0f, delayMs));
 
-        const float fb = (0.018f + 0.090f * d + 0.050f * w);
+        const float fb = (0.018f + 0.095f * d + 0.035f * w) * m;
         const float write = softClip(x + feedback * fb);
         float wet = delay.read(delayMs * 0.001f * sampleRate);
         delay.write(write);
@@ -290,10 +283,7 @@ public:
         wet = softClip(wet * comp * (1.05f + 0.11f * d));
 
         const float airBase = lowPass(wet, airY, airA);
-        wet = airBase + (wet - airBase) * (0.06f + 0.46f * t);
-
-        clockNoise += noiseA * (noise.next() - clockNoise);
-        wet += clockNoise * (0.00010f + 0.00026f * d);
+        wet = airBase + (wet - airBase) * (0.10f + 0.34f * w);
 
         dc += 0.00035f * (wet - dc);
         wet -= dc;
@@ -302,8 +292,8 @@ public:
         const float throb = 1.0f - (0.055f + 0.125f * d) * (0.5f + 0.5f * wobble);
         wet *= throb;
 
-        const float dryLevel = 0.74f - 0.16f * d;
-        const float wetLevel = 0.44f + 0.66f * d;
+        const float dryLevel = 1.0f - 0.50f * m;
+        const float wetLevel = (0.28f + 0.86f * m) * m;
         float y = x * dryLevel - wet * wetLevel;
         return softClip(y * 0.98f) * 0.97f;
     }
@@ -347,7 +337,7 @@ protected:
     const char* getDescription() const override { return "Marshall SV-1 style BBD vibe"; }
     const char* getMaker() const override { return "RigBuilder"; }
     const char* getLicense() const override { return "ISC"; }
-    uint32_t getVersion() const override { return d_version(1, 1, 0); }
+    uint32_t getVersion() const override { return d_version(1, 0, 0); }
     int64_t getUniqueId() const override { return d_cconst('M', 'S', 'V', 'b'); }
 
     void initParameter(uint32_t index, Parameter& parameter) override
@@ -390,9 +380,8 @@ protected:
         float* outR = outputs[1];
         for (uint32_t i = 0; i < frames; ++i)
         {
-            const rbmod::StereoInputPair feed = rbmod::stereoPedalFeeds(inL[i], inR[i]);
-            outL[i] = left.process(feed.left);
-            outR[i] = right.process(feed.right);
+            outL[i] = left.process(inL[i]);
+            outR[i] = right.process(inR[i]);
         }
     }
 
