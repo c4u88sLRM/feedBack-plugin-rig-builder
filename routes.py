@@ -300,6 +300,12 @@ _DEFAULT_SETTINGS = {
     # default rather than whatever tone happened to load last. On by default
     # (seeded with the Sampleg SBT-CL amp), so a fresh install plays an idle rig.
     "default_tone_enabled": True,
+    # Master on/off for the whole Rig Builder engine integration. When False,
+    # Rig Builder loads NOTHING into the shared audio engine — no per-song
+    # mega-chain, no idle default tone, no preview — so a user who doesn't want
+    # to use Rig Builder can turn it off from Gear and their own Audio-menu
+    # signal chain is left completely untouched. On by default.
+    "rig_builder_enabled": True,
     # NAM loudness normalization. Each .nam carries an integrated LUFS
     # value in its JSON header; we read it and apply a per-stage
     # `outputLevel` so every NAM lands at `target_lufs`, eliminating
@@ -6905,6 +6911,7 @@ def setup(app, context):
             "preferred_size": s.get("preferred_size", "standard"),
             "mega_chain_mode": s.get("mega_chain_mode", True),
             "default_tone_enabled": bool(s.get("default_tone_enabled", False)),
+            "rig_builder_enabled": bool(s.get("rig_builder_enabled", True)),
             "bypass_all_cabs": s.get("bypass_all_cabs", True),
             # Chain-input drive (engine setGain('input', X)). Read by JS
             # at every chain load — value of 8.0 = +18 dB feeds NAM amps
@@ -6942,6 +6949,8 @@ def setup(app, context):
             allowed["mega_chain_mode"] = bool(data["mega_chain_mode"])
         if "default_tone_enabled" in data:
             allowed["default_tone_enabled"] = bool(data["default_tone_enabled"])
+        if "rig_builder_enabled" in data:
+            allowed["rig_builder_enabled"] = bool(data["rig_builder_enabled"])
         if "nam_chain_input_drive" in data:
             try:
                 v = float(data["nam_chain_input_drive"])

@@ -1095,6 +1095,22 @@
          DOM ids used by JS — only the layout was reorganised. -->
     <div id="rb-tab-settings" class="rb-tab-panel rb-overlay hidden">
 
+        <!-- Rig Builder master ON/OFF — turn the whole thing off if you don't use it. -->
+        <div class="bg-dark-700/50 border border-gray-800/50 rounded-xl p-5 mb-6">
+            <h3 class="text-white font-semibold mb-2">Rig Builder</h3>
+            <p class="text-gray-500 text-sm mb-3">
+                When off, Rig Builder loads nothing into the audio engine — no per-song
+                tone, no idle default tone, no preview — and your own Audio-menu signal
+                chain is left completely untouched. Turn it off if you don't use Rig Builder.
+            </p>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="rb-enabled-toggle" checked
+                       onchange="rbSetRigBuilderEnabled(this.checked)"
+                       class="accent-emerald-500 w-4 h-4">
+                <span class="text-sm text-gray-200">Use Rig Builder (load its tones into the audio engine)</span>
+            </label>
+        </div>
+
         <!-- Levels — kept at the very top for quick access. -->
         <div class="bg-dark-700/50 border border-gray-800/50 rounded-xl p-5 mb-6">
             <h3 class="text-white font-semibold mb-3">Levels</h3>

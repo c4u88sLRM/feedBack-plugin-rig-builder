@@ -1240,6 +1240,7 @@ async function rbPreLoadMute(chainLen, targetGain, opts) {
     }
 
     async function autoApplyChain() {
+        if (window.__rbEnabled === false) return;   // Rig Builder master switch off
         if (window.__rbAmpAutoApply === false) return;
         // Tone override: load the chosen user tone instead of the song's tone
         // (once per song; tone changes keep the same override tone).
@@ -2372,7 +2373,11 @@ const RbMegaChain = (function () {
     let _indexToSlotId = [];   // chain index → engine slotId
 
     function _settingOn() {
-        // Chain preloader is ALWAYS on now (the Setup toggle was removed).
+        // Master Rig Builder switch (Gear → "Rig Builder: ON/OFF"). When the
+        // user turns Rig Builder OFF, nothing from it loads into the shared
+        // engine — their own Audio-menu chain is left untouched.
+        if (window.__rbEnabled === false) return false;
+        // Chain preloader is ALWAYS on otherwise (the Setup toggle was removed).
         // The DevTools kill-switch `window.__rbMegaChain = false` still works
         // as an escape hatch for debugging a misbehaving song / weak PC.
         return window.__rbMegaChain !== false;
@@ -3364,6 +3369,11 @@ window.addEventListener('rig-builder:tones-state', () => rbInjectPlayerToneButto
     // off. Fire-and-forget — the polling fallback will pick up the song
     // as soon as the flag flips.
     fetch(`${window.RB_API}/settings`).then(r => r.json()).then(s => {
+        // Master Rig Builder switch — set as early as possible so the very
+        // first song/idle load respects it (default ON when the key is absent).
+        if (s && typeof s.rig_builder_enabled !== 'undefined') {
+            window.__rbEnabled = !!s.rig_builder_enabled;
+        }
         if (s && typeof s.mega_chain_mode !== 'undefined') {
             window.__rbMegaChainSetting = !!s.mega_chain_mode;
             console.log(`[rig_builder mega-chain] boot setting=${window.__rbMegaChainSetting} (read from /settings)`);
@@ -3404,6 +3414,9 @@ window.addEventListener('rig-builder:tones-state', () => rbInjectPlayerToneButto
     let _buildingFile = null;
 
     function triggerBuild(filename, source) {
+        // Master Rig Builder switch off → do nothing at all (no mega-chain, no
+        // tone override) so the engine chain stays whatever the user built.
+        if (window.__rbEnabled === false) return;
         // Tone override: ignore the song's tone entirely. Tear down any mega-chain
         // and play the user's chosen tone instead (loaded once per song).
         if (rbToneOverrideActive()) {
@@ -7833,7 +7846,47 @@ async function rbLoadDefaultTone(options) {
 // Reload the default tone IFF enabled and it has assigned content; else
 // no-op (leave the engine as-is). Called at startup and whenever the user
 // leaves a song or stops a Listen preview.
+// ── Master Rig Builder ON/OFF (Gear) ─────────────────────────────────────
+// Lets a user who doesn't want Rig Builder turn it off entirely: it then loads
+// NOTHING into the shared audio engine (no per-song mega-chain, no idle default
+// tone, no preview), so their own Audio-menu signal chain is left completely
+// untouched. Persists to /settings (rig_builder_enabled).
+async function rbSetRigBuilderEnabled(on) {
+    on = !!on;
+    window.__rbEnabled = on;
+    rbUpdateRigBuilderEnabledUI();
+    try {
+        await fetch(`${window.RB_API}/settings`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rig_builder_enabled: on }),
+        });
+    } catch (_) {}
+    if (!on) {
+        // Remove Rig Builder's current presence from the shared engine via the
+        // host route-release (leaves the user's own chain intact; only falls
+        // back to clearChain on a host that doesn't support the handoff).
+        try { if (typeof RbMegaChain !== 'undefined') await RbMegaChain.teardown(false); } catch (_) {}
+        try { await rbReleaseAudioEffectsRouteWithHost('rig-builder-disabled'); } catch (_) {}
+        rbState._defaultToneActive = false;
+    } else {
+        // Re-enable: reload the right tone (current song, else the idle default).
+        const cur = window.slopsmith && window.slopsmith.currentSong;
+        const filename = cur && cur.filename;
+        if (filename) { try { triggerBuild(filename, 'rig-builder-enabled'); } catch (_) {} }
+        else { try { await rbReloadDefaultTone(); } catch (_) {} }
+    }
+}
+
+function rbUpdateRigBuilderEnabledUI() {
+    const on = window.__rbEnabled !== false;
+    const el = document.getElementById('rb-enabled-toggle');
+    if (el) el.checked = on;
+}
+
 async function rbReloadDefaultTone() {
+    // Master Rig Builder switch off → never load the idle default tone into
+    // the engine (see Gear "Rig Builder: ON/OFF").
+    if (window.__rbEnabled === false) return false;
     // Self-sufficient: fetch the enabled flag + pieces from the backend when
     // the editor hasn't been opened yet (e.g. at startup or right after a
     // song), so this works without the Gear → Default tone tab being visited.
@@ -12899,6 +12952,9 @@ async function rbLoadSettings() {
     // sees it even if the user never opens Settings. rbLoadSettings is
     // called from rbInit so this runs at page-load.
     window.__rbMegaChainSetting = !!s.mega_chain_mode;
+    // Master Rig Builder ON/OFF (Gear toggle). Default ON when the key is absent.
+    if (typeof s.rig_builder_enabled !== 'undefined') window.__rbEnabled = !!s.rig_builder_enabled;
+    try { rbUpdateRigBuilderEnabledUI(); } catch (_) {}
     // "Play a specific tone" override — set the checkbox + dropdown from settings.
     try { rbInitToneOverrideUI(s); } catch (_) {}
     // Refresh the chain-input drive cache too — picks up any change the
