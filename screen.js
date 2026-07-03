@@ -2677,6 +2677,10 @@ const RbMegaChain = (function () {
     }
 
     async function buildForSong(filename) {
+        // Master Rig Builder switch off → build nothing at all. Checked BEFORE
+        // the tone-override guard below, which would otherwise still load a
+        // forced tone into the engine while Rig Builder is meant to be off.
+        if (window.__rbEnabled === false) { _clearPending(filename); return false; }
         // Tone override: the user is forcing ONE specific tone on every song, so
         // the mega-chain (which loads the SONG's own tones) must NOT build — it
         // would clobber the forced tone. triggerBuild() already guards the normal

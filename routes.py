@@ -7891,11 +7891,15 @@ def setup(app, context):
 
         # Did the tone come back with a resolved amp? If not, roll the snapshot
         # back so we never leave the tone broken (VST-less amp / blank face).
+        # An amp is "resolved" as EITHER a VST with a path OR a NAM with a model
+        # file — a NAM-amp song is a valid re-seed, so requiring kind='vst' here
+        # wrongly rolled every NAM-amp reset back with "reseed_failed".
         got = conn.execute(
             "SELECT COUNT(*) FROM tone_mappings tm JOIN preset_pieces pp "
             "ON pp.preset_id = tm.preset_id "
-            "WHERE tm.tone_key = ? AND pp.slot = 'amp' AND pp.kind = 'vst' "
-            "AND COALESCE(pp.vst_path,'') != ''",
+            "WHERE tm.tone_key = ? AND pp.slot = 'amp' AND ("
+            "  (pp.kind = 'vst' AND COALESCE(pp.vst_path,'') != '') OR "
+            "  (pp.kind = 'nam' AND COALESCE(pp.file,'') != ''))",
             (tone_key,)).fetchone()
         reseeded = bool(got and got[0])
         if not reseeded and snap:
