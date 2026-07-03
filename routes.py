@@ -1054,9 +1054,14 @@ def _migrate_assign_bundled_primary_once() -> None:
         ("__rig_builder_master_pre__",),
     ).fetchone()
     marker = json.loads(marker_row[0] or "{}") if marker_row else {}
-    if marker.get("bundled_primary_assigned_v27"):
-        return
-    if _db_path:
+    already_ran = bool(marker.get("bundled_primary_assigned_v27"))
+    # Runs on EVERY startup now (was one-shot). Songs seeded AFTER the first run
+    # kept their raw NAM amp/pedal/rack instead of the bundled VST, so a pure-VST
+    # rig kept "sprouting NAMs" (277 amp pieces stuck on NAM). The reassignment is
+    # idempotent (skips pieces already on the bundled VST) and still preserves a
+    # deliberate MANUAL pick, so re-running every launch is safe and self-heals
+    # any song whose amp resolves to a bundled VST. Back the DB up only once.
+    if not already_ran and _db_path:
         try:
             shutil.copy2(_db_path, f"{_db_path}.pre-bundled-primary-v27.bak")
         except OSError:
@@ -1064,11 +1069,11 @@ def _migrate_assign_bundled_primary_once() -> None:
             return
     known = _build_known_vst_lookup()
     rows = conn.execute(
-        "SELECT id, rs_gear_type, params_json, vst_path, assigned_mode "
+        "SELECT id, rs_gear_type, params_json, vst_path, assigned_mode, kind "
         "FROM preset_pieces"
     ).fetchall()
     changed = 0
-    for pid, gear, pj, cur, mode in rows:
+    for pid, gear, pj, cur, mode, kind in rows:
         if not gear or _gear_category(gear) == "cab":
             continue
         # Amps flip to a bundled VST only when one is actually installed for
@@ -1078,12 +1083,20 @@ def _migrate_assign_bundled_primary_once() -> None:
         if not pick:
             continue
         bundled = pick["vst_path"]
-        if cur == bundled:
+        # Only skip when the piece is ALREADY a fully-resolved VST on this bundle.
+        # A piece with the right vst_path but kind='none' (e.g. its NAM file was
+        # deleted and the file-missing cleanup blanked the kind) must still be
+        # repaired to kind='vst' — otherwise the amp shows up dead/unloadable.
+        if cur == bundled and kind == "vst":
             continue
         cur_broken = bool(cur) and not Path(cur).exists()
-        # Respect a deliberate manual pick that still resolves; reassign
-        # everything auto, and any broken VST path (e.g. a renamed bundle).
-        if mode == "manual" and not cur_broken:
+        # Respect a deliberate manual pick that still resolves — a manual NAM
+        # ('manual') OR a manual VST ('manual_vst'); reassign everything auto, and
+        # any broken path (e.g. a renamed bundle or a deleted NAM). Since this now
+        # runs every startup, preserving manual_vst matters: without it a user's
+        # hand-picked non-primary VST would be overwritten with the gear's primary
+        # on every launch.
+        if mode in ("manual", "manual_vst") and not cur_broken:
             continue
         try:
             knobs = json.loads(pj) if pj else {}
@@ -1097,13 +1110,15 @@ def _migrate_assign_bundled_primary_once() -> None:
             (bundled, pick["vst_format"], state, pid),
         )
         changed += 1
-    mpid = _get_master_preset_id("pre")
-    if mpid is not None:
-        marker["bundled_primary_assigned_v27"] = True
-        conn.execute("UPDATE presets SET settings_json = ? WHERE id = ?",
-                     (json.dumps(marker), mpid))
+    if not already_ran:
+        mpid = _get_master_preset_id("pre")
+        if mpid is not None:
+            marker["bundled_primary_assigned_v27"] = True
+            conn.execute("UPDATE presets SET settings_json = ? WHERE id = ?",
+                         (json.dumps(marker), mpid))
     conn.commit()
-    log.info("bundled-primary migration: reassigned %d pedal/rack/amp pieces", changed)
+    if changed:
+        log.info("bundled-primary migration: reassigned %d auto pedal/rack/amp piece(s) to their bundled VST", changed)
 
 
 def _load_settings() -> dict:
