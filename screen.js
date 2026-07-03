@@ -1892,7 +1892,7 @@ function rbRegisterLibraryCapability() {
             safety: 'safe',
             version: 1,
             runtime: true,
-            description: 'Uses Slopsmith library providers for Rig Builder song search and remote song sync.',
+            description: 'Uses feedBack library providers for Rig Builder song search and remote song sync.',
         },
     });
 }
@@ -2315,7 +2315,7 @@ async function rbOpenLibrarySongFromList(row) {
 //     network traffic — the param doesn't change between renders)
 //   - 404 responses cached by the browser from BEFORE a fix (e.g.
 //     the case-insensitive lookup landed) get a new URL on the next
-//     Slopsmith launch, busting the stale cache miss
+//     feedBack launch, busting the stale cache miss
 // The current epoch is plenty unique; we only need it to differ
 // across plugin restarts.
 const _RB_GEAR_PHOTO_CB = `?cb=${Date.now()}`;
@@ -2453,7 +2453,7 @@ const RbMegaChain = (function () {
     // publish a tone base but DID publish a non-empty `toneChanges`
     // schedule, use the FIRST scheduled change's tone name as the
     // intro. Some songs (notably Bon Jovi "Livin' on a Prayer", Police
-    // "Message in a Bottle", anything where Slopsmith's PSARC parser
+    // "Message in a Bottle", anything where feedBack's PSARC parser
     // populated the change list but not the base) leave `getToneBase`
     // empty even though the schedule is fully there — without this
     // option, we'd fall through to a heuristic guess after the 10 s
@@ -3517,7 +3517,7 @@ window.addEventListener('rig-builder:tones-state', () => rbInjectPlayerToneButto
             window.addEventListener('slopsmith:capabilities:ready', installPlaybackLifecycle, { once: true });
         }
         window.slopsmith.on('song:loaded', (info) => {
-            // Some Slopsmith builds emit song:loaded with no payload (or a
+            // Some feedBack builds emit song:loaded with no payload (or a
             // payload missing `filename`). Fall back to currentSong before
             // giving up — same info, different source.
             const filename = (info && info.filename)
@@ -7270,7 +7270,7 @@ function rbToneRenderInlineVstParams(toneIdx, pIdx) {
     if (window.RBPedalCanvas && (window.RBPedalCanvas.has(stem) || params.length > 0)) {
         editor.innerHTML = `
             <div class="flex items-center justify-between mb-1">
-                <div class="text-[11px] text-purple-300 font-semibold">In-Slopsmith editor · ${rbEsc(vstName)}</div>
+                <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstName)}</div>
                 <div class="flex items-center gap-1">
                     <button onclick="rbToneCaptureVstState(${toneIdx}, ${pIdx})"
                             title="Snapshot the current parameter values into this tone's saved state"
@@ -7317,7 +7317,7 @@ function rbToneRenderInlineVstParams(toneIdx, pIdx) {
     }
     const header = `
         <div class="flex items-center justify-between">
-            <div class="text-[11px] text-purple-300 font-semibold">In-Slopsmith editor · ${rbEsc(vstName)} · ${params.length} params</div>
+            <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstName)} · ${params.length} params</div>
             <div class="flex items-center gap-1">
                 <button onclick="rbToneCaptureVstState(${toneIdx}, ${pIdx})"
                         title="Snapshot the current parameter values into this tone's saved state"
@@ -8173,7 +8173,7 @@ function rbMasterRenderInlineVstParams(role, idx) {
     if (window.RBPedalCanvas && (window.RBPedalCanvas.has(stem) || params.length > 0)) {
         editor.innerHTML = `
             <div class="flex items-center justify-between mb-1">
-                <div class="text-[11px] text-purple-300 font-semibold">In-Slopsmith editor · ${rbEsc(vstName)}</div>
+                <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstName)}</div>
                 <div class="flex items-center gap-1">
                     <button onclick="rbMasterCaptureVstState('${role}', ${idx})"
                             title="Snapshot the current parameter values into the master chain's saved state"
@@ -8209,7 +8209,7 @@ function rbMasterRenderInlineVstParams(role, idx) {
     }
     const header = `
         <div class="flex items-center justify-between">
-            <div class="text-[11px] text-purple-300 font-semibold">In-Slopsmith editor · ${vstName} · ${params.length} params</div>
+            <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${vstName} · ${params.length} params</div>
             <div class="flex items-center gap-1">
                 <button onclick="rbMasterCaptureVstState('${role}', ${idx})"
                         title="Snapshot the current parameter values into the master chain's saved state"
@@ -9378,7 +9378,7 @@ function rbUpdatePathFromInput(toneIdx, pIdx, path) {
     }
 }
 
-// Use Slopsmith's host file picker to select a .vst3 or .component bundle
+// Use feedBack's host file picker to select a .vst3 or .component bundle
 // by path. Sidesteps scanPlugins entirely — engine just loads what we
 // hand it, no introspection of the install dirs required.
 async function rbPickVstFile(toneIdx, pIdx) {
@@ -9386,7 +9386,7 @@ async function rbPickVstFile(toneIdx, pIdx) {
     const statusEl = document.getElementById(`rb-vst-status-${toneIdx}-${pIdx}`);
     const setStatus = (m) => { if (statusEl) statusEl.textContent = m; };
     if (!host || typeof host.pickFile !== 'function') {
-        return alert('File picker not available on this Slopsmith build.');
+        return alert('File picker not available on this feedBack build.');
     }
     try {
         const picked = await host.pickFile([
@@ -9461,7 +9461,7 @@ async function rbLoadKnownVsts() {
 // (rbScanForVsts) and the Gear-tab catalog panel (rbCatalogScanVsts).
 // Returns the plugin list (may be empty); throws on hard engine failure.
 //
-// CRASH SAFETY NOTE: Slopsmith's native engine validates each plugin by
+// CRASH SAFETY NOTE: feedBack's native engine validates each plugin by
 // instantiating it briefly, and a single malformed VST3 / AU can crash the
 // host process. When that happens:
 //   - The engine writes the offending path to /tmp/slopsmith-vst-trace-*.log
@@ -9496,7 +9496,7 @@ async function rbDoVstScan(statusSetter) {
             () => reject(new Error(
                 `timed out after ${SCAN_TIMEOUT_MS / 1000}s — a slow or incompatible `
                 + `plugin is likely hanging the engine. Check the console for the last `
-                + `scanned path, remove that plugin, then relaunch Slopsmith and retry.`)),
+                + `scanned path, remove that plugin, then relaunch feedBack and retry.`)),
             SCAN_TIMEOUT_MS);
     });
     try {
@@ -9997,7 +9997,7 @@ function rbRenderInlineVstParams(toneIdx, pIdx) {
             </div>`;
     }).join('');
     host.innerHTML = `
-        <div class="text-[11px] text-purple-300 font-semibold mb-1">In-Slopsmith editor · ${params.length} params</div>
+        <div class="text-[11px] text-purple-300 font-semibold mb-1">In-feedBack editor · ${params.length} params</div>
         ${rows}`;
 }
 
@@ -12167,7 +12167,7 @@ async function rbCatalogPickFile(panelId, rsGear, currentFormat) {
     const statusEl = document.getElementById(`${panelId}-status`);
     const setStatus = (m) => { if (statusEl) statusEl.textContent = m; };
     if (!host || typeof host.pickFile !== 'function') {
-        return alert('File picker not available on this Slopsmith build.');
+        return alert('File picker not available on this feedBack build.');
     }
     try {
         const picked = await host.pickFile([
@@ -12615,7 +12615,7 @@ async function rbCatalogEditInline(safeId, vstPath, vstFormat, rsGear, stem) {
         }
         el.innerHTML = `
             <div class="flex items-center justify-between mb-1">
-                <div class="text-[11px] text-purple-300 font-semibold">In-Slopsmith editor · ${rbEsc(vstPath.split('/').pop().replace(/\.(vst3|component)$/i, ''))}</div>
+                <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstPath.split('/').pop().replace(/\.(vst3|component)$/i, ''))}</div>
                 <button onclick="event.stopPropagation(); rbCatalogEditInline('${safeId}','${rbEsc(vstPath).replace(/'/g,"\\'")}','${rbEsc(vstFormat)}','${rbEsc(rsGear)}','${stem}')"
                         title="Close inline editor" class="text-[10px] text-gray-400 hover:text-gray-200 px-1">✕</button>
             </div>
@@ -12682,7 +12682,7 @@ async function rbCatalogEditVst(vstPath, vstFormat, rsGear) {
                 alert(`Couldn't open editor for this plugin (the native window may have crashed). Plugin is loaded — try again or use the inline editor in a song's slot.`);
             });
         } else {
-            alert('This Slopsmith build has no openPluginEditor API.');
+            alert('This feedBack build has no openPluginEditor API.');
         }
     } catch (e) {
         await rbQuarantineFailedStandaloneVst(api, loadToken);

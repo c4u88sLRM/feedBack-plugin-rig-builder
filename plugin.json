@@ -3,7 +3,7 @@
   "name": "Rig Builder",
   "version": "2.10.1",
   "private": false,
-  "description": "Build guitar & bass rigs — amps, cabs, pedals and cab IRs — for the songs in your Slopsmith library.",
+  "description": "Build guitar & bass rigs — amps, cabs, pedals and cab IRs — for the songs in your feedBack library.",
   "category": "audio",
   "icon": "assets/thumb.svg",
   "nav": { "label": "Rig Builder", "screen": "plugin-rig_builder" },
@@ -59,7 +59,7 @@
       "ownership": "requester-only",
       "safety": "safe",
       "version": 1,
-      "description": "Uses Slopsmith library providers for Rig Builder song search and remote song sync without registering its own browsable library source."
+      "description": "Uses feedBack library providers for Rig Builder song search and remote song sync without registering its own browsable library source."
     },
     "audio-effects": {
       "roles": ["provider", "requester", "observer"],

@@ -144,7 +144,7 @@ def main() -> int:
     db_path = args.db or _default_db_path()
     if not db_path or not db_path.exists():
         print(f"nam_tone.db not found at {db_path}.", file=sys.stderr)
-        print("Pass --db <path> if Slopsmith is installed elsewhere.", file=sys.stderr)
+        print("Pass --db <path> if feedBack is installed elsewhere.", file=sys.stderr)
         return 1
 
     print(f"Reading {db_path}")

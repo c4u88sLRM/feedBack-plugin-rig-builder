@@ -6,7 +6,7 @@
  *
  * STEREO I/O, single mono core: the amp IS a mono device, so it runs ONE EN30Core
  * (half the CPU of a true dual-core stereo build), but it presents 2-in/2-out and
- * writes the same processed signal to BOTH output channels. Slopsmith's engine
+ * writes the same processed signal to BOTH output channels. feedBack's engine
  * routed a 1-out (mono) plugin to a single side -> imbalanced/louder on one side;
  * dual-mono output keeps it centered/balanced while staying CPU-cheap.
  */

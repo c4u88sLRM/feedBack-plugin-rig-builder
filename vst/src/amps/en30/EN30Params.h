@@ -14,7 +14,7 @@
  *   - Bright: the Top Boost brilliance bright-cap amount (a real preamp treble
  *     bypass, distinct from the power-amp Tone Cut). RS Bright -> this.
  *   - Cab Sim: temporary fallback speaker voice for auditioning the amp by
- *     itself. Slopsmith should set this OFF when a real cabinet/IR is present.
+ *     itself. feedBack should set this OFF when a real cabinet/IR is present.
  *
  * the game mapping (rs_knob_to_vst_param.json): Gain->TB Vol, Treble->Treble,
  * Bass->Bass, Pres->Tone Cut(inv), Mid->Normal Vol(+Input=Both), Bright->Bright.

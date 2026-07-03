@@ -1,6 +1,6 @@
 // amp_harness_template.cpp — plantilla de banco de pruebas OFFLINE para calibrar un amp.
 //
-// Corre el Core del amp (sin abrir Slopsmith) sobre la Brit DI y mide RMS + CREST
+// Corre el Core del amp (sin abrir feedBack) sobre la Brit DI y mide RMS + CREST
 // (pico/RMS en dB) = el proxy de distorsión. Crest alto = limpio; bajo = saturado.
 // También verifica estabilidad (NaN/inf a 48/96/192 kHz).
 //

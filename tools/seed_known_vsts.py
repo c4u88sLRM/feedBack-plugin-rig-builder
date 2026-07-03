@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workaround for Slopsmith's `api.scanPlugins()` crash bug.
+"""Workaround for feedBack's `api.scanPlugins()` crash bug.
 
 JUCE's plugin validation crashes the host on machines with a malformed
 plugin — confirmed in HANDOFF.md and WHATS_NEW.md. The Settings → Scan
@@ -12,7 +12,7 @@ This script does what scanPlugins() would have done, but safely from the
 filesystem instead of the JUCE host: it walks the standard VST3 + AU
 install dirs, lists every `.vst3` bundle and `.component` bundle it
 finds, and merges them into the cache (deduping by path). After running,
-restart Slopsmith — the per-piece VST picker dropdown will show the new
+restart feedBack — the per-piece VST picker dropdown will show the new
 plugins without ever needing to call scanPlugins.
 
 What this script CANNOT do (vs a real scan):
@@ -205,7 +205,7 @@ def main() -> int:
     }
     cache_path.write_text(json.dumps(payload, indent=2))
     print(f"\nWrote {len(payload['plugins'])} entries to {cache_path}")
-    print("Restart Slopsmith — the VST picker dropdown will show the new plugins.")
+    print("Restart feedBack — the VST picker dropdown will show the new plugins.")
     return 0
 
 

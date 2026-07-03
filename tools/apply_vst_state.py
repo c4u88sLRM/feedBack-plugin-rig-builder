@@ -21,8 +21,8 @@ Why this works for real song playback (not just preview):
   entry in our `{"params": ...}` dict. So a populated `vst_state` IS the
   source of truth for both preview AND real song playback.
 
-Slopsmith does NOT need to be running; UPDATEs are plain SQLite. Restart
-Slopsmith (or reload affected songs) to see the change.
+feedBack does NOT need to be running; UPDATEs are plain SQLite. Restart
+feedBack (or reload affected songs) to see the change.
 
 Usage:
     # Dry-run: show what would be written and skipped
@@ -41,7 +41,7 @@ Usage:
 
 What this script does NOT do:
   - Generate the `opaque` blob (only `savePreset()` in the live engine
-    can). That's needed if your build of Slopsmith disables the fetch
+    can). That's needed if your build of feedBack disables the fetch
     interceptor or the post-load setParameter walk. Default rig_builder
     builds include the walk, so `{"params": ...}` is enough.
   - Touch `kind != 'vst'` rows. NAM/IR pieces aren't VSTs.
@@ -490,7 +490,7 @@ def main() -> int:
                 (new_state, row_id),
             )
     print(f"Done: {len(plan)} preset_pieces row(s) updated.")
-    print("Reload the affected songs in Slopsmith to see the change (the post-load")
+    print("Reload the affected songs in feedBack to see the change (the post-load")
     print("setParameter walk runs each time the chain is built).")
     return 0
 

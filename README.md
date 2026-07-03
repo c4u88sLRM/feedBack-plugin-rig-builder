@@ -1,6 +1,6 @@
 # Rig Builder
 
-A [Slopsmith](https://slopsmith.app) plugin that turns each song's tone into a
+A [feedBack](https://slopsmith.app) plugin that turns each song's tone into a
 **real guitar/bass rig**. Every amp, cab, pedal, and rack in a tone is rendered
 by either a **bundled VST3/AU effect** or a **NAM capture / IR** from
 [tone3000.com](https://www.tone3000.com), chained into a realistic
@@ -42,18 +42,18 @@ a VST or a NAM to any piece.
 
 ## Install
 
-1. Install Slopsmith and run it once (it ships the `nam_tone` engine and
-   creates the app-data folder). Quit Slopsmith.
+1. Install feedBack and run it once (it ships the `nam_tone` engine and
+   creates the app-data folder). Quit feedBack.
 2. Drop this folder into the plugins directory so it lives at:
    - **macOS:** `~/Library/Application Support/slopsmith-desktop/plugins/rig_builder/`
    - **Windows:** `%APPDATA%\slopsmith-desktop\plugins\rig_builder\`
    - **Linux:** `~/.config/slopsmith-desktop/plugins/rig_builder/`
-3. Restart Slopsmith. **Rig Builder** appears in the nav.
+3. Restart feedBack. **Rig Builder** appears in the nav.
 
 Optional: open **Setup** and connect a tone3000 account to unlock in-app
 candidate listing and auto-download. Without it, deep-link mode works fully.
 
-> No hot reload — restart Slopsmith after updating the plugin. Database
+> No hot reload — restart feedBack after updating the plugin. Database
 > migrations run automatically on launch.
 
 ---
@@ -66,7 +66,7 @@ candidate listing and auto-download. Without it, deep-link mode works fully.
    bundled VST, or **Suggest → Download and assign** (with a tone3000 account).
 3. **▶ Listen** to audition the full chain live; toggle **Bypass** on any
    stage to hear what it contributes.
-4. **Save preset.** Play the song in Slopsmith — it now runs through the full
+4. **Save preset.** Play the song in feedBack — it now runs through the full
    neural chain.
 5. Browse everything you've mapped in the **Gear** tab (photos + isolated ▶).
 
@@ -74,12 +74,12 @@ candidate listing and auto-download. Without it, deep-link mode works fully.
 
 ## Requirements
 
-- Slopsmith desktop (macOS, Windows, or Linux) with the bundled `nam_tone`
+- feedBack desktop (macOS, Windows, or Linux) with the bundled `nam_tone`
   plugin.
 - A tone3000 account is optional (enables in-app candidate listing and
   auto-download).
 
-Rig Builder reads songs in Slopsmith's own `.sloppak` format only.
+Rig Builder reads songs in feedBack's own `.sloppak` format only.
 
 ---
 
@@ -90,7 +90,7 @@ Rig Builder reads songs in Slopsmith's own `.sloppak` format only.
 - Assignments persist into `nam_tone`'s database as a `preset_pieces` chain
   plus a primary amp+cab (what the stock engine reads).
 - Real playback is upgraded to the full chain by transparently serving every
-  stage to the audio engine — no changes to the Slopsmith app bundle, so it
+  stage to the audio engine — no changes to the feedBack app bundle, so it
   survives app updates. (Kill-switch: `window.__rbChainPlayback = false`.)
 
 For the full design, internals, and contributor notes see **`docs/HANDOFF.md`**

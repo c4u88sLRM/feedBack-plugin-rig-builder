@@ -97,7 +97,7 @@ cp bin/<Bundle>.vst3/Contents/MacOS/<NAME> \
 codesign --force -s - ../../../amps/<Bundle>.vst3/Contents/MacOS/<NAME>
 lipo -archs ...   # verifica arm64 + timestamp fresco
 ```
-El usuario aplica con **Cmd+Q + reabrir Slopsmith**, y valida de oído.
+El usuario aplica con **Cmd+Q + reabrir feedBack**, y valida de oído.
 
 ---
 

@@ -2,7 +2,7 @@ name: Build Linux VST3 binaries
 
 # Why: the bundled effects in vst/*.vst3 ship with macOS (Contents/MacOS/<Name>)
 # and Windows (Contents/x86_64-win/<Name>.vst3) binaries, but no Linux build.
-# On Linux the host (Slopsmith Desktop's JUCE VST3 sandbox) resolves the binary
+# On Linux the host (feedBack Desktop's JUCE VST3 sandbox) resolves the binary
 # at Contents/<machine>-linux/<Name>.so, where <machine> comes from `uname -m`
 # (so x86_64-linux on a normal box). With no such folder the bundles can't load
 # and the plugin has no Linux support.

@@ -5850,7 +5850,7 @@
     "param": "Tone Cut",
     "scale": 0.01,
     "invert": true,
-    "_hint": "Pres is the inverse of the AC30 Tone Cut (VR9 + C80 4n7): higher RS Pres -> less cut -> more EL84/OT bite. Cab Sim is a fallback speaker voice until Slopsmith routes an external cabinet/IR."
+    "_hint": "Pres is the inverse of the AC30 Tone Cut (VR9 + C80 4n7): higher RS Pres -> less cut -> more EL84/OT bite. Cab Sim is a fallback speaker voice until feedBack routes an external cabinet/IR."
    },
    "Bright": {
     "param": "Bright",

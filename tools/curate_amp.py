@@ -16,7 +16,7 @@ hand-edit `rs_to_real.json` (or the curation CSV).
 
 Auth: reuses the API key (or OAuth tokens) already in the plugin's
 `rig_builder_settings.json` — same store as the running plugin, so if
-you can download captures from inside Slopsmith this script also works.
+you can download captures from inside feedBack this script also works.
 """
 
 import argparse

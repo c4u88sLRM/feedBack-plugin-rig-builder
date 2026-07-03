@@ -1,6 +1,6 @@
-# Cómo hacer los amps de Slopsmith "circuito-real" (guía para Claude + humano)
+# Cómo hacer los amps de feedBack "circuito-real" (guía para Claude + humano)
 
-Esta guía explica cómo convertir un amp VST de Slopsmith desde el modelo viejo de
+Esta guía explica cómo convertir un amp VST de feedBack desde el modelo viejo de
 **caja-negra (`tanh`)** a un modelo **circuito-real** (física real de tubos / diodos /
 transformadores), que suena mucho más fiel. Está escrita para dársela a un agente de
 Claude como contexto + para que un humano la siga.
@@ -150,7 +150,7 @@ DST=$(python3 -c "import json;print(json.load(open('data/rs_gear_to_vst.json'))[
 cp -R vst/src/amps/<dir>/bin/<Bin>.vst3/. "$DST/"   # copia el contenido fresco
 codesign --force -s - "$DST"
 ```
-Aplicar en la app: **Cmd+Q y reabrir Slopsmith**.
+Aplicar en la app: **Cmd+Q y reabrir feedBack**.
 
 ### Paso 5b — Loudness (que no salte el volumen entre amps)
 Todos los amps deben quedar al **mismo nivel** (target del proyecto: **−19 dBFS RMS**),
@@ -248,7 +248,7 @@ Hiwatt se queda ~14-16). El dueño prueba en vivo y ajusta a oído al final.
 
 Decile algo así (y dale esta guía + `REAL_TUBE_AMP_GUIDE.md` como contexto):
 
-> "Portá el amp `<dir>` de Slopsmith a circuito-real siguiendo `COMO_PORTAR_AMPS.md`.
+> "Portá el amp `<dir>` de feedBack a circuito-real siguiendo `COMO_PORTAR_AMPS.md`.
 > Leé su esquemático en `amps/<...>` para el tonestack y la topología, reemplazá los
 > `asymTube`/`softClip` por los bloques de `tube_stage.hpp` (TubeStage + PowerAmpXXX +
 > ToneStackYeh, y DiodeClipper si tiene diodos), agregá oversampling 2×, y calibrá con un

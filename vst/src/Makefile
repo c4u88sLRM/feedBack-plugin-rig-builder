@@ -13,7 +13,7 @@ DPF_PATH ?= ../DPF
 
 include $(DPF_PATH)/Makefile.plugins.mk
 
-# Only build VST3 (that's what the Slopsmith engine scans). AU added too in
+# Only build VST3 (that's what the feedBack engine scans). AU added too in
 # case it's useful as a fallback format.
 TARGETS += vst3
 TARGETS += au

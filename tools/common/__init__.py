@@ -58,7 +58,7 @@ if str(PLUGIN_ROOT) not in sys.path:
 
 
 def config_dir() -> Path | None:
-    """Locate Slopsmith's per-user config dir across the supported OSes.
+    """Locate feedBack's per-user config dir across the supported OSes.
 
     Mirrors the resolution `default_db_path()` uses; the settings file
     (`rig_builder_settings.json`) and `nam_tone.db` live side by side here.
@@ -134,7 +134,7 @@ def load_tone3000_client(plugin_dir: Path | str | None = None,
     `make_gain_variants` each open-coded: add the plugin dir to `sys.path`,
     import the client, read OAuth/API creds from `rig_builder_settings.json`,
     and point the SQLite cache at a throwaway file under the temp dir (so the
-    CLI never contends with a running Slopsmith for the real cache).
+    CLI never contends with a running feedBack for the real cache).
 
     Exits the process with a helpful message on any unrecoverable problem —
     these are interactive dev tools, so failing loudly is the right call.

@@ -1202,7 +1202,7 @@ def _safe_loopback_redirect(origin: str) -> str:
 def _oauth_result_page(message: str, ok: bool) -> str:
     """Tiny self-contained page shown in the user's browser after the OAuth
     redirect. The real state lives in the backend; this just tells the user
-    they can return to Slopsmith."""
+    they can return to feedBack."""
     color = "#34d399" if ok else "#f87171"
     return (
         "<!doctype html><html><head><meta charset='utf-8'>"
@@ -4877,11 +4877,11 @@ def _list_library_songs() -> tuple[list[Path], int]:
 
     Walks the DLC dir RECURSIVELY so libraries organised in subfolders
     (e.g. one folder per artist) get fully covered. Songs are surfaced
-    with their basename downstream, which matches Slopsmith's own
+    with their basename downstream, which matches feedBack's own
     convention in web_library.db.
 
     Cloud-loader users have a DLC dir full of 0-byte PSARC stubs —
-    metadata exists in Slopsmith's library DB, but the actual archive
+    metadata exists in feedBack's library DB, but the actual archive
     isn't on disk until the user plays the song (or runs cloud_loader's
     materialize action). Trying to parse those stubs floods the batch
     log with "Not a PSARC file" errors and slows nothing down, so we
@@ -5614,7 +5614,7 @@ def _batch_worker(mode: str = "all"):
         if cloud_only:
             _batch_log(
                 f"Skipping {cloud_only} cloud-only placeholders (0-byte stubs). "
-                "Play them through Slopsmith or use cloud_loader → materialize "
+                "Play them through feedBack or use cloud_loader → materialize "
                 "to pull them onto disk first."
             )
         rs_map = _load_rs_to_real()
@@ -6399,7 +6399,7 @@ def _resync_stale_song_seed(song_key: str, path: Path) -> list[str]:
 # Polls the DLC dir; when a song flips from a 0-byte cloud stub to real
 # content (cloud_loader materialize, a manual copy, another plugin's
 # extractor, …) it runs the per-song auto-download so the NAM chain is
-# ready before the user hits play in Slopsmith's main view. Decoupled
+# ready before the user hits play in feedBack's main view. Decoupled
 # from cloud_loader on purpose — it reacts to the file appearing on
 # disk, not to any specific code path that produced it.
 _WATCH_INTERVAL_SEC = 5
@@ -6808,7 +6808,7 @@ def setup(app, context):
     _install_bundled_cab_irs()
 
     # Start the background materialization watcher so songs played from
-    # Slopsmith's main view (which only triggers cloud_loader to put the
+    # feedBack's main view (which only triggers cloud_loader to put the
     # PSARC on disk) get their NAM chain auto-downloaded too — not just
     # songs opened from the NAM Rig Builder tab.
     _start_watcher()
@@ -7046,7 +7046,7 @@ def setup(app, context):
         if not pending or not code:
             return HTMLResponse(_oauth_result_page(
                 "This sign-in link expired or was already used. "
-                "Return to Slopsmith and click Connect again.", ok=False))
+                "Return to feedBack and click Connect again.", ok=False))
         client = _get_t3k_client()
         try:
             client.exchange_code(code, pending["verifier"], pending["redirect_uri"])
@@ -7070,7 +7070,7 @@ def setup(app, context):
         with _t3k_lock:
             _t3k_client = None
         return HTMLResponse(_oauth_result_page(
-            "You're connected to TONE3000. Close this tab and return to Slopsmith.",
+            "You're connected to TONE3000. Close this tab and return to feedBack.",
             ok=True))
 
     @app.get("/api/plugins/rig_builder/oauth/status")

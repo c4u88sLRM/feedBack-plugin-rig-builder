@@ -21,7 +21,7 @@ static inline float gainLoudnessMakeupDb(float gain)
 {
     // Measured against tools/measure_amp_loudness.py after the AC30C2 A500K pot
     // taper and 0.45x preGain calibration.  RS Gain is distortion amount in
-    // Slopsmith, not output volume, so this post-circuit makeup keeps clean,
+    // feedBack, not output volume, so this post-circuit makeup keeps clean,
     // edge-of-breakup and cranked settings close in perceived loudness.  The
     // smooth high-gain trim compensates the extra guitar-density loudness that
     // appears when the Top Boost path starts compressing hard.

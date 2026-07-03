@@ -16,7 +16,7 @@
 > not just param-less ones). The native window is tracked via `_vstEditorSlot` so
 > `rbCloseActiveVstEditor` closes it on navigation. Edit params in the native
 > window → 📸 Capture snapshots them into the tone/master saved state. Pure JS —
-> restart Slopsmith to load.
+> restart feedBack to load.
 
 > **Leveler start-up blast fix — detector warm-up (2026-06-12, branch
 > `feat/amp-loudness-normalize`).** After the load-mute fixes the user STILL heard
@@ -33,7 +33,7 @@
 > (seed) → **0.4 dB (warm-up)**. Net: a brief soft attack on the very first note
 > per song load instead of a blast. State reset in prepareToPlay
 > (`warmupSamples`/`detectorSeeded`). Rebuild+install+sign the racks bundle as
-> usual; restart Slopsmith.
+> usual; restart feedBack.
 
 > **Load-mute: full silence + un-mute on the FIRST REAL TONE (2026-06-12, branch
 > `feat/amp-loudness-normalize`).** User still heard "el instrumento fuerte y
@@ -133,7 +133,7 @@
 > Release`, then copy the artefact binary into
 > `vst/racks/RB Final Leveler.vst3/Contents/MacOS/RB Final Leveler` (macOS slot
 > only — keep linux/win) + `codesign --force --sign - "vst/racks/RB Final Leveler.vst3"`.
-> Restart Slopsmith (Cmd+Q + `pkill -f 'uvicorn server:app'` + reopen — orphan
+> Restart feedBack (Cmd+Q + `pkill -f 'uvicorn server:app'` + reopen — orphan
 > backend serves stale code). DON'T commit the `build/` artifacts (persistent
 > noise); commit only the Source .cpp + the shipped bundle binary + CodeResources.
 
@@ -270,7 +270,7 @@
 > #14 (mac IR extraction), #15 (quiet NAMs). See `WHATS_NEW.md` for the
 > user-facing summary.
 
-A Slopsmith plugin that maps **the game tones** (amp + cab + pedals + racks)
+A feedBack plugin that maps **the game tones** (amp + cab + pedals + racks)
 to **NAM captures and IRs from tone3000.com**, persisting per-song mappings in
 `nam_tone.db` so the existing NAM runtime plays them back automatically.
 
@@ -280,7 +280,7 @@ database schema, API quirks, what's done, what isn't, and why.
 
 ---
 
-## Slopsmith capability migration (2026-06-01)
+## feedBack capability migration (2026-06-01)
 
 `plugin.json` now declares the current capability standards:
 `capability-pipelines.v1` and `plugin-runtime-idempotent.v1`. The frontend
@@ -346,7 +346,7 @@ Migration gates still expected:
   raw paths/state only in the provider-private response consumed by the core
   host. Stage state is passed as `stateBase64` on the trusted asset entry so
   NAM/IR/VST state survives the executor path.
-- Saving a tone now also writes Slopsmith core's audio-effects mapping index
+- Saving a tone now also writes feedBack core's audio-effects mapping index
   with provider id `rig_builder.effects` and opaque `preset:<id>` refs. The
   existing `nam_tone.db` `tone_mappings` write remains as the legacy/private
   compatibility bridge until normal playback and the Amp UI are fully host-
@@ -369,7 +369,7 @@ Migration gates still expected:
 
 ## Total capability migration path (Rig Builder)
 
-Goal: Rig Builder should become a native participant in Slopsmith's capability
+Goal: Rig Builder should become a native participant in feedBack's capability
 graph while keeping its DSP/domain logic private. "Fully migrated" does not
 mean deleting `routes.py`; it means browser code and other plugins no longer
 depend on ad hoc globals, monkey-patches, direct legacy UI surfaces, or raw
@@ -400,7 +400,7 @@ may remain as the implementation behind native capability handlers.
 
 5. **Put privileged actions behind policy.** tone3000 OAuth/request/download, native file pickers, DB writes, media import/export, and subprocess execution should check the privileged host before they run. Long-running privileged actions must link the authorization record to the `jobs` job ID. Removal gate: background/unconfirmed execution is blocked, user-action flows are accepted, and diagnostics show authorized/blocked/degraded outcomes without raw payloads.
 
-6. **Retire legacy UI compatibility.** When Slopsmith's UI hosts are the only supported path, remove reliance on legacy manifest `nav`/`screen` behavior and any direct DOM/global registrations that duplicate native contributions. Native records must continue to mount exactly once after reload, plugin screen navigation, and repeated plugin script hydration.
+6. **Retire legacy UI compatibility.** When feedBack's UI hosts are the only supported path, remove reliance on legacy manifest `nav`/`screen` behavior and any direct DOM/global registrations that duplicate native contributions. Native records must continue to mount exactly once after reload, plugin screen navigation, and repeated plugin script hydration.
 
 7. **Tighten diagnostics and tests.** Add focused smoke tests or manual release checks for: provider selector local/remote search; remote sync to local filename; multi-NAM playback chain; bypass persistence; mega-chain mode; batch map progress/failure; tone3000 disconnected/offline; app restart/reload idempotency; and Capability Inspector output. Support snapshots must remain under the host caps and exclude local paths, filenames, tokens, URLs, model/IR names, VST paths/state, raw chain payloads, recordings, and subprocess details.
 
@@ -422,7 +422,7 @@ dependencies are absent from the normal path:
 
 ## Songs tab library provider routing (2026-06-01)
 
-The Songs tab search has a Slopsmith library-source selector before the search
+The Songs tab search has a feedBack library-source selector before the search
 box. `rbListSongs()` always searches through the core provider endpoint,
 including the local library: `GET /api/library?provider=local&...` or
 `provider=<remote-id>`. Provider refresh, selection, and remote sync are routed
@@ -604,7 +604,7 @@ all manual ones.
 
 Take the game tones (amp, cab, pedals, racks already exposed by the
 existing `tones` plugin) and **map them to real NAM `.nam` captures and
-`.wav` IRs** so that playing a CDLC song in Slopsmith uses
+`.wav` IRs** so that playing a CDLC song in feedBack uses
 realistic neural amp simulations instead of generic synth.
 
 Source for captures: [tone3000.com](https://www.tone3000.com), which
@@ -644,10 +644,10 @@ Total ~50 KB of code + ~360 KB of pre-generated JSON.
 
 ---
 
-## How Slopsmith loads plugins
+## How feedBack loads plugins
 
-Slopsmith is an Electron app whose Python backend lives in
-`/Applications/Slopsmith.app/Contents/Resources/slopsmith/`. The host
+feedBack is an Electron app whose Python backend lives in
+`/Applications/feedBack.app/Contents/Resources/slopsmith/`. The host
 scans `~/Library/Application Support/slopsmith-desktop/plugins/*/plugin.json`
 at startup (search `server.py` for `load_plugins`). For each plugin it
 imports the file pointed to by `routes` and calls:
@@ -664,7 +664,7 @@ The **`context` dict** we rely on:
 | `get_dlc_dir` | `() -> Path` | Returns the user's DLC dir (CDLC library). |
 | `get_sloppak_cache_dir` | `() -> Path \| None` | Optional — where to unpack sloppaks. |
 
-There is **no hot reload**. The user must close + reopen Slopsmith for
+There is **no hot reload**. The user must close + reopen feedBack for
 new/edited plugin code to take effect.
 
 ---
@@ -672,7 +672,7 @@ new/edited plugin code to take effect.
 ## Critical: sister plugin `nam_tone`
 
 A plugin called `nam_tone` already ships **inside the app bundle** at
-`/Applications/Slopsmith.app/Contents/Resources/slopsmith/plugins/nam_tone/`.
+`/Applications/feedBack.app/Contents/Resources/feedBack/plugins/nam_tone/`.
 It owns:
 
 - `nam_tone.db` — tables `presets` (one `model_file` + one `ir_file` per
@@ -694,7 +694,7 @@ It owns:
 `rig_builder` **does not duplicate** any of nam_tone's tables or
 endpoints — it writes into the same `presets` / legacy `tone_mappings`
 rows and uploads files through nam_tone's upload endpoints from the UI. On
-newer Slopsmith cores it also writes the public audio-effects mapping index;
+newer feedBack cores it also writes the public audio-effects mapping index;
 that index stores only `provider_id`, `tone_key`, and an opaque provider ref
 such as `preset:123`, while `preset_pieces` remains Rig Builder's private
 chain state.
@@ -867,14 +867,14 @@ that field blindly; it shipped broken in May 2026.
 
 ## Bundled Python (gotcha for any subprocess)
 
-Slopsmith bundles its own Python at:
+feedBack bundles its own Python at:
 
 ```
-/Applications/Slopsmith.app/Contents/Resources/python/runtime/bin/python3.12
+/Applications/feedBack.app/Contents/Resources/python/runtime/bin/python3.12
 ```
 
 Any subprocess the plugin spawns should use the host's bundled Python
-(via `sys.executable` when running inside Slopsmith) rather than the
+(via `sys.executable` when running inside feedBack) rather than the
 user's system `python3`, which may differ in version or installed
 packages.
 
@@ -921,7 +921,7 @@ Users running `cloud_loader` keep most of their DLC dir as 0-byte
 placeholders — actual PSARC content lives in Google Drive and only
 gets pulled when needed. rig_builder handles this:
 
-- The Songs tab uses Slopsmith's library provider results rather than a
+- The Songs tab uses feedBack's library provider results rather than a
   Rig Builder-local listing. Remote/cloud rows must sync through the provider
   and return a local filename before tone parsing.
 - `GET /song/{filename}` returns HTTP 409 + `{error: "cloud_only",
@@ -965,7 +965,7 @@ to a 0-byte stub) and later re-materialized:
 
 Closes the last gap in the "download and just play" flow. Before this,
 auto-download only fired when the user opened a song **from the Tone
-Bridge tab**. Playing a song from Slopsmith's main view only triggers
+Bridge tab**. Playing a song from feedBack's main view only triggers
 `cloud_loader` to drop the real PSARC on disk — `rig_builder` never
 heard about it, so the song played with the generic synth until the
 user later visited Rig Builder.
@@ -1005,7 +1005,7 @@ after the key is added. `auto_watch` defaults to True in
 (`running`, `primed`, `fired_count`, `last_fired`, `last_error`,
 `interval_sec`) so the UI/operator can confirm it's alive.
 
-Net flow now: play a song in Slopsmith → `cloud_loader` materializes
+Net flow now: play a song in feedBack → `cloud_loader` materializes
 the PSARC → within ~5-10s the watcher detects it and downloads the NAM
 chain → ~10-30s later the chain is in `nam_tone.db`. First play may
 still be generic synth (download in flight); by the time the file is
@@ -1115,7 +1115,7 @@ Notes / gotchas:
 - `_state_b64` / `_safe_child` in `routes.py` are byte-for-byte copies of
   nam_tone's so the stage `state` blobs + absolute paths match exactly.
 - Previewing **persists** the preset (the engine only loads a saved id).
-- No hot reload: the user must restart Slopsmith for this to take effect.
+- No hot reload: the user must restart feedBack for this to take effect.
 
 ## Per-stage bypass + immediate gear refresh (v3.7 — DONE)
 
@@ -1401,10 +1401,10 @@ back to the old wrapper (they still only apply in preview).
 
 | Thing | Path |
 |---|---|
-| App bundle | `/Applications/Slopsmith.app/` |
-| Bundled Python | `/Applications/Slopsmith.app/Contents/Resources/python/runtime/bin/python3.12` |
-| Host server code | `/Applications/Slopsmith.app/Contents/Resources/slopsmith/server.py` |
-| Sister plugin | `/Applications/Slopsmith.app/Contents/Resources/slopsmith/plugins/nam_tone/` |
+| App bundle | `/Applications/feedBack.app/` |
+| Bundled Python | `/Applications/feedBack.app/Contents/Resources/python/runtime/bin/python3.12` |
+| Host server code | `/Applications/feedBack.app/Contents/Resources/slopsmith/server.py` |
+| Sister plugin | `/Applications/feedBack.app/Contents/Resources/feedBack/plugins/nam_tone/` |
 | User config dir | `~/Library/Application Support/slopsmith-desktop/slopsmith-config/` |
 | User plugins dir | `~/Library/Application Support/slopsmith-desktop/plugins/` |
 | This plugin | `~/Library/Application Support/slopsmith-desktop/plugins/rig_builder/` |
@@ -1418,14 +1418,14 @@ back to the old wrapper (they still only apply in preview).
 
 ## Install on a fresh Mac
 
-1. Install Slopsmith (the .app) and run it at least once so it creates
+1. Install feedBack (the .app) and run it at least once so it creates
    `~/Library/Application Support/slopsmith-desktop/`.
-2. Quit Slopsmith.
+2. Quit feedBack.
 3. Unzip this plugin into
    `~/Library/Application Support/slopsmith-desktop/plugins/rig_builder/`.
 4. The included `rs_to_real.json` ships pre-generated and covers the
    base-game gear set — no per-machine regeneration is needed.
-5. Open Slopsmith. "Rig Builder" appears in the nav.
+5. Open feedBack. "Rig Builder" appears in the nav.
 
 Optional: tone3000 API key → Settings → paste → "Guardar". Without it,
 deep-link mode works fully.
@@ -1437,13 +1437,13 @@ deep-link mode works fully.
 Run from inside the plugin dir with the bundled Python:
 
 ```bash
-PY=/Applications/Slopsmith.app/Contents/Resources/python/runtime/bin/python3.12
-PYTHONPATH=/Applications/Slopsmith.app/Contents/Resources/slopsmith/lib:. \
+PY=/Applications/feedBack.app/Contents/Resources/python/runtime/bin/python3.12
+PYTHONPATH=/Applications/feedBack.app/Contents/Resources/slopsmith/lib:. \
   $PY -c "import routes; print('OK')"
 ```
 
 Should print `OK` with no traceback. If it doesn't, the most likely
-causes are: (a) Slopsmith was updated and the bundled Python path
+causes are: (a) feedBack was updated and the bundled Python path
 changed; (b) a sibling module was edited in a way that breaks import
 ordering.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Slopsmith-owned AC30-style 2x12 alnico cabinet IRs.
+"""Generate feedBack-owned AC30-style 2x12 alnico cabinet IRs.
 
 These IRs are synthesized from a simple speaker/cab/mic response model. The
 script does not read, analyze, deconvolve, fit, or copy any captured/proprietary

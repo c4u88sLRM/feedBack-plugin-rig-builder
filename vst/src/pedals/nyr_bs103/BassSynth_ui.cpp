@@ -1,6 +1,6 @@
 /* NYR BS103 stompbox UI — shared pedal_ui template. The face is an original
  * design (no real brand/model). Knob count + labels come from the plugin params;
- * Slopsmith draws its own canvas, so this native UI is only a fallback. */
+ * feedBack draws its own canvas, so this native UI is only a fallback. */
 #include "BassSynthParams.h"
 #define PEDAL_TITLE  "BASS SYNTH"
 #define PEDAL_NAMES  kBassSynthNames

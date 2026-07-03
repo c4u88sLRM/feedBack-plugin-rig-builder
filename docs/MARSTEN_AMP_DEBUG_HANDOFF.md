@@ -113,7 +113,7 @@ Con seno `test logic/amp_debug/sine_440_-18dbfs.wav`, el estado restaurado dio:
 - JCM800 `Gain=0.50`: THD aprox. `10.06%`
 - JCM800 `Gain=0.78`: THD aprox. `16.74%`
 
-Advertencia: esta métrica no reemplaza escucha real en Slopsmith. Solo sirve para confirmar que el DSP genera armónicos y que no está mudo/cortado.
+Advertencia: esta métrica no reemplaza escucha real en feedBack. Solo sirve para confirmar que el DSP genera armónicos y que no está mudo/cortado.
 
 ## Siguiente forma correcta de investigar
 
@@ -121,7 +121,7 @@ Trabajar un amp a la vez. Empezar por Plexi, no por todos los Marshall.
 
 Orden recomendado:
 
-1. Confirmar que Slopsmith está cargando el mismo bundle que el harness.
+1. Confirmar que feedBack está cargando el mismo bundle que el harness.
    - `~/Library/Application Support/slopsmith-desktop/plugins/rig_builder` es symlink a `/Users/nacho/Files/slopsmith/rig_builder`.
    - Comparar hash del binario si hay duda.
 2. Reproducir el tono real de una canción problemática.
@@ -129,7 +129,7 @@ Orden recomendado:
    - Renderizar el mismo estado con `tools/render_amp_wav.py`.
 3. Comparar tres rutas:
    - DI -> amp VST solamente.
-   - DI -> amp VST + cab/IR real usado por Slopsmith.
+   - DI -> amp VST + cab/IR real usado por feedBack.
    - Cadena completa con pedales/racks/leveler si existe harness disponible.
 4. Revisar si el problema perceptual viene de cab/leveler/amp trim después del amp.
    - El amp puede distorsionar, pero un bloque posterior puede nivelar/oscurecer/aplastar el resultado.
@@ -199,7 +199,7 @@ Antes de decir que un amp está arreglado:
 - `clip_frac=0`.
 - Limpio/gain bajo debe sonar y no quedar gateado.
 - Gain alto debe tener más armónicos medibles y perceptibles.
-- Probar dentro de Slopsmith después de reiniciar/cerrar backend si el VST ya estaba cargado.
+- Probar dentro de feedBack después de reiniciar/cerrar backend si el VST ya estaba cargado.
 - Pedir confirmación auditiva del usuario en un solo amp antes de propagar el patrón a otros.
 
 ## Nota para el próximo agente

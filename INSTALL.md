@@ -1,20 +1,20 @@
 # Rig Builder — Install & try
 
-A Slopsmith plugin that maps each song's tones (amp + cab + pedals + racks)
+A feedBack plugin that maps each song's tones (amp + cab + pedals + racks)
 to NAM captures from [tone3000.com](https://www.tone3000.com) and bundled
-VST3/AU effects, so playing a song in Slopsmith uses realistic neural amp
+VST3/AU effects, so playing a song in feedBack uses realistic neural amp
 simulations instead of the generic engine sounds.
 
 ## Install (macOS)
 
-1. Quit Slopsmith if it's running.
+1. Quit feedBack if it's running.
 2. Unzip into the user plugins directory:
 
    ```bash
    cd ~/Library/Application\ Support/slopsmith-desktop/plugins/
    unzip ~/Downloads/rig_builder.zip
    ```
-3. Open Slopsmith. **"Rig Builder"** appears in the side nav.
+3. Open feedBack. **"Rig Builder"** appears in the side nav.
 
 That's it — no Python, no extra dependencies. The plugin runs inside the
 slopsmith backend.
@@ -49,12 +49,12 @@ Two modes:
 
 ## Songs
 
-Rig Builder reads songs in Slopsmith's own `.sloppak` format. Point it at a
+Rig Builder reads songs in feedBack's own `.sloppak` format. Point it at a
 raw archive and it will tell you to convert it to `.sloppak` first.
 
 ## Quick verification
 
-After install, open Slopsmith → Rig Builder → **Songs** tab → search any
+After install, open feedBack → Rig Builder → **Songs** tab → search any
 song you have → click it. You should see the tone chain with gear names,
 images, and a "Suggest" button per piece. If you see that, the plugin is
 healthy.
@@ -63,7 +63,7 @@ healthy.
 
 | Symptom | Fix |
 |---|---|
-| "Rig Builder" not in nav | Restart Slopsmith (the plugin loader runs at startup only) |
+| "Rig Builder" not in nav | Restart feedBack (the plugin loader runs at startup only) |
 | All gear pieces show with empty "Suggest" results | Connect a tone3000 account in Setup, or use deep-link mode |
 | Song click does nothing / spinner stuck | The song file may be a `cloud_loader` stub (0 bytes). The plugin tries to materialize from Drive automatically — make sure `cloud_loader` is authenticated to your Google Drive |
 | A gear returns 0 candidates | The make/model query may be too generic. Edit the query in the Suggest modal (e.g. "Ampeg SVT") and click "Save override to rs_to_real.json" — the corrected mapping persists for future searches and batches |

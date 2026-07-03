@@ -18,8 +18,8 @@ recommended VST is actually installed on this machine. Marks the new
 row `assigned_mode='manual_vst'` so future auto-batches treat it as
 sacred. Mirrors the `/vst/assign` endpoint's UPDATE exactly.
 
-Slopsmith does NOT need to be running — the UPDATE is plain SQLite.
-Slopsmith should be RESTARTED (or the song re-loaded) after running.
+feedBack does NOT need to be running — the UPDATE is plain SQLite.
+feedBack should be RESTARTED (or the song re-loaded) after running.
 
 What this script does NOT do:
   - Capture each plugin's opaque state blob. Real-song playback restores

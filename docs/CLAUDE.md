@@ -17,7 +17,7 @@ can pick up safely.
 
 ## What this is
 
-`rig_builder` is a **Slopsmith** plugin. Slopsmith is an Electron
+`rig_builder` is a **feedBack** plugin. feedBack is an Electron
 music/guitar app. The plugin maps **the game tones** (amp + cab +
 pedals + racks) to **NAM captures + IRs from tone3000.com**, and persists
 per-song presets into the sister `nam_tone` plugin's `nam_tone.db` so the
@@ -37,18 +37,18 @@ Stack: Python (FastAPI) backend `routes.py` + browser JS UI `screen.js` /
    `git` does not work here. Session-to-session state lives in `HANDOFF.md`.
 
 2. **No hot reload.** After editing any plugin file the user must **quit and
-   reopen Slopsmith** for changes to take effect. DB migrations in
+   reopen feedBack** for changes to take effect. DB migrations in
    `_get_conn()` run automatically on first launch.
 
-3. **Use Slopsmith's bundled Python** for any verification — it matches the
+3. **Use feedBack's bundled Python** for any verification — it matches the
    interpreter the plugin actually runs under. On macOS:
    ```bash
-   PY=/Applications/Slopsmith.app/Contents/Resources/python/runtime/bin/python3.12
+   PY=/Applications/feedBack.app/Contents/Resources/python/runtime/bin/python3.12
    cd <this folder>
-   PYTHONPATH=/Applications/Slopsmith.app/Contents/Resources/slopsmith/lib:. \
+   PYTHONPATH=/Applications/feedBack.app/Contents/Resources/slopsmith/lib:. \
      $PY -c "import routes; print('routes OK')"
    ```
-   (On Windows the bundled interpreter is under the Slopsmith install dir;
+   (On Windows the bundled interpreter is under the feedBack install dir;
    locate `python*/runtime` and `Resources/slopsmith/lib`.)
 
 4. **Validate JS without a browser** using deno (compile-only, no execute):
@@ -70,10 +70,10 @@ Stack: Python (FastAPI) backend `routes.py` + browser JS UI `screen.js` /
 Key paths:
 | Thing | macOS path |
 |---|---|
-| App bundle | `/Applications/Slopsmith.app/` |
-| Bundled Python | `…/Slopsmith.app/Contents/Resources/python/runtime/bin/python3.12` |
-| Host code | `…/Slopsmith.app/Contents/Resources/slopsmith/` |
-| Sister plugin (in bundle) | `…/Resources/slopsmith/plugins/nam_tone/` |
+| App bundle | `/Applications/feedBack.app/` |
+| Bundled Python | `…/feedBack.app/Contents/Resources/python/runtime/bin/python3.12` |
+| Host code | `…/feedBack.app/Contents/Resources/slopsmith/` |
+| Sister plugin (in bundle) | `…/Resources/feedBack/plugins/nam_tone/` |
 | Config dir | `~/Library/Application Support/slopsmith-desktop/slopsmith-config/` |
 | DB / models / IRs | `slopsmith-config/nam_tone.db`, `nam_models/*.nam`, `nam_irs/*.wav` |
 
@@ -206,9 +206,9 @@ See `HANDOFF.md` for the full detail and the route table.
 
 ## Install + verify on this machine
 
-1. Install Slopsmith, run once (creates app-data + ships `nam_tone`), quit.
+1. Install feedBack, run once (creates app-data + ships `nam_tone`), quit.
 2. Put this folder at `…/slopsmith-desktop/plugins/rig_builder/`.
-3. Restart Slopsmith → "Rig Builder" appears in the nav. The `bypassed`
+3. Restart feedBack → "Rig Builder" appears in the nav. The `bypassed`
    column migration runs automatically.
 4. Optional but needed for downloads: Settings → paste a tone3000 API key
    (`t3k_…`). Without it, deep-link mode works (manual `.nam` download).

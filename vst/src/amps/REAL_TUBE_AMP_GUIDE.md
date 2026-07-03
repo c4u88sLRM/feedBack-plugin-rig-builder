@@ -362,7 +362,7 @@ Pentodo conectado clase-A (screen a placa): `Ipk = 2·E1^ex/kg1 · atan(Vpk/kvb)
    este soportado; si no, crear el spec del amp ahi. Revisar estabilidad, crest/THD por gain y
    puntos de espectro. Ajustar rangos, no inventar curvas.
 6. **Build + firmar:** `make -C <dir> BASE_PATH=<dir>`, copiar `bin/Xxx.vst3` a
-   `vst/amps/<NOMBRE>.vst3`, `codesign --force --sign -`. Cmd+Q + reabrir Slopsmith para probar.
+   `vst/amps/<NOMBRE>.vst3`, `codesign --force --sign -`. Cmd+Q + reabrir feedBack para probar.
 
 ---
 

@@ -77,7 +77,7 @@ topologia, knobs, loudness, crest y prueba en vivo.
    - gain sweep con crest y THD coherentes
    - RMS/loudness usable
    - espectro en puntos graves y medios
-   - prueba en vivo dentro de Slopsmith
+   - prueba en vivo dentro de feedBack
 
 ## Consideraciones especificas de bajo
 
@@ -93,7 +93,7 @@ topologia, knobs, loudness, crest y prueba en vivo.
 - Validar con DI de bajo, no solo con `ui_public_inputs_Brit - Guitar.wav`.
   Para el harness, agregar una entrada o excitacion con fundamentales de bajo
   (aprox. 41, 55, 73, 82, 110, 220, 440 Hz).
-- Separar amp y cab. El amp no debe hornear toda la curva de un cab si Slopsmith
+- Separar amp y cab. El amp no debe hornear toda la curva de un cab si feedBack
   aplicara IR despues; pero si se modela una carga reactiva, debe representar lo
   que el power amp "ve", no una EQ final decorativa.
 
