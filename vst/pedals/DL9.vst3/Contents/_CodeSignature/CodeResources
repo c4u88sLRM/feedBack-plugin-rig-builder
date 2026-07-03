@@ -18,18 +18,18 @@
 			47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
 			</data>
 		</dict>
-		<key>x86_64-linux/DL9.so</key>
+		<key>x86_64-linux/ModDelay.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			HMrVRvnqw6YkX1mMRRyofgOTBN1R0m/4EnPjsy9HMnU=
+			1hVfcCGwAvHT5MVQwLzf4WJUnIsf3RAy6V/CuVd1+7U=
 			</data>
 		</dict>
-		<key>x86_64-win/DL9.vst3</key>
+		<key>x86_64-win/ModDelay.vst3</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			JsjghYUL6mkppwXP5kV42hk/RJ24oUYG90IZAcBFxqk=
+			6IDtBSI0DQcCsjgsQCWvK9Bn6Y3DX+Nmzny/K1xz8wo=
 			</data>
 		</dict>
 	</dict>
