@@ -2677,6 +2677,24 @@ const RbMegaChain = (function () {
     }
 
     async function buildForSong(filename) {
+        // Tone override: the user is forcing ONE specific tone on every song, so
+        // the mega-chain (which loads the SONG's own tones) must NOT build — it
+        // would clobber the forced tone. triggerBuild() already guards the normal
+        // entry, but this closes every other path into buildForSong: the 600 ms
+        // pending-build timer that was scheduled before the override setting
+        // finished loading (settings /GET is async on boot), the internal
+        // 404-retry loop, and the 2 s currentSong poll. Load the override tone
+        // instead so the forced tone survives.
+        if (typeof rbToneOverrideActive === 'function' && rbToneOverrideActive()) {
+            console.log('[rig_builder mega-chain] buildForSong skipped — tone override active');
+            _clearPending(filename);
+            try {
+                if (typeof rbLoadOverrideToneForSong === 'function') {
+                    rbLoadOverrideToneForSong(filename).catch(() => {});
+                }
+            } catch (_) {}
+            return false;
+        }
         if (!_settingOn()) {
             console.log('[rig_builder mega-chain] buildForSong skipped — setting off');
             _clearPending(filename);
@@ -5205,7 +5223,13 @@ function rbPopulateToneOverrideSelect() {
     sel.innerHTML = '<option value="">Default tone</option>'
         + (rbState.savedTones || []).map(t => `<option value="${rbEsc(t.name)}">${rbEsc(t.name)}</option>`).join('');
     sel.value = cur;
-    if (sel.value !== cur) { sel.value = ''; rbToneOverride.name = ''; }   // chosen tone deleted → Default
+    // "Chosen tone deleted → fall back to Default" — but ONLY once the saved
+    // tones have actually loaded. rbState.savedTones starts as [] and is filled
+    // by an async fetch, while rbInitToneOverrideUI runs during the (earlier)
+    // /settings restore; without this guard the option for the saved tone isn't
+    // in the list yet, so we'd wrongly wipe a valid saved selection back to
+    // Default — which is exactly the "isn't saving my selection" bug.
+    if (sel.value !== cur && rbState._savedTonesLoaded) { sel.value = ''; rbToneOverride.name = ''; }
 }
 
 function rbPersistToneOverride() {
@@ -5242,8 +5266,12 @@ function rbInitToneOverrideUI(s) {
     const sel = document.getElementById('rb-tone-override-name');
     if (!cb || !sel) return;
     if (s) {
-        rbToneOverride.enabled = !!s.tone_override_enabled;
-        rbToneOverride.name = (typeof s.tone_override_name === 'string') ? s.tone_override_name : '';
+        // Only apply fields the GET actually returned. A /settings response that
+        // OMITS tone_override_* (e.g. an older backend, or any partial payload)
+        // must NOT clobber the in-memory selection back to off/Default — that is
+        // exactly what disabled the toggle every time Setup re-read /settings.
+        if (typeof s.tone_override_enabled !== 'undefined') rbToneOverride.enabled = !!s.tone_override_enabled;
+        if (typeof s.tone_override_name === 'string') rbToneOverride.name = s.tone_override_name;
     }
     cb.checked = rbToneOverride.enabled;
     sel.disabled = !rbToneOverride.enabled;
@@ -5406,6 +5434,7 @@ async function rbStudioLoadSavedTones() {
         const d = await r.json().catch(() => ({}));
         rbState.savedTones = Array.isArray(d.tones) ? d.tones : [];
     } catch (_) { rbState.savedTones = []; }
+    rbState._savedTonesLoaded = true;   // the override dropdown may now safely prune a deleted selection
     try { rbStudioRenderToneChips(); } catch (_) {}
     try { rbPopulateToneOverrideSelect(); } catch (_) {}   // keep the Setup override dropdown in sync
 }

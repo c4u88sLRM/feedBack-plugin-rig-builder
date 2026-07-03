@@ -6912,6 +6912,11 @@ def setup(app, context):
             "mega_chain_mode": s.get("mega_chain_mode", True),
             "default_tone_enabled": bool(s.get("default_tone_enabled", False)),
             "rig_builder_enabled": bool(s.get("rig_builder_enabled", True)),
+            # "Play a specific tone" override — MUST be returned here or the
+            # Setup toggle + chosen tone can't be restored on reopen (they persist
+            # to disk fine via POST, but this GET is a fixed allowlist).
+            "tone_override_enabled": bool(s.get("tone_override_enabled", False)),
+            "tone_override_name": s.get("tone_override_name") or "",
             "bypass_all_cabs": s.get("bypass_all_cabs", True),
             # Chain-input drive (engine setGain('input', X)). Read by JS
             # at every chain load — value of 8.0 = +18 dB feeds NAM amps
