@@ -99,15 +99,15 @@ public:
         const float ceilingDb = *apvts.getRawParameterValue("ceiling_db");
         const float trimDb = *apvts.getRawParameterValue("trim_db");
 
-        // DOWNWARD-ONLY leveler: cap the AGC so it can only ATTENUATE, never
-        // boost. Boosting a quiet tone up to target also lifts its idle hiss /
-        // white-noise floor with it ("sube el ruido blanco al tocar"); with the
-        // boost capped at 0 dB this behaves like a limiter — LOUD tones are
-        // brought DOWN to target while quiet tones (and their noise floor) are
-        // left untouched. Because the AGC now never lifts the noise floor, the
-        // separate idle-noise GATE below is redundant and has been removed.
-        // (max_boost_db param kept for state compat but never adds gain.)
-        const float boostCapDb = std::min(maxBoostDb, 0.0f);
+        // BIDIRECTIONAL loudness normalization to target (-12 LUFS default): the
+        // AGC boosts quiet tones UP and cuts loud tones DOWN so every tone lands
+        // at the same perceived loudness — that is what gives a consistent -12
+        // LUFS base when playing along to songs. (An earlier downward-only +
+        // fixed-makeup experiment was removed: the makeup re-loudened the loud
+        // tones AFTER the AGC had leveled them, so loud tones stayed ~7 dB hot.)
+        // The idle-noise gate stays removed per request; boosting a quiet noisy
+        // tone lifts its hiss, so if idle hiss between notes becomes audible the
+        // remedy is to reintroduce a gentle gate here (not to cap the boost).
 
         // Loudness detector: a running mean-square of the K-WEIGHTED signal
         // (ITU-R BS.1770), integrated per sample so it is independent of host
@@ -378,12 +378,12 @@ public:
             const float rawCapGainDb = (targetRmsDb + RAW_MARGIN_DB) - rawRmsDb;
             wantedGainDb = std::min(wantedGainDb, rawCapGainDb);
 
-            wantedGainDb = juce::jlimit(-maxCutDb, boostCapDb, wantedGainDb);
+            wantedGainDb = juce::jlimit(-maxCutDb, maxBoostDb, wantedGainDb);
         }
 
         if (hasSignal && warm && !levelInitialized)
         {
-            currentGainDb = juce::jlimit(-maxCutDb, boostCapDb, wantedGainDb);
+            currentGainDb = juce::jlimit(-maxCutDb, maxBoostDb, wantedGainDb);
             currentGain = juce::Decibels::decibelsToGain(currentGainDb);   // AGC gain only (makeup applied later)
             levelInitialized = true;
         }
@@ -435,30 +435,21 @@ public:
         const float alpha = 1.0f - std::exp(-blockSeconds / std::max(0.001f, timeMs / 1000.0f));
 
         currentGainDb += (wantedGainDb - currentGainDb) * juce::jlimit(0.0f, 1.0f, alpha);
-        currentGainDb = juce::jlimit(-maxCutDb, boostCapDb, currentGainDb);
+        currentGainDb = juce::jlimit(-maxCutDb, maxBoostDb, currentGainDb);
 
-        // Idle-noise GATE REMOVED. It existed only because the AGC used to BOOST
-        // and hold that boost through silence, amplifying the idle floor — so the
-        // output had to be ducked. With the downward-only AGC above the floor is
-        // never lifted, so there is nothing to gate. Ducking silence also chopped
-        // note tails / muted low-level fuzz sustain ("de repente el fuzz se
-        // mutea"), so the output now passes through clean (peaks still caught by
-        // the brickwall limiter below). The gateGain/gateHoldSamples members are
-        // left declared but unused to keep this change minimal.
+        // Idle-noise GATE REMOVED per request (it chopped note tails / muted
+        // low-level fuzz sustain — "de repente el fuzz se mutea"). Tradeoff: the
+        // bidirectional AGC above CAN boost a quiet tone, lifting its idle hiss,
+        // and with no gate that hiss is audible in the silences. If that becomes
+        // a problem, reintroduce a gentle gate here. The gateGain/gateHoldSamples
+        // members are left declared but unused.
 
-        // Signal path: cut-only AGC (normalize loud tones DOWN to target) -> FIXED
-        // makeup (+kOutputMakeupDb, a constant lift so it never pumps the noise
-        // floor the way per-tone boost did) -> user Output Trim -> FINAL brickwall
-        // limiter LAST. The limiter now sits AFTER the makeup so it catches the
-        // +10 dB lift and guarantees the output never exceeds the ceiling — this
-        // is what lets us push the chain up toward the -12 LUFS target without
-        // clipping. (Cut-only + fixed makeup means genuinely quiet tones land a
-        // touch below target rather than being boosted up, by design — that is
-        // what keeps the idle white noise from being lifted dynamically.)
-        // kOutputMakeupDb is the tunable "how loud" knob; dial it by ear.
-        constexpr float kOutputMakeupDb = 13.0f;
+        // Signal path: AGC (loudness-normalize to target, both directions) ->
+        // user Output Trim -> FINAL brickwall limiter. The limiter is a peak
+        // SAFETY net at the ceiling; the actual loudness match is done by the
+        // AGC, so no fixed makeup is applied (an earlier +13 dB makeup made the
+        // loud tones hot again and was removed).
         const float nextAgcGain = juce::Decibels::decibelsToGain(currentGainDb);
-        const float makeupFixedGain = juce::Decibels::decibelsToGain(kOutputMakeupDb);
         const float makeupGain  = juce::Decibels::decibelsToGain(trimDb);
         const float ceilLin = juce::Decibels::decibelsToGain(ceilingDb);
         const float relCoef = 1.0f - std::exp(-1.0f / std::max(1.0f, 0.080f * float(sr)));
@@ -469,11 +460,11 @@ public:
         for (int i = 0; i < numSamples; ++i)
         {
             const float gAgc = currentGain + (nextAgcGain - currentGain) * (float(i) * invN);
-            // Full pre-limiter gain: cut-only AGC x fixed +makeup x user Output Trim.
-            const float gPre = gAgc * makeupFixedGain * makeupGain;
+            // Pre-limiter gain: loudness-normalized AGC x user Output Trim.
+            const float gPre = gAgc * makeupGain;
             float pk = 0.0f;
             for (int ch = 0; ch < chN; ++ch)
-                pk = std::max(pk, std::abs(wch[ch][i]) * gPre);   // peak at the FINAL (post-makeup) stage
+                pk = std::max(pk, std::abs(wch[ch][i]) * gPre);   // peak at the final stage
             const float need = (pk > ceilLin && pk > 0.0f) ? (ceilLin / pk) : 1.0f;
             if (need < limGain) limGain = need;                       // instant attack: no overshoot
             else                limGain += relCoef * (need - limGain); // slow release
