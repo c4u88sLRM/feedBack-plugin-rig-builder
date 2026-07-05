@@ -3741,21 +3741,23 @@ async function rbCheckPluginUpdate(opts = {}) {
     applyBtn?.classList.add('hidden');
     if (checkBtn) checkBtn.disabled = true;
     try {
-        const r = await fetch('/api/plugins/update_manager/check/rig_builder');
+        const r = await fetch('/api/plugins/rig_builder/update_status');
         const d = await r.json();
-        const local = (d.source && d.source.local_version) || (d.update && d.update.local_version) || null;
-        const remote = (d.update && d.update.remote_version) || (d.source && d.source.remote_version) || null;
+        const local = d.local_version || null;
+        const remote = d.remote_version || null;
         if (verEl) verEl.textContent = 'Installed: ' + (local || '(unknown)') + (remote ? '  ·  Latest: ' + remote : '');
-        if (d.error) {
-            statusEl.textContent = d.error.message || 'Could not check for updates.';
-            statusEl.className = 'text-xs text-amber-400';
-        } else if (d.update) {
-            statusEl.textContent = 'Update available' + (remote ? ' → ' + remote : '');
+        if (d.update_available) {
+            statusEl.textContent = 'Update available → ' + remote + (d.is_git ? '' : ' (reinstall to update)');
             statusEl.className = 'text-xs text-emerald-400';
-            applyBtn?.classList.remove('hidden');
-        } else {
+            if (d.is_git) applyBtn?.classList.remove('hidden');
+        } else if (d.error) {
+            statusEl.textContent = "Couldn't reach GitHub to check the latest version.";
+            statusEl.className = 'text-xs text-amber-400';
+        } else if (local && remote) {
             statusEl.textContent = 'Up to date ✓';
             statusEl.className = 'text-xs text-gray-400';
+        } else {
+            statusEl.textContent = '';
         }
     } catch (e) {
         statusEl.textContent = 'Check failed — no connection?';
@@ -3772,15 +3774,13 @@ async function rbApplyPluginUpdate() {
     if (applyBtn) applyBtn.disabled = true;
     if (statusEl) { statusEl.textContent = 'Updating…'; statusEl.className = 'text-xs text-gray-400'; }
     try {
-        const r = await fetch('/api/plugins/update_manager/update/rig_builder', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
-        });
+        const r = await fetch('/api/plugins/rig_builder/self_update', { method: 'POST' });
         const d = await r.json();
         if (d.error) {
             if (statusEl) { statusEl.textContent = d.error; statusEl.className = 'text-xs text-red-400'; }
             if (applyBtn) applyBtn.disabled = false;
         } else {
-            if (statusEl) { statusEl.textContent = 'Updated ✓ — restart feedBack to load the new version.'; statusEl.className = 'text-xs text-emerald-400'; }
+            if (statusEl) { statusEl.textContent = 'Updated to ' + (d.version || 'latest') + ' ✓ — restart feedBack to load it.'; statusEl.className = 'text-xs text-emerald-400'; }
             applyBtn?.classList.add('hidden');
         }
     } catch (e) {

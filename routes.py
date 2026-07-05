@@ -6897,6 +6897,65 @@ def setup(app, context):
             pass
         return {"ok": True}
 
+    # ── Plugin self-update (Setup → Rig Builder version) ────────────────────
+    # Self-contained: reads its own version from plugin.json and the latest from
+    # GitHub raw, and updates via `git` when this copy is a clone. Does NOT depend
+    # on the update_manager plugin (older bundled copies lack its /check endpoint,
+    # which is what left the version showing "unknown").
+    _PLUGIN_RAW_MANIFEST = (
+        "https://raw.githubusercontent.com/got-feedBack/"
+        "feedBack-plugin-rig-builder/main/plugin.json"
+    )
+
+    def _rb_own_version():
+        try:
+            return json.loads((_plugin_dir / "plugin.json").read_text(encoding="utf-8")).get("version")
+        except Exception:
+            return None
+
+    def _rb_ver_tuple(v):
+        try:
+            return tuple(int(x) for x in str(v).split(".")[:3])
+        except Exception:
+            return None
+
+    @app.get("/api/plugins/rig_builder/update_status")
+    def rb_update_status():
+        local = _rb_own_version()
+        remote, err = None, None
+        try:
+            req = urllib.request.Request(
+                _PLUGIN_RAW_MANIFEST, headers={"User-Agent": "rig_builder-updater"})
+            with urllib.request.urlopen(req, timeout=12) as r:
+                remote = (json.loads(r.read().decode("utf-8")) or {}).get("version")
+        except Exception as e:
+            err = str(e)
+        lt, rt = _rb_ver_tuple(local), _rb_ver_tuple(remote)
+        return {
+            "local_version": local,
+            "remote_version": remote,
+            "update_available": bool(lt and rt and rt > lt),
+            "is_git": (_plugin_dir / ".git").exists(),
+            "error": err,
+        }
+
+    @app.post("/api/plugins/rig_builder/self_update")
+    def rb_self_update():
+        if not (_plugin_dir / ".git").exists():
+            return {"error": "This copy isn't a git checkout — reinstall from GitHub "
+                             "(clone into your plugins folder) to enable in-app updates."}
+        try:
+            for args in (["fetch", "--depth", "1", "origin", "main"],
+                         ["reset", "--hard", "FETCH_HEAD"]):
+                subprocess.run(["git", "-C", str(_plugin_dir), *args],
+                               check=True, capture_output=True, timeout=600)
+            return {"ok": True, "version": _rb_own_version()}
+        except subprocess.CalledProcessError as e:
+            msg = (e.stderr or b"").decode("utf-8", "ignore").strip()
+            return {"error": msg[:300] or "git update failed"}
+        except Exception as e:
+            return {"error": str(e)}
+
     @app.get("/api/plugins/rig_builder/status")
     def status():
         rs_map = _load_rs_to_real()
