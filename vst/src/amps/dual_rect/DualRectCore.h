@@ -70,11 +70,11 @@ struct DualRectCore {
             g1 = 0.3f + 1.8f*gA; g2 = 0.4f + 1.2f*gA; g3 = 1.0f; g4 = 1.0f; nStages = 2;
             modeGain = 1.0f + 0.8f*pMode;
         } else if (ch == 1) {     // ORANGE crunch (g4 = unity recovery)
-            g1 = 0.4f + 2.8f*gA; g2 = 0.5f + 2.0f*gA; g3 = 0.6f + 1.4f*gA; g4 = 1.0f; nStages = 3;
+            g1 = 0.25f + 2.95f*gA; g2 = 0.3f + 2.2f*gA; g3 = 0.35f + 1.65f*gA; g4 = 1.0f; nStages = 3;   // bases lowered: crunch distorted at low gain
             modeGain = 0.7f + 0.3f*pMode;
         } else {                  // RED — THE heavy-metal channel: deep 4-stage cascade (drives v4 too)
-            g1 = 0.6f + 6.5f*gA; g2 = 0.7f + 5.0f*gA; g3 = 0.8f + 3.5f*gA;
-            g4 = 1.3f + 4.5f*gA; nStages = 3;   // 4th driven stage = the Recto sustain/aggression (real = 5 stages)
+            g1 = 0.3f + 6.8f*gA; g2 = 0.35f + 5.35f*gA; g3 = 0.4f + 3.9f*gA;   // bases ~halved: distorted at gain 2-3, keep the cranked max
+            g4 = 0.7f + 5.1f*gA; nStages = 3;   // 4th driven stage = the Recto sustain/aggression (real = 5 stages)
             modeGain = 0.7f + 0.3f*pMode;        // Raw looser, Modern hottest
         }
         g1 *= modeGain; g2 *= modeGain; g3 *= modeGain; g4 *= modeGain;
