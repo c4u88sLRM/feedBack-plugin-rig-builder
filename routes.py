@@ -2831,6 +2831,56 @@ _DEFAULT_TONE_PRESET_NAME = "__rig_builder_default_tone__"
 _SAVED_TONE_PREFIX = "__rig_builder_saved_tone__"
 
 
+def _seed_bundled_default_tone(conn: sqlite3.Connection, pid: int) -> None:
+    """Seed the freshly-created default-tone sentinel preset with the pieces
+    from the bundled data/default_tone.json. Each piece's `vst_rel` is resolved
+    against the plugin dir so the stored vst_path is correct on the current
+    OS/install (macOS/Windows/Linux); pieces whose bundled VST is missing are
+    skipped. Called once, under `_lock`, from _get_default_tone_preset_id — must
+    not re-acquire `_lock`."""
+    try:
+        doc = json.loads(_data_path("default_tone.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(f"[rig_builder] default tone seed skipped ({e})")
+        return
+    ig, og, gt = doc.get("input_gain"), doc.get("output_gain"), doc.get("gate_threshold")
+    if ig is not None or og is not None or gt is not None:
+        conn.execute(
+            "UPDATE presets SET input_gain = COALESCE(?, input_gain), "
+            "output_gain = COALESCE(?, output_gain), "
+            "gate_threshold = COALESCE(?, gate_threshold) WHERE id = ?",
+            (ig, og, gt, pid),
+        )
+    for piece in doc.get("pieces", []):
+        rel = piece.get("vst_rel")
+        if not rel:
+            continue
+        vst_path = _plugin_dir / rel
+        if not vst_path.exists():
+            print(f"[rig_builder] default tone: bundled VST missing, skipping {rel}")
+            continue
+        conn.execute(
+            "INSERT INTO preset_pieces "
+            "(preset_id, slot_order, slot, rs_gear_type, kind, file, "
+            " params_json, tone3000_id, assigned_mode, bypassed, "
+            " vst_path, vst_format, vst_state) "
+            "VALUES (?, ?, ?, ?, 'vst', NULL, ?, NULL, ?, ?, ?, ?, ?)",
+            (
+                pid,
+                piece.get("slot_order", 0),
+                piece.get("slot") or "amp",
+                piece.get("rs_gear_type") or "",
+                piece.get("params_json") or "{}",
+                piece.get("assigned_mode") or "manual",
+                int(piece.get("bypassed") or 0),
+                str(vst_path),
+                piece.get("vst_format") or "VST3",
+                piece.get("vst_state"),
+            ),
+        )
+    conn.commit()
+
+
 def _get_default_tone_preset_id() -> int | None:
     """Return the sentinel preset id for the user's default tone, creating
     it on first call so callers can assume it exists."""
@@ -2851,22 +2901,13 @@ def _get_default_tone_preset_id() -> int | None:
             "SELECT id FROM presets WHERE name = ?", (_DEFAULT_TONE_PRESET_NAME,)
         ).fetchone()
         pid = int(new_row[0]) if new_row else None
-        # Seed the out-of-the-box default tone with the Sampleg SBT-CL bundled
-        # amp (Ampeg SVT-CL clone) so a fresh install has an audible idle rig
-        # with zero setup. Only runs once, when the sentinel is first created.
+        # Seed the out-of-the-box default tone from the bundled
+        # data/default_tone.json (a curated multi-piece studio rig) so a fresh
+        # install has an audible idle rig with zero setup. Only runs once, when
+        # the sentinel is first created — existing users keep whatever default
+        # tone they already have.
         if pid is not None:
-            seed_vst = _plugin_dir / "vst" / "amps" / "SamplegSBTCL.vst3"
-            if seed_vst.exists():
-                conn.execute(
-                    "INSERT INTO preset_pieces "
-                    "(preset_id, slot_order, slot, rs_gear_type, kind, file, "
-                    " params_json, tone3000_id, assigned_mode, bypassed, "
-                    " vst_path, vst_format, vst_state) "
-                    "VALUES (?, 0, 'amp', 'Bass_Amp_BT975B', 'vst', NULL, "
-                    "        '{}', NULL, 'default', 0, ?, 'VST3', NULL)",
-                    (pid, str(seed_vst)),
-                )
-                conn.commit()
+            _seed_bundled_default_tone(conn, pid)
         return pid
 
 
