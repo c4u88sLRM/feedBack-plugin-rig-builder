@@ -99,6 +99,16 @@ public:
         const float ceilingDb = *apvts.getRawParameterValue("ceiling_db");
         const float trimDb = *apvts.getRawParameterValue("trim_db");
 
+        // DOWNWARD-ONLY leveler: cap the AGC so it can only ATTENUATE, never
+        // boost. Boosting a quiet tone up to target also lifts its idle hiss /
+        // white-noise floor with it ("sube el ruido blanco al tocar"); with the
+        // boost capped at 0 dB this behaves like a limiter — LOUD tones are
+        // brought DOWN to target while quiet tones (and their noise floor) are
+        // left untouched. Because the AGC now never lifts the noise floor, the
+        // separate idle-noise GATE below is redundant and has been removed.
+        // (max_boost_db param kept for state compat but never adds gain.)
+        const float boostCapDb = std::min(maxBoostDb, 0.0f);
+
         // Loudness detector: a running mean-square of the K-WEIGHTED signal
         // (ITU-R BS.1770), integrated per sample so it is independent of host
         // block size. K-weighting makes this measure PERCEIVED loudness (LUFS),
@@ -368,12 +378,12 @@ public:
             const float rawCapGainDb = (targetRmsDb + RAW_MARGIN_DB) - rawRmsDb;
             wantedGainDb = std::min(wantedGainDb, rawCapGainDb);
 
-            wantedGainDb = juce::jlimit(-maxCutDb, maxBoostDb, wantedGainDb);
+            wantedGainDb = juce::jlimit(-maxCutDb, boostCapDb, wantedGainDb);
         }
 
         if (hasSignal && warm && !levelInitialized)
         {
-            currentGainDb = juce::jlimit(-maxCutDb, maxBoostDb, wantedGainDb);
+            currentGainDb = juce::jlimit(-maxCutDb, boostCapDb, wantedGainDb);
             currentGain = juce::Decibels::decibelsToGain(currentGainDb);   // AGC gain only (makeup applied later)
             levelInitialized = true;
         }
@@ -425,31 +435,30 @@ public:
         const float alpha = 1.0f - std::exp(-blockSeconds / std::max(0.001f, timeMs / 1000.0f));
 
         currentGainDb += (wantedGainDb - currentGainDb) * juce::jlimit(0.0f, 1.0f, alpha);
-        currentGainDb = juce::jlimit(-maxCutDb, maxBoostDb, currentGainDb);
+        currentGainDb = juce::jlimit(-maxCutDb, boostCapDb, currentGainDb);
 
-        // ── Idle-noise GATE (separate from the AGC) ──────────────────────────
-        // The AGC HOLDS its boost during silence (above), which alone would keep
-        // amplifying the idle noise floor. So duck the OUTPUT with a real noise
-        // gate that OPENS fast on the CURRENT block's level (a note attack passes
-        // un-muted) and CLOSES with a 300 ms hold + slow release on sustained
-        // silence. Being a separate output multiplier — not the AGC gain — note
-        // onsets are NEVER muted by a slow gain recovery (the bug with the old
-        // release-to-unity: "de repente el fuzz se mutea").
-        const bool gateOpenNow = integrating;   // same instantaneous raw-level test
-        if (gateOpenNow) gateHoldSamples = int(0.30 * sr);             // 300 ms hold
-        else if (gateHoldSamples > 0) gateHoldSamples = std::max(0, gateHoldSamples - numSamples);
-        const float gateTarget = (gateOpenNow || gateHoldSamples > 0) ? 1.0f : 0.0f;
-        const float gateAtkCoef = 1.0f - std::exp(-1.0f / std::max(1.0f, 0.003f * float(sr)));  // ~3 ms open
-        const float gateRelCoef = 1.0f - std::exp(-1.0f / std::max(1.0f, 0.250f * float(sr)));  // ~250 ms close
+        // Idle-noise GATE REMOVED. It existed only because the AGC used to BOOST
+        // and hold that boost through silence, amplifying the idle floor — so the
+        // output had to be ducked. With the downward-only AGC above the floor is
+        // never lifted, so there is nothing to gate. Ducking silence also chopped
+        // note tails / muted low-level fuzz sustain ("de repente el fuzz se
+        // mutea"), so the output now passes through clean (peaks still caught by
+        // the brickwall limiter below). The gateGain/gateHoldSamples members are
+        // left declared but unused to keep this change minimal.
 
-        // Order matters: AGC (loudness normalize) -> brickwall limiter on the
-        // NORMALIZED signal -> makeup (Output Trim, the user's loudness) LAST.
-        // The limiter must sit BEFORE the makeup; if it sits after, it claws the
-        // makeup straight back down to the ceiling and everything plays quiet.
-        // So `currentGain`/`nextAgcGain` track the AGC gain WITHOUT the makeup;
-        // the limiter caps the normalized peaks; `makeupGain` is applied clean on
-        // top (loud, the way the Chain-volume knob intends).
+        // Signal path: cut-only AGC (normalize loud tones DOWN to target) -> FIXED
+        // makeup (+kOutputMakeupDb, a constant lift so it never pumps the noise
+        // floor the way per-tone boost did) -> user Output Trim -> FINAL brickwall
+        // limiter LAST. The limiter now sits AFTER the makeup so it catches the
+        // +10 dB lift and guarantees the output never exceeds the ceiling — this
+        // is what lets us push the chain up toward the -12 LUFS target without
+        // clipping. (Cut-only + fixed makeup means genuinely quiet tones land a
+        // touch below target rather than being boosted up, by design — that is
+        // what keeps the idle white noise from being lifted dynamically.)
+        // kOutputMakeupDb is the tunable "how loud" knob; dial it by ear.
+        constexpr float kOutputMakeupDb = 13.0f;
         const float nextAgcGain = juce::Decibels::decibelsToGain(currentGainDb);
+        const float makeupFixedGain = juce::Decibels::decibelsToGain(kOutputMakeupDb);
         const float makeupGain  = juce::Decibels::decibelsToGain(trimDb);
         const float ceilLin = juce::Decibels::decibelsToGain(ceilingDb);
         const float relCoef = 1.0f - std::exp(-1.0f / std::max(1.0f, 0.080f * float(sr)));
@@ -460,15 +469,15 @@ public:
         for (int i = 0; i < numSamples; ++i)
         {
             const float gAgc = currentGain + (nextAgcGain - currentGain) * (float(i) * invN);
+            // Full pre-limiter gain: cut-only AGC x fixed +makeup x user Output Trim.
+            const float gPre = gAgc * makeupFixedGain * makeupGain;
             float pk = 0.0f;
             for (int ch = 0; ch < chN; ++ch)
-                pk = std::max(pk, std::abs(wch[ch][i]) * gAgc);   // peak at the normalized (pre-makeup) stage
+                pk = std::max(pk, std::abs(wch[ch][i]) * gPre);   // peak at the FINAL (post-makeup) stage
             const float need = (pk > ceilLin && pk > 0.0f) ? (ceilLin / pk) : 1.0f;
             if (need < limGain) limGain = need;                       // instant attack: no overshoot
             else                limGain += relCoef * (need - limGain); // slow release
-            const float gc = (gateTarget > gateGain) ? gateAtkCoef : gateRelCoef;
-            gateGain += gc * (gateTarget - gateGain);                  // fast-open / slow-close noise gate
-            const float tot = gAgc * limGain * makeupGain * confidence * gateGain;  // ...makeup, warm-up fade, gate, last
+            const float tot = gPre * limGain * confidence;  // makeup+trim inside the final limiter, warm-up fade last
             for (int ch = 0; ch < numChannels; ++ch)
                 buffer.getWritePointer(ch)[i] *= tot;
         }
@@ -684,7 +693,7 @@ private:
             "target_rms_db",
             "Target RMS dB",
             juce::NormalisableRange<float>(-30.0f, -6.0f, 0.1f),
-            -14.0f
+            -12.0f
         ));
 
         params.push_back(std::make_unique<juce::AudioParameterFloat>(
