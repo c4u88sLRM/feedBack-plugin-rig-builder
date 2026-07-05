@@ -274,7 +274,7 @@ public:
         const float pushed = smoothstepRange(0.28f, 0.88f, preDrive);
         const float mPush = smoothstep(master);
 
-        float x = inputHp.process(in * 3.8f);  // VST input boost (lowered 5.0->3.8: amp distorted too early at low gain)
+        float x = inputHp.process(in * 2.0f);  // pass5: global input boost cut hard (5.0->2.0) — the tube grids saw too many volts, still distorting
         x = pickupLoad.process(x);
         x *= inScale;
 
