@@ -1,7 +1,8 @@
 {
   "id": "rig_builder",
   "name": "Rig Builder",
-  "version": "3.0.0",
+  "version": "3.0.1",
+  "url": "https://github.com/got-feedBack/feedBack-plugin-rig-builder",
   "private": false,
   "description": "Build guitar & bass rigs — amps, cabs, pedals and cab IRs — for the songs in your feedBack library.",
   "category": "audio",
