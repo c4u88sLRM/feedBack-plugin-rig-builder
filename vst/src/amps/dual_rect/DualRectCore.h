@@ -62,7 +62,7 @@ struct DualRectCore {
         v3.set(sr, 1, 250.0f, 40.0f, 30.0f, 1500.0f);
         v4.set(sr, 1, 250.0f, 40.0f, 55.0f, 1500.0f);
 
-        const float gA = rbtube::PotTaper::audio(pGain, 1.30f);
+        const float gA = rbtube::PotTaper::audio(pGain, 2.0f);   // steeper taper (1.30->2.0): keep the low gain range clean, distorted too early
         // Per-channel gain staging + stage count (Green clean, Red high-gain roar).
         // modeGain: Green Clean->Pushed adds breakup; Orange/Red Raw(loose/clean) -> Modern(hottest).
         float modeGain;
