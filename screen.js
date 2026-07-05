@@ -3784,7 +3784,7 @@ const RB_MAX_RACKS = 4;    // rack-tower capacity
 function rbStudioPieceStem(p) {
     const vp = rbEffVstPath(p);
     if (!vp) return '';
-    return vp.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return vp.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 function rbStudioPedalImg(p) {
     const stem = rbStudioPieceStem(p);
@@ -6623,7 +6623,7 @@ function rbRenderPieceEditor(p, toneIdx, pIdx, filename) {
 
     let stageLabel, stageClass;
     if (hasVst) {
-        stageLabel = `✓ VST: ${effVstPath.split('/').pop()}`;
+        stageLabel = `✓ VST: ${effVstPath.split(/[\\/]/).pop()}`;
         stageClass = 'text-purple-300';
     } else if (hasFile) {
         const a = p.assigned;
@@ -6678,7 +6678,7 @@ function rbRenderPieceEditor(p, toneIdx, pIdx, filename) {
     } else if ((p.rs_irs || []).length > 0) {
         // Legacy fallback: raw dropdown for cabs without a mic map.
         const rsIrs = p.rs_irs;
-        const options = rsIrs.map(f => `<option value="${rbEsc(f)}">${rbEsc(f.split('/').pop())}</option>`).join('');
+        const options = rsIrs.map(f => `<option value="${rbEsc(f)}">${rbEsc(f.split(/[\\/]/).pop())}</option>`).join('');
         rsIrControl = `
             <div class="flex items-center gap-2 bg-green-900/15 border border-green-800/30 rounded px-2 py-1.5 mt-2">
                 <span class="text-xs text-green-400 whitespace-nowrap">IR (${rsIrs.length}):</span>
@@ -6785,7 +6785,7 @@ function rbRenderPieceEditor(p, toneIdx, pIdx, filename) {
                             ${rbEsc(bypassLabel)}
                         </button>
                     </div>
-                    <div class="text-xs ${stageClass} truncate" title="${rbEsc(hasVst ? (effVstPath || '').split('/').pop() : (hasFile ? effFile : ''))}">${rbEsc(stageLabel)}
+                    <div class="text-xs ${stageClass} truncate" title="${rbEsc(hasVst ? (effVstPath || '').split(/[\\/]/).pop() : (hasFile ? effFile : ''))}">${rbEsc(stageLabel)}
                         ${(hasFile || hasVst) && mode ? `<span class="text-[10px] text-gray-600 ml-1">(${rbEsc(mode)})</span>` : ''}
                     </div>
                 </div>
@@ -7154,7 +7154,7 @@ async function rbToneEditVst(toneIdx, pIdx) {
     if (rbState._vstEditorBusy) return;   // ignore rapid double-clicks while a load is in flight
     rbState._vstEditorBusy = true;
     editor.classList.remove('hidden');
-    editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split('/').pop())}…</div>`;
+    editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split(/[\\/]/).pop())}…</div>`;
     try {
         // Did the tone have a saved / in-session param state BEFORE we touch
         // anything? Decides whether we auto-apply the RS knob mapping below
@@ -7182,7 +7182,7 @@ async function rbToneEditVst(toneIdx, pIdx) {
         }
         // rbListenTone / rbCloseActiveVstEditor collapse inline panels — re-open ours.
         editor.classList.remove('hidden');
-        editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split('/').pop())}…</div>`;
+        editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split(/[\\/]/).pop())}…</div>`;
 
         // Locate this piece's stage inside the loaded chain. setParameter on that
         // slot tweaks the pedal in place; the chain keeps playing and no 2nd copy
@@ -7239,7 +7239,7 @@ async function rbToneEditVst(toneIdx, pIdx) {
         // state already exists so we don't clobber the user's own tweaks.
         if (!hadSaved && piece.knobs && Object.keys(piece.knobs).length) {
             try {
-                const vstStem2 = vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+                const vstStem2 = vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
                 const mapped = await rbComputeRsMappedParams(piece.type, piece.knobs, vstStem2, piece._vst_param_meta);
                 if (mapped && Object.keys(mapped).length) {
                     for (const [id, v] of Object.entries(mapped)) {
@@ -7258,7 +7258,7 @@ async function rbToneEditVst(toneIdx, pIdx) {
         if (rbHasCanvasUI(piece)) {
             rbToneRenderInlineVstParams(toneIdx, pIdx);
         } else if (await rbTryOpenNativeEditor(api, slotId)) {
-            const _nm = vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+            const _nm = vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
             editor.innerHTML = rbNativeEditorPanelHtml(
                 _nm, `rbToneCaptureVstState(${toneIdx}, ${pIdx})`, `rbToneEditVst(${toneIdx}, ${pIdx})`);
         } else {
@@ -7295,7 +7295,7 @@ function rbFriendlyVstLoadError(e) {
 function rbCanvasStem(piece) {
     const p = rbEffVstPath(piece);
     if (!p) return '';
-    return p.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return p.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 // True if we have an in-app canvas recreation of this piece's plugin UI.
 function rbHasCanvasUI(piece) {
@@ -7394,7 +7394,7 @@ function rbToneRenderInlineVstParams(toneIdx, pIdx) {
     const piece = rbState.songTones.tones[toneIdx].chain[pIdx];
     const params = rbFilterVstParams((piece && piece._vst_param_meta) || []);
     const effVstPath = rbEffVstPath(piece);
-    const vstName = effVstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const vstName = effVstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     // ── In-app canvas UI (no native window): faithful pedal face, draggable
     //    knobs → setParameter + persist into piece._vst_params. ───────────────
     const stem = rbCanvasStem(piece);
@@ -8087,7 +8087,7 @@ function rbRenderMasterPiece(role, idx, p, total) {
     const effFile = rbEffFile(p);
     let label, labelClass;
     if (effKind === 'vst' && effVstPath) {
-        label = `✓ VST: ${effVstPath.split('/').pop()}`;
+        label = `✓ VST: ${effVstPath.split(/[\\/]/).pop()}`;
         labelClass = 'text-purple-300';
     } else if (effFile) {
         label = `✓ ${effFile}`;
@@ -8124,7 +8124,7 @@ function rbRenderMasterPiece(role, idx, p, total) {
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <span class="flex-1 text-xs ${labelClass} truncate" title="${rbEsc((effVstPath ? effVstPath.split('/').pop() : '') || effFile || '')}">${rbEsc(label)}</span>
+                <span class="flex-1 text-xs ${labelClass} truncate" title="${rbEsc((effVstPath ? effVstPath.split(/[\\/]/).pop() : '') || effFile || '')}">${rbEsc(label)}</span>
                 ${effVstPath ? `
                 <button onclick="rbMasterEditVst('${role}', ${idx})"
                         title="Load this VST in the engine and edit its parameters with inline sliders"
@@ -8278,7 +8278,7 @@ async function rbMasterEditVst(role, idx) {
     if (rbState._vstEditorBusy) return;   // ignore rapid double-clicks while a load is in flight
     rbState._vstEditorBusy = true;
     editor.classList.remove('hidden');
-    editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split('/').pop())}…</div>`;
+    editor.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split(/[\\/]/).pop())}…</div>`;
     try {
         // Close + clear any previously-open editor (this or another piece)
         // before loading — closing its native window first avoids the crash.
@@ -8320,7 +8320,7 @@ async function rbMasterEditVst(role, idx) {
         if (rbHasCanvasUI(piece)) {
             rbMasterRenderInlineVstParams(role, idx);
         } else if (await rbTryOpenNativeEditor(api, slotId)) {
-            const _nm = vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+            const _nm = vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
             editor.innerHTML = rbNativeEditorPanelHtml(
                 _nm, `rbMasterCaptureVstState('${role}', ${idx})`, `rbMasterEditVst('${role}', ${idx})`);
         } else {
@@ -8338,7 +8338,7 @@ function rbMasterRenderInlineVstParams(role, idx) {
     if (!editor) return false;
     const piece = rbState.master[role][idx];
     const params = rbFilterVstParams((piece && piece._vst_param_meta) || []);
-    const vstName = (piece._vst_path || '').split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const vstName = (piece._vst_path || '').split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     // ── In-app canvas UI (no native window) ──────────────────────────────────
     const stem = rbCanvasStem(piece);
     if (window.RBPedalCanvas && (window.RBPedalCanvas.has(stem) || params.length > 0)) {
@@ -8633,7 +8633,7 @@ function rbMasterAddPickerSetVstFilter(role, value) {
 function rbMasterAddPieceVst(role, vstPath, vstFormat, displayName) {
     if (!vstPath) return;
     const dawCat = rbDawCategoryForVst({ name: displayName, manufacturer: '' });
-    const synthName = displayName || vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const synthName = displayName || vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     const synthGear = 'VST_' + synthName.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 60);
     rbState.master[role].push({
         type: synthGear,
@@ -8657,7 +8657,7 @@ function rbMasterAddPieceVstFromPath(role, vstPath) {
     if (!vstPath || !vstPath.trim()) return;
     const path = vstPath.trim();
     const fmt = path.toLowerCase().endsWith('.component') ? 'AudioUnit' : 'VST3';
-    const name = path.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const name = path.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     return rbMasterAddPieceVst(role, path, fmt, name);
 }
 
@@ -9189,7 +9189,7 @@ async function rbAddPieceVst(toneIdx, filename, vstPath, vstFormat, displayName)
     const tone = rbState.songTones && rbState.songTones.tones[toneIdx];
     if (!tone || !vstPath) return;
     const dawCat = rbDawCategoryForVst({ name: displayName, manufacturer: '' });
-    const synthName = displayName || vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const synthName = displayName || vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     // Synthetic rs_gear_type: stable for a given VST so re-adding the
     // same plugin twice produces the same key (and dedup would land
     // sensibly if we ever want N:1 mapping later).
@@ -9225,7 +9225,7 @@ function rbAddPieceVstFromPath(toneIdx, filename, vstPath) {
     if (!vstPath || !vstPath.trim()) return;
     const path = vstPath.trim();
     const fmt = path.toLowerCase().endsWith('.component') ? 'AudioUnit' : 'VST3';
-    const name = path.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const name = path.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     return rbAddPieceVst(toneIdx, filename, path, fmt, name);
 }
 
@@ -9266,7 +9266,7 @@ function rbBuildVstOptions(stagedPath, filter, hideInstruments) {
             .map(p => {
                 const sel = (p.path === stagedPath) ? ' selected' : '';
                 const tag = p.format ? ` [${rbEsc(p.format)}]` : '';
-                return `<option value="${rbEsc(p.path)}"${sel}>${rbEsc(p.name || p.path.split('/').pop())}${tag}</option>`;
+                return `<option value="${rbEsc(p.path)}"${sel}>${rbEsc(p.name || p.path.split(/[\\/]/).pop())}${tag}</option>`;
             }).join('');
         return `<optgroup label="${rbEsc(cat)}">${opts}</optgroup>`;
     }).join('');
@@ -9289,7 +9289,7 @@ function rbRenderVstPanelBody(toneIdx, pIdx, currentVstPath, currentFormat) {
     // the panel doesn't lose it before the user clicks Assign).
     const piece = rbState.songTones && rbState.songTones.tones[toneIdx] && rbState.songTones.tones[toneIdx].chain[pIdx];
     const stagedPath = (piece && piece._vst_staged_path) || currentVstPath || '';
-    const stagedName = stagedPath ? stagedPath.split('/').pop() : '(none selected)';
+    const stagedName = stagedPath ? stagedPath.split(/[\\/]/).pop() : '(none selected)';
     // Dropdown only renders if a previous scan populated the list. If not,
     // we fall back to file-picker only (no scan required, never crashes).
     let pluginSelector;
@@ -9423,7 +9423,7 @@ async function rbApplyRsSettingsToVst(toneIdx, pIdx) {
     }
     const vstPath = rbResolveStagedPath(toneIdx, pIdx);
     if (!vstPath) return setStatus('No VST selected.');
-    const vstStem = vstPath.split('/').pop().replace(/\.(vst3|component)$/i, '');
+    const vstStem = vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '');
     const rsKnobs = piece.knobs || {};
     if (Object.keys(rsKnobs).length === 0) {
         return setStatus('This RS gear exposes no knobs to map from.');
@@ -9535,7 +9535,7 @@ function rbUpdatePathFromInput(toneIdx, pIdx, path) {
     rbStagePath(toneIdx, pIdx, path);
     const sel = document.getElementById(`rb-vst-selected-${toneIdx}-${pIdx}`);
     if (sel) {
-        const name = (path || '').split('/').pop() || '(none selected)';
+        const name = (path || '').split(/[\\/]/).pop() || '(none selected)';
         sel.textContent = `Selected: ${name}`;
     }
     // Auto-assign when the user pasted/typed a real plugin path. Heuristic:
@@ -9577,7 +9577,7 @@ async function rbPickVstFile(toneIdx, pIdx) {
             const curFmt = piece._vst_format || (piece.assigned && piece.assigned.vst_format) || (path.toLowerCase().endsWith('.component') ? 'AudioUnit' : 'VST3');
             panel.innerHTML = rbRenderVstPanelBody(toneIdx, pIdx, path, curFmt);
         }
-        setStatus(`picked ${path.split('/').pop()}`);
+        setStatus(`picked ${path.split(/[\\/]/).pop()}`);
     } catch (e) {
         setStatus(`pick failed: ${e.message || e}`);
     }
@@ -9808,7 +9808,7 @@ async function rbGetVstParamsEventually(api, slotId, attempts = 18, delayMs = 75
 function rbAddCanvasParamNameFallback(vstPath, nameToId, idToName) {
     if (!vstPath || !window.RBPedalCanvas || !window.RBPedalCanvas.specs) return false;
 
-    const stem = vstPath.split('/').pop()
+    const stem = vstPath.split(/[\\/]/).pop()
         .replace(/\.(vst3|component)$/i, '')
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '');
@@ -9939,7 +9939,7 @@ async function rbLoadAndEditVst(toneIdx, pIdx) {
     const path = rbResolveStagedPath(toneIdx, pIdx);
     if (!path) return alert('Pick a plugin first (Pick file or dropdown)');
     const statusEl = document.getElementById(`rb-vst-status-${toneIdx}-${pIdx}`);
-    if (statusEl) statusEl.textContent = `loading ${path.split('/').pop()}…`;
+    if (statusEl) statusEl.textContent = `loading ${path.split(/[\\/]/).pop()}…`;
     try {
         // Clear any previous experimental load so the editor doesn't accumulate.
         await rbTeardownVstEditor(api);
@@ -10982,7 +10982,7 @@ function rbGearVstPath(g) {
 
 function rbGearCanvasStem(g) {
     return rbGearHasVst(g)
-        ? g.vst_path.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+        ? g.vst_path.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '')
         : '';
 }
 
@@ -11111,7 +11111,7 @@ function rbRenderGearListItem(g) {
 
 function rbCatalogVisualForGear(g, size) {
     const isVst = rbGearHasVst(g);
-    const gStem = isVst ? g.vst_path.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    const gStem = isVst ? g.vst_path.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '') : '';
     const canvasArt = (gStem && window.RBPedalCanvas && window.RBPedalCanvas.has(gStem))
         ? window.RBPedalCanvas.dataURL(gStem, {}) : null;
     const minHeight = size === 'large' ? '360px' : '96px';
@@ -11125,7 +11125,7 @@ function rbCatalogVisualForGear(g, size) {
                         </div>`;
             }
 
-            const vstName = g.vst_path.split('/').pop();
+            const vstName = g.vst_path.split(/[\\/]/).pop();
             return `<div class="bg-purple-900/10 border border-purple-800/30 rounded-xl flex items-center justify-center text-center px-6"
                         style="min-height:${minHeight};height:${height}">
                         <div>
@@ -11168,7 +11168,7 @@ function rbOpenSelectedGearVst(g) {
     const path = rbGearVstPath ? rbGearVstPath(g) : g.vst_path;
     if (!path) return;
 
-    const stem = path.split('/').pop()
+    const stem = path.split(/[\\/]/).pop()
         .replace(/\.(vst3|component)$/i, '')
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '');
@@ -11194,7 +11194,7 @@ function rbRenderGearDetail(g) {
     const safeId = g.rs_gear.replace(/[^a-zA-Z0-9_-]/g, '_');
     const isVst = rbGearHasVst(g);
     const assignedLine = isVst
-        ? `<span class="text-purple-300 break-all">VST: ${rbEsc(g.vst_path.split('/').pop())}</span>`
+        ? `<span class="text-purple-300 break-all">VST: ${rbEsc(g.vst_path.split(/[\\/]/).pop())}</span>`
         : rbGearIsAssigned(g)
             ? `<span class="text-emerald-300 break-all">${rbEsc(g.tone3000_title || rbLibShortName(g.file) || 'assigned')}</span>`
             : `<span class="text-gray-500">unassigned</span>`;
@@ -11371,9 +11371,9 @@ function rbRenderCatalogCardCompact(g) {
     // are one step away: clicking anywhere else on the row toggles
     // back to a full card for that single gear (planned).
     const file = g.file
-        ? `<span class="text-xs text-gray-500 truncate font-mono" title="${rbEsc(g.file)}">${rbEsc(g.file.split('/').pop())}</span>`
+        ? `<span class="text-xs text-gray-500 truncate font-mono" title="${rbEsc(g.file)}">${rbEsc(g.file.split(/[\\/]/).pop())}</span>`
         : (g.vst_path
-            ? `<span class="text-xs text-purple-400 truncate" title="${rbEsc((g.vst_path || '').split('/').pop())}">VST: ${rbEsc(g.vst_path.split('/').pop())}</span>`
+            ? `<span class="text-xs text-purple-400 truncate" title="${rbEsc((g.vst_path || '').split(/[\\/]/).pop())}">VST: ${rbEsc(g.vst_path.split(/[\\/]/).pop())}</span>`
             : `<span class="text-xs text-gray-600 italic">unassigned</span>`);
     return `<div class="flex items-center gap-2 px-3 py-2 hover:bg-dark-700/30">
         ${photo}
@@ -11417,8 +11417,8 @@ function rbRenderCatalogCard(g) {
     // but that line repeated 100+ times made the catalog feel noisy).
     let assignedLine;
     if (isVst) {
-        const vstName = g.vst_path.split('/').pop();
-        assignedLine = `<div class="text-xs text-purple-300/90 break-all" title="${rbEsc((g.vst_path || '').split('/').pop())}">✓ VST: ${rbEsc(vstName)}</div>`;
+        const vstName = g.vst_path.split(/[\\/]/).pop();
+        assignedLine = `<div class="text-xs text-purple-300/90 break-all" title="${rbEsc((g.vst_path || '').split(/[\\/]/).pop())}">✓ VST: ${rbEsc(vstName)}</div>`;
     } else if (g.assigned) {
         const label = g.tone3000_title || rbLibShortName(g.file) || 'assigned';
         assignedLine = `<div class="text-xs text-green-400/90 break-all" title="${rbEsc(g.file || '')}">✓ ${rbEsc(label)}</div>`;
@@ -11437,7 +11437,7 @@ function rbRenderCatalogCard(g) {
     // off-screen at default knob values; if fonts haven't loaded yet the one
     // re-render kicked off by RBPedalCanvas.ready() (see rbApplyGearFilters)
     // repaints it correctly.
-    const gStem = isVst ? g.vst_path.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    const gStem = isVst ? g.vst_path.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '') : '';
     const canvasArt = (gStem && window.RBPedalCanvas && window.RBPedalCanvas.has(gStem))
         ? window.RBPedalCanvas.dataURL(gStem, {}) : null;
     const canvasImgTag = canvasArt
@@ -12231,7 +12231,7 @@ function rbRenderCatalogVstPanelBody(panelId, rsGear, currentVstPath, currentFor
     // Look up any staged path (file picker landed here without scan, e.g.).
     const el = document.getElementById(panelId);
     const stagedPath = (el && el.dataset.stagedPath) || currentVstPath || '';
-    const stagedName = stagedPath ? stagedPath.split('/').pop() : '(none selected)';
+    const stagedName = stagedPath ? stagedPath.split(/[\\/]/).pop() : '(none selected)';
 
     // Plugin selector. Two flavours:
     //   - Scanned VSTs exist → single dropdown with a tiny "hide
@@ -12323,7 +12323,7 @@ async function rbCatalogUpdatePathFromInput(panelId, rsGear, path) {
     rbCatalogStagePath(panelId, path);
     const sel = document.getElementById(`${panelId}-selected`);
     if (sel) {
-        const name = (path || '').split('/').pop() || '(none selected)';
+        const name = (path || '').split(/[\\/]/).pop() || '(none selected)';
         sel.textContent = `Selected: ${name}`;
     }
     const looksReady = /^\/.+\.(vst3|component)$/i.test((path || '').trim());
@@ -12355,7 +12355,7 @@ async function rbCatalogPickFile(panelId, rsGear, currentFormat) {
             el.innerHTML = rbRenderCatalogVstPanelBody(panelId, rsGear, path, currentFormat);
         }
         const newStatus = document.getElementById(`${panelId}-status`);
-        if (newStatus) newStatus.textContent = `picked ${path.split('/').pop()}`;
+        if (newStatus) newStatus.textContent = `picked ${path.split(/[\\/]/).pop()}`;
     } catch (e) {
         setStatus(`pick failed: ${e.message || e}`);
     }
@@ -12381,7 +12381,7 @@ async function rbCatalogLoadAndEdit(panelId) {
     const path = rbCatalogResolveStagedPath(panelId);
     if (!path) return alert('Pick a plugin first (📁 Pick file or dropdown)');
     const statusEl = document.getElementById(`${panelId}-status`);
-    if (statusEl) statusEl.textContent = `loading ${path.split('/').pop()}…`;
+    if (statusEl) statusEl.textContent = `loading ${path.split(/[\\/]/).pop()}…`;
     try {
         await rbTeardownVstEditor(api);
         await api.startAudio().catch(() => {});
@@ -12590,7 +12590,7 @@ async function rbRecoverFailedVstLoad(api, partialSlot = null) {
 async function rbSafeLoadStandaloneVst(api, vstPath) {
     // Log only the basename — never the absolute path (leaks the user's home
     // dir / username in console output and shared logs).
-    console.log('[rig_builder vst] preparing clean host:', (vstPath || '').split('/').pop());
+    console.log('[rig_builder vst] preparing clean host:', (vstPath || '').split(/[\\/]/).pop());
 
     await rbResetStandaloneVstHost(api);
 
@@ -12637,7 +12637,7 @@ async function rbApplyCatalogGearVstParams(api, slotId, vstPath, rsGear) {
 
     if (!rsGear) return null;
 
-    const vstStem = vstPath.split('/').pop()
+    const vstStem = vstPath.split(/[\\/]/).pop()
         .replace(/\.(vst3|component)$/i, '')
         .toLowerCase();
 
@@ -12741,7 +12741,7 @@ async function rbCatalogEditInline(safeId, vstPath, vstFormat, rsGear, stem) {
     document.getElementById(`rb-cat-lib-${safeId}`)?.classList.add('hidden');
     document.getElementById(`rb-cat-variants-${safeId}`)?.classList.add('hidden');
     el.classList.remove('hidden');
-    el.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split('/').pop())}…</div>`;
+    el.innerHTML = `<div class="text-xs text-gray-500">loading ${rbEsc(vstPath.split(/[\\/]/).pop())}…</div>`;
     const loadToken = rbStandaloneVstLoadToken();
     try {
         await rbCloseActiveVstEditor().catch(() => {});
@@ -12786,7 +12786,7 @@ async function rbCatalogEditInline(safeId, vstPath, vstFormat, rsGear, stem) {
         }
         el.innerHTML = `
             <div class="flex items-center justify-between mb-1">
-                <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstPath.split('/').pop().replace(/\.(vst3|component)$/i, ''))}</div>
+                <div class="text-[11px] text-purple-300 font-semibold">In-feedBack editor · ${rbEsc(vstPath.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, ''))}</div>
                 <button onclick="event.stopPropagation(); rbCatalogEditInline('${safeId}','${rbEsc(vstPath).replace(/'/g,"\\'")}','${rbEsc(vstFormat)}','${rbEsc(rsGear)}','${stem}')"
                         title="Close inline editor" class="text-[10px] text-gray-400 hover:text-gray-200 px-1">✕</button>
             </div>
@@ -13368,7 +13368,7 @@ const RB_ADV_STEREO_OUT_STEMS = new Set([
     'tapeecho',
 ]);
 function rbAdvStemFromPath(path) {
-    return (path || '').split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return (path || '').split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 function rbAdvCatalogCanStereoOut(g) {
     if (!g) return false;
@@ -13602,7 +13602,7 @@ function rbAdvAutoLayout() {
 function rbAdvGearImg(g) {
     const vp = g && (g.vst_path || g._vst_path);
     if (!vp || !window.RBPedalCanvas) return null;
-    const stem = vp.split('/').pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const stem = vp.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
     if (stem && window.RBPedalCanvas.has(stem)) {
         try { return window.RBPedalCanvas.dataURL(stem, {}); } catch (_) {}
     }
@@ -14462,7 +14462,7 @@ async function rbStudioApplyStereoToEngine() {
     try {
         const st = (await audio.getChainState()) || [];
         const summary = st.map((s, k) => {
-            const nm = String(s.path || s.name || '?').split('/').pop().slice(0, 30);
+            const nm = String(s.path || s.name || '?').split(/[\\/]/).pop().slice(0, 30);
             const g = (typeof s.postGain === 'number' && s.postGain !== 1) ? ` g=${s.postGain.toFixed(3)}` : '';
             return `#${k} id=${s.id} ${nm} b=${s.branch | 0} pan=${Number(s.pan || 0).toFixed(2)}${g}${s.bypassed ? ' BYP' : ''}`;
         }).join('  |  ');
