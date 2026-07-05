@@ -282,10 +282,10 @@ public:
         // Gentle drive: the Hiwatt has huge headroom, so it stays clean until cranked.
         float bch = brightCapShelf.process(brightBody.process(x));
         bch = vBright.process(brightMiller.process(bch) *
-                              (1.0f + 7.0f * brightVol) * bplus.preamp);   // gain halved (was 2.0+16.0): bright distorted too early
+                              (0.8f + 3.6f * brightVol) * bplus.preamp);   // pass3: much more headroom (was 2.0+16.0 orig); clean until ~65%
         float nch = normalBody.process(x);
         nch = vNormal.process(normalMiller.process(nch) *
-                              (0.8f + 5.0f * normalVol) * bplus.preamp);   // gain halved (was 1.5+11.0): normal distorted too early
+                              (0.6f + 2.6f * normalVol) * bplus.preamp);   // pass3 (was 1.5+11.0 orig)
 
         // jumpered mix
         float y = brightG * (0.34f + 0.66f * brightVol) * bch + normalG * (0.30f + 0.62f * normalVol) * nch;

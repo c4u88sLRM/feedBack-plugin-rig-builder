@@ -62,7 +62,7 @@ struct DualRectCore {
         v3.set(sr, 1, 250.0f, 40.0f, 30.0f, 1500.0f);
         v4.set(sr, 1, 250.0f, 40.0f, 55.0f, 1500.0f);
 
-        const float gA = rbtube::PotTaper::audio(pGain, 2.0f);   // steeper taper (1.30->2.0): keep the low gain range clean, distorted too early
+        const float gA = rbtube::PotTaper::audio(pGain, 3.0f);   // pass3: much steeper taper (1.30->3.0) — keep low/mid gain range clean, was distorting at ~15%
         // Per-channel gain staging + stage count (Green clean, Red high-gain roar).
         // modeGain: Green Clean->Pushed adds breakup; Orange/Red Raw(loose/clean) -> Modern(hottest).
         float modeGain;
@@ -70,11 +70,11 @@ struct DualRectCore {
             g1 = 0.3f + 1.8f*gA; g2 = 0.4f + 1.2f*gA; g3 = 1.0f; g4 = 1.0f; nStages = 2;
             modeGain = 1.0f + 0.8f*pMode;
         } else if (ch == 1) {     // ORANGE crunch (g4 = unity recovery)
-            g1 = 0.25f + 2.95f*gA; g2 = 0.3f + 2.2f*gA; g3 = 0.35f + 1.65f*gA; g4 = 1.0f; nStages = 3;   // bases lowered: crunch distorted at low gain
+            g1 = 0.18f + 2.2f*gA; g2 = 0.22f + 1.7f*gA; g3 = 0.26f + 1.3f*gA; g4 = 1.0f; nStages = 3;   // pass3: bases+scale lowered, crunch distorted too early
             modeGain = 0.7f + 0.3f*pMode;
         } else {                  // RED — THE heavy-metal channel: deep 4-stage cascade (drives v4 too)
-            g1 = 0.3f + 6.8f*gA; g2 = 0.35f + 5.35f*gA; g3 = 0.4f + 3.9f*gA;   // bases ~halved: distorted at gain 2-3, keep the cranked max
-            g4 = 0.7f + 5.1f*gA; nStages = 3;   // 4th driven stage = the Recto sustain/aggression (real = 5 stages)
+            g1 = 0.2f + 5.0f*gA; g2 = 0.22f + 4.0f*gA; g3 = 0.28f + 3.0f*gA;   // pass3: bases+scale lowered, distorted at ~15% gain
+            g4 = 0.45f + 4.0f*gA; nStages = 3;   // 4th driven stage = the Recto sustain/aggression (real = 5 stages)
             modeGain = 0.7f + 0.3f*pMode;        // Raw looser, Modern hottest
         }
         g1 *= modeGain; g2 *= modeGain; g3 *= modeGain; g4 *= modeGain;
