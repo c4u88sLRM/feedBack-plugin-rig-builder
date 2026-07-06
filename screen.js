@@ -4030,7 +4030,8 @@ function rbRenderStudioRoom() {
         return `<div class="${cls}" data-amp-idx="${entry.idx}"${style}
                      onclick="rbStudioClickAmp(${entry.idx})" title="${rbEsc(nm)} — click to zoom in">
                     ${head}
-                    <div class="rb-amp-cab" title="${rbEsc(cabName)}"></div>
+                    <div class="rb-amp-cab" title="${rbEsc(cabName)} — click: Cab Room" style="cursor:pointer"
+                         onclick="event.stopPropagation(); rbStudioOpenCabRoom()"></div>
                 </div>`;
     };
     const ampHtml = amps.map(ampStack).join('');
@@ -11100,12 +11101,14 @@ function rbCabRoomLayout(entry) {
     return [[152, 92, 80], [408, 92, 80], [152, 248, 80], [408, 248, 80]];
 }
 
-function rbCabRoomBuild(g, entry, safeId) {
+function rbCabRoomBuild(g, entry, safeId, opts) {
     const box = document.getElementById(`rb-cabroom-${safeId}`);
     if (!box) return;
     const st = _rbCabRoom[safeId] = _rbCabRoom[safeId]
         || { mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0, micPx: null,
              speaker: (entry.speakers && entry.speakers[0]) || entry.speaker };
+    st._studio = (opts && opts.studio) || null;
+    if (opts && opts.init) Object.assign(st, opts.init);
     const mics = [['sm57', 'Dynamic 57'], ['md421', 'MD421'], ['km84', 'KM84'],
                   ['r121', 'Ribbon R121'], ['tlm103', 'Condenser'], ['tube', 'Tube']];
     const micBtns = mics.map(([k, lbl]) =>
@@ -11140,6 +11143,16 @@ function rbCabRoomBuild(g, entry, safeId) {
                 <button id="rb-cabroom-ang-${safeId}" onclick="rbCabRoomToggleAngle('${safeId}','${g.rs_gear}')"
                         class="text-xs px-2.5 py-1 rounded border ${st.angle_deg ? 'bg-violet-700/60 text-violet-100 border-violet-500/60' : 'bg-dark-800 text-gray-400 border-gray-700'}">45°</button>
             </div>
+            ${(opts && opts.studio) ? `
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] text-gray-500">cab:</span>
+                <select onchange="rbStudioCabSwap(this.value)"
+                        class="flex-1 bg-dark-800 border border-gray-700 rounded text-xs text-gray-300 px-1 py-1">
+                    ${Object.entries(rbState.realCabCatalog.cabs).map(([k, e]) =>
+                        `<option value="${k}" ${g.rs_gear.startsWith(k) ? 'selected' : ''}>${rbEsc(e.name || k)}</option>`).join('')}
+                </select>
+                <span id="rb-cabroom-status-${safeId}" class="text-[11px] text-gray-500"></span>
+            </div>` : `
             <div class="flex items-center gap-2">
                 <button id="rb-cabroom-play-${safeId}" onclick="rbCabRoomListen('${safeId}','${g.rs_gear}')"
                         class="bg-violet-700 hover:bg-violet-600 text-white text-xs px-3 py-1.5 rounded">▶ Escuchar</button>
@@ -11147,7 +11160,7 @@ function rbCabRoomBuild(g, entry, safeId) {
                         class="bg-emerald-800/70 hover:bg-emerald-700 text-emerald-100 text-xs px-3 py-1.5 rounded border border-emerald-600/40"
                         title="Usar esta posición de mic como el sonido de este cab en TODAS las canciones">★ Usar en todas las canciones</button>
                 <span id="rb-cabroom-status-${safeId}" class="text-[11px] text-gray-500"></span>
-            </div>
+            </div>`}
         </div>`;
     const cv = box.querySelector('canvas');
     cv.addEventListener('pointerdown', e => rbCabRoomPointer(e, safeId, g.rs_gear, true));
@@ -11252,6 +11265,8 @@ async function rbCabRoomSynth(safeId, gear, assign) {
 }
 
 window.rbCabRoomListen = async function (safeId, gear, restart) {
+    const stx = _rbCabRoom[safeId];
+    if (stx && stx._studio) return rbStudioCabRoomApply(safeId, gear);
     try {
         const d = await rbCabRoomSynth(safeId, gear, false);
         const btnId = `rb-cabroom-play-${safeId}`;
@@ -11325,6 +11340,118 @@ window.rbCabRoomToggleAngle = function (safeId, gear) {
         : 'bg-dark-800 text-gray-400 border-gray-700'}`;
     rbCabRoomDraw(safeId, rbCabRoomEntry(gear));
     rbCabRoomListen(safeId, gear, true);
+};
+
+// ── Cab Room en THE STUDIO ──────────────────────────────────────────────
+// Click en la caja del cab (bajo el amp) → overlay con el Cab Room wired al
+// TONO: se inicializa con el mic/posición que la canción usa (sufijo del
+// gear, p.ej. _5c = 57@Cone) y cada cambio PERSISTE en el tono y recarga el
+// monitor (se oye en contexto con amp+pedales). El select de cab hace swap
+// por-canción (/gear/replace_with con preset_id).
+function rbStudioCabPiece() {
+    const chain = rbStudioCurrentChain() || [];
+    for (let i = 0; i < chain.length; i++) {
+        const p = chain[i];
+        if ((p.slot || '').toLowerCase() === 'cabinet' || p.rs_category === 'cab')
+            return { piece: p, pIdx: i };
+    }
+    return null;
+}
+
+function rbCabRoomStateFromPiece(piece) {
+    // 1) si ya usa un IR realcab custom, parsear sus parámetros del nombre
+    const f = piece._uploaded_file || (piece.assigned && piece.assigned.file) || '';
+    const m = /realcab_.*_([a-z0-9]+)_x(\d{3})_d(\d{3})_a(\d{2})\.wav$/i.exec(String(f));
+    if (m) return { mic: m[1], x: parseInt(m[2], 10) / 100,
+                    dist_in: parseInt(m[3], 10) / 10, angle_deg: parseInt(m[4], 10), micPx: null };
+    // 2) si no, del sufijo RS del gear (lo que la canción dice usar)
+    const cat = rbState.realCabCatalog || {};
+    const suf = /_([a-z0-9]{2})$/i.exec(String(piece.type || ''));
+    if (suf && cat.mic_suffixes && cat.pos_suffixes) {
+        const mic = cat.mic_suffixes[suf[1][0]];
+        const pos = cat.pos_suffixes[suf[1][1]];
+        if (mic && pos) return { mic, x: pos.x, dist_in: pos.dist_in,
+                                 angle_deg: pos.angle_deg || 0, micPx: null };
+    }
+    return {};
+}
+
+window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
+    const v = rbState.studioView || {};
+    if (v.source !== 'song') { alert('Carga un tono de canción para editar su cab.'); return; }
+    const found = rbStudioCabPiece();
+    if (!found) { alert('Este tono no tiene pieza de cabinet.'); return; }
+    const entry = rbRealCabEntryFor(found.piece.type || found.piece.rs_gear);
+    if (!entry) { alert('Este cab no está en el catálogo Real Cab (¿bajo?).'); return; }
+    const room = document.getElementById('rb-studio-room');
+    if (!room) return;
+    let ov = document.getElementById('rb-studio-cabroom');
+    if (ov) { ov.remove(); return; }   // toggle
+    ov = document.createElement('div');
+    ov.id = 'rb-studio-cabroom';
+    ov.style.cssText = 'position:absolute; right:12px; top:12px; z-index:60; width:600px; max-width:92%;';
+    ov.innerHTML = `<div class="relative">
+        <button onclick="document.getElementById('rb-studio-cabroom').remove()"
+                class="absolute -top-2 -right-2 z-10 bg-dark-700 border border-gray-600 rounded-full w-6 h-6 text-gray-300 text-xs">✕</button>
+        <div id="rb-cabroom-studio"></div></div>`;
+    room.appendChild(ov);
+    delete _rbCabRoom['studio'];   // estado fresco por apertura
+    rbCabRoomBuild({ rs_gear: found.piece.type || found.piece.rs_gear }, entry, 'studio', {
+        studio: { toneIdx: v.toneIdx, pIdx: found.pIdx },
+        init: rbCabRoomStateFromPiece(found.piece),
+    });
+};
+
+async function rbStudioCabRoomApply(safeId, gear) {
+    const st = _rbCabRoom[safeId];
+    const info = st && st._studio;
+    if (!info) return;
+    const status = document.getElementById(`rb-cabroom-status-${safeId}`);
+    try {
+        const d = await rbCabRoomSynth(safeId, gear, false);
+        const piece = rbState.songTones?.tones?.[info.toneIdx]?.chain?.[info.pIdx];
+        if (!piece) throw new Error('pieza no encontrada');
+        piece._uploaded_file = d.name;
+        piece._uploaded_kind = 'ir';
+        await rbPersistTone(info.toneIdx, rbState.currentSongFile);
+        try { rbStudioLoadMonitor(); } catch (_) {}
+        if (status) status.textContent = '✓ aplicado al tono';
+    } catch (e) {
+        if (status) status.textContent = '✗ ' + (e.message || e);
+    }
+}
+
+window.rbStudioCabSwap = async function (newBase) {
+    const st = _rbCabRoom['studio'];
+    const info = st && st._studio;
+    const v = rbState.studioView || {};
+    if (!info || v.source !== 'song') return;
+    const tone = rbState.songTones?.tones?.[info.toneIdx];
+    const piece = tone?.chain?.[info.pIdx];
+    if (!tone || !piece) return;
+    const cur = String(piece.type || '');
+    const suf = /_([a-z0-9]{2})$/i.exec(cur);
+    const to = newBase + (suf ? '_' + suf[1] : '');
+    const status = document.getElementById('rb-cabroom-status-studio');
+    if (status) status.textContent = '⏳ cambiando cab…';
+    try {
+        const r = await fetch(`${window.RB_API}/gear/replace_with`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ from_rs_gear: cur, to_rs_gear: to,
+                                   preset_id: tone.preset_id }),
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || r.status);
+        // refresh liviano del tono + reabrir el cab room con el cab nuevo
+        const fresh = await rbFetchSong(rbState.currentSongFile);
+        if (fresh && !fresh.error) { rbState.songTones = fresh; try { rbSeedBypass(fresh); } catch (_) {} }
+        try { rbStudioShowSongTone(info.toneIdx); } catch (_) {}
+        const ov = document.getElementById('rb-studio-cabroom');
+        if (ov) ov.remove();
+        rbStudioOpenCabRoom();
+    } catch (e) {
+        if (status) status.textContent = '✗ ' + (e.message || e);
+    }
 };
 
 function rbAuditionGainForVariantLevel(level) {
