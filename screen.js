@@ -4081,7 +4081,6 @@ function rbRenderStudioRoom() {
             }).join('')}
         </div>`;
 
-    const empty = !(rbStudioCurrentChain().length);
     el.innerHTML = `
         <div class="rb-room-camera" id="rb-room-camera">
             <div class="rb-room-3d">
@@ -4102,20 +4101,19 @@ function rbRenderStudioRoom() {
                 <div class="rb-floor3d"><div class="rb-carpet"></div></div>
             </div>
             <div class="rb-studio-stage">
-                ${amp ? '<div class="rb-amp-ground"></div>' : ''}
+                <div class="rb-amp-ground"></div>
                 ${extraGroundHtml}
                 ${ampHtml}
-                ${amp ? '' : `<div class="rb-amp-empty" onclick="rbStudioBrowseAmps()" title="Click to add an amp">＋ amp</div>`}
+                ${amp ? '' : `<div class="rb-amp-stack rb-amp-stack-empty" onclick="rbStudioBrowseAmps()" title="Click to add an amp">
+                    <div class="rb-amp-face rb-amp-face-empty">＋ amp</div>
+                    <div class="rb-amp-cab"></div>
+                </div>`}
                 ${pedalHtml}
                 ${rackHtml}
                 <!-- props to dress the room -->
                 <div class="rb-ceil-cloud"></div>
             </div>
-        </div>
-        ${empty ? `<div class="absolute inset-0 flex items-center justify-center text-gray-500 text-sm z-10">
-            No default tone yet —
-            <button onclick="rbShowTab('gear')" class="underline ml-1 text-gray-300 hover:text-white">add gear</button>.
-        </div>` : ''}`;
+        </div>`;
     rbStudioTintPedalEdges();   // colour each pedal's extruded depth from its render
     rbStudioApplyScale();       // scale the fixed-px gear up to fill a larger room
 }
