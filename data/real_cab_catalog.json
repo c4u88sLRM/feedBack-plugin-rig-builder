@@ -159,17 +159,17 @@
       ]
     },
     "Cab_CS212C": {
-      "speaker": "v30",
+      "speaker": "mod12110",
       "drivers": 2,
       "size_in": 12,
-      "back": "closed",
-      "baffle_m": 0.66,
-      "speaker_confidence": "medium",
-      "name": "CS 2x12",
+      "back": "open",
+      "baffle_m": 0.76,
+      "speaker_confidence": "high",
+      "name": "Ronald JC-120 2x12",
       "speakers": [
-        "v30",
-        "blue",
-        "g12h"
+        "mod12110",
+        "c12n",
+        "v30"
       ]
     },
     "Cab_EN212C": {

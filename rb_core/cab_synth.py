@@ -164,6 +164,20 @@ _P10Q_POINTS = [
 ]
 
 
+# Jensen MOD 12-110 (speakers/MOD-12-110.pdf, curva 8Ω en baffle IEC).
+# El 12" cerámico moderno para el Ronald JC-120 (CS212C, identificado por el
+# usuario). Fs=85.6, 99.1 dB. Firma: pico de resonancia ~95-100 Hz, leve
+# valle 600-900, montaña de presencia 2.5-4k (~106) y cliff ~6k con notches.
+_MOD12110_POINTS = [
+    (50, 72.0), (70, 80.0), (90, 99.0), (100, 101.0), (120, 99.5),
+    (150, 99.5), (200, 99.0), (300, 97.5), (400, 97.0), (500, 96.5),
+    (700, 95.5), (900, 96.0), (1200, 98.5), (1600, 99.5), (2000, 101.0),
+    (2500, 104.5), (3000, 106.0), (3500, 105.5), (4200, 104.0), (5000, 104.0),
+    (5800, 100.0), (6500, 90.0), (7500, 82.0), (8500, 80.0), (10000, 76.0),
+    (12000, 78.0), (15000, 74.0), (20000, 70.0),
+]
+
+
 def _interp_points(points, f):
     pf = np.array([p[0] for p in points], float)
     pd = np.array([p[1] for p in points], float)
@@ -179,6 +193,7 @@ DRIVERS = {
     "g12h": lambda f: _interp_points(_G12H_POINTS, f),
     "c12n": lambda f: _interp_points(_C12N_POINTS, f),
     "p10q": lambda f: _interp_points(_P10Q_POINTS, f),
+    "mod12110": lambda f: _interp_points(_MOD12110_POINTS, f),
 }
 
 
