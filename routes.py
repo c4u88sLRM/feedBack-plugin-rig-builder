@@ -8165,6 +8165,91 @@ def setup(app, context):
             log.warning("save_preset: mirror to sibling format failed", exc_info=True)
         return {"ok": True, "preset_id": preset_id, "mirrored": mirrored, "mirrored_presets": mirrored_presets}
 
+    # ── Real Cab: el CAB ROOM del catálogo (Gear → Cabs) ────────────────
+    # El panel de cada cab dibuja un canvas con el mic ARRASTRABLE; al
+    # soltarlo la UI llama a /cab/synthesize y AUDICIONA el IR renderizado
+    # (rbAuditionFile). Con assign=true, además ese IR pasa a ser el sonido
+    # del cab en TODAS las canciones (bulk sobre preset_pieces del gear).
+    @app.get("/api/plugins/rig_builder/cab/catalog")
+    def real_cab_catalog():
+        """El catálogo Real Cab completo (la UI lo cachea una vez)."""
+        try:
+            with open(_plugin_dir / "data" / "real_cab_catalog.json",
+                      encoding="utf-8") as fh:
+                return json.load(fh)
+        except Exception as e:
+            return JSONResponse({"error": f"{type(e).__name__}: {e}"}, 500)
+
+    @app.post("/api/plugins/rig_builder/cab/synthesize")
+    def cab_synthesize(data: dict = Body(...)):
+        """Renderiza el IR del modelo físico para (gear, mic, x, dist, angle).
+
+        Devuelve {"name": "realcab/….wav"} (cacheado por parámetros). Con
+        `assign=true`, además escribe ese IR en TODAS las preset_pieces del
+        cab (base + sufijos de posición), marcadas manual para que Remap all
+        no las pise — el cab queda sonando así en todas las canciones.
+        """
+        gear = str(data.get("gear_type") or "")
+        mic = str(data.get("mic") or "sm57")
+        x = float(data.get("x", 0.15))
+        dist_in = float(data.get("dist_in", 1.0))
+        angle = float(data.get("angle_deg", 0.0))
+        try:
+            with open(_plugin_dir / "data" / "real_cab_catalog.json",
+                      encoding="utf-8") as fh:
+                cat = json.load(fh)
+        except Exception as e:
+            return JSONResponse({"error": f"catalog: {e}"}, 500)
+        base_gear = gear
+        entry = cat["cabs"].get(base_gear)
+        if entry is None and "_" in gear:
+            base_gear = gear.rsplit("_", 1)[0]
+            entry = cat["cabs"].get(base_gear)
+        if entry is None:
+            return JSONResponse({"error": f"cab not in Real Cab catalog: {gear}"}, 404)
+        if mic not in ("sm57", "tlm103", "md421", "km84", "r121", "tube"):
+            return JSONResponse({"error": f"unknown mic: {mic}"}, 400)
+        x = min(max(x, 0.0), 1.0)
+        dist_in = min(max(dist_in, 0.0), 12.0)
+        angle = min(max(angle, 0.0), 60.0)
+
+        out_dir = _config_dir / "nam_irs" / "realcab"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        spk = entry.get("speaker", "g12m")
+        fname = (f"realcab_{spk}_{entry.get('drivers', 1)}x{entry.get('size_in', 12)}"
+                 f"{'c' if entry.get('back') == 'closed' else 'o'}_{mic}"
+                 f"_x{int(round(x * 100)):03d}_d{int(round(dist_in * 10)):03d}"
+                 f"_a{int(round(angle)):02d}.wav")
+        out_path = out_dir / fname
+        rel = f"realcab/{fname}"
+        if not out_path.exists():
+            try:
+                from rb_core import cab_synth
+                cab_synth.synthesize_ir_wav(
+                    str(out_path), speaker=spk, mic=mic, x=x, dist_in=dist_in,
+                    angle_deg=angle, drivers=int(entry.get("drivers", 1)),
+                    size_in=float(entry.get("size_in", 12)),
+                    back=str(entry.get("back", "closed")),
+                    baffle_m=float(entry.get("baffle_m", 0.6)))
+            except Exception as e:
+                log.exception("cab_synthesize failed")
+                return JSONResponse({"error": f"{type(e).__name__}: {e}"}, 500)
+
+        assigned = 0
+        if data.get("assign"):
+            conn = _get_conn()
+            with _lock:
+                cur = conn.execute(
+                    "UPDATE preset_pieces SET file = ?, kind = 'ir', "
+                    "assigned_mode = 'manual' WHERE slot = 'cabinet' AND "
+                    "(rs_gear_type = ? OR rs_gear_type LIKE ?)",
+                    (rel, base_gear, base_gear + "_%"))
+                assigned = cur.rowcount or 0
+                conn.commit()
+        return {"ok": True, "name": rel, "assigned": assigned,
+                "params": {"mic": mic, "x": x, "dist_in": dist_in,
+                           "angle_deg": angle}}
+
     @app.post("/api/plugins/rig_builder/reset_tone")
     def reset_tone(data: dict = Body(...)):
         """Reload ONE song tone EXACTLY as it ships in the sloppak.

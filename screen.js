@@ -3629,6 +3629,7 @@ async function rbInit() {
     rbShowTab(rbState.currentTab);
     rbStudioRenderToneChips();              // show the current-tone label right away
     rbStudioLoadSavedTones().catch(() => {});   // then fill in saved tones
+    rbLoadRealCabCatalog().catch(() => {});     // Real Cab catalog (cab room)
     // Close the tone dropdown when clicking outside it. Use mousedown (fires
     // before click handlers mutate the DOM) so the target is still attached —
     // a 'click' listener saw the replaced Save button as "outside" and closed
@@ -11053,6 +11054,236 @@ async function rbAfterGearChange(toneIdx) {
 // against typical curated 3-tier amps (Marshall JCM800, Twin, etc.).
 // Returns 1.0 (no extra trim) for unknown levels so non-variant amps
 // audition exactly as before.
+// ── Real Cab: CAB ROOM del catálogo (Gear → Cabs) ───────────────────────
+// El panel de cada cab dibuja el gabinete físico (caja + rejilla + sus
+// parlantes reales 1x12/2x12/4x12/4x10…) con un MICRÓFONO ARRASTRABLE:
+// arrastra = posición sobre el cono · slider = distancia · botones = tipo de
+// mic · 45° = off-axis. Al soltar, el backend sintetiza el IR del modelo
+// físico (/cab/synthesize) y se AUDICIONA al tiro (rbAuditionFile). El botón
+// ★ lo asigna como el sonido del cab en TODAS las canciones.
+const _rbCabRoom = {};   // safeId → estado {mic, x, dist_in, angle_deg, micPx}
+
+function rbRealCabEntryFor(gear) {
+    const cat = rbState.realCabCatalog;
+    if (!cat || !gear) return null;
+    return cat.cabs[gear] || cat.cabs[String(gear).replace(/_[a-z0-9]+$/i, '')] || null;
+}
+
+async function rbLoadRealCabCatalog() {
+    try {
+        const r = await fetch(`${window.RB_API}/cab/catalog`);
+        if (r.ok) rbState.realCabCatalog = await r.json();
+    } catch (_) { /* sin catálogo = foto estática */ }
+}
+
+const RB_CABROOM_W = 560, RB_CABROOM_H = 340;
+
+function rbCabRoomLayout(entry) {
+    // [cx, cy, r] de cada parlante en el canvas
+    const n = entry.drivers || 1;
+    if (n === 1) return [[280, 170, 118]];
+    if (n === 2) return [[152, 170, 104], [408, 170, 104]];
+    return [[152, 92, 80], [408, 92, 80], [152, 248, 80], [408, 248, 80]];
+}
+
+function rbCabRoomBuild(g, entry, safeId) {
+    const box = document.getElementById(`rb-cabroom-${safeId}`);
+    if (!box) return;
+    const st = _rbCabRoom[safeId] = _rbCabRoom[safeId]
+        || { mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0, micPx: null };
+    const mics = [['sm57', 'Dynamic 57'], ['md421', 'MD421'], ['km84', 'KM84'],
+                  ['r121', 'Ribbon R121'], ['tlm103', 'Condenser'], ['tube', 'Tube']];
+    const micBtns = mics.map(([k, lbl]) =>
+        `<button data-mic="${k}" onclick="rbCabRoomSetMic('${safeId}','${g.rs_gear}','${k}')"
+                 class="rb-cabroom-mic px-2.5 py-1 rounded border text-xs ${st.mic === k
+                     ? 'bg-violet-700/60 text-violet-100 border-violet-500/60 font-semibold'
+                     : 'bg-dark-800 text-gray-300 border-gray-700 hover:bg-violet-900/40'}">${lbl}</button>`).join(' ');
+    box.innerHTML = `
+        <div class="bg-dark-800/60 border border-gray-800/50 rounded-lg p-3 space-y-2">
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-violet-300 font-medium">🎙 Cab Room</span>
+                <span class="text-[11px] text-gray-500">arrastra el micrófono — se escucha al soltar · ${rbEsc(entry.speaker)} ${entry.drivers}x${entry.size_in} ${entry.back === 'closed' ? 'cerrado' : 'open-back'}</span>
+            </div>
+            <canvas id="rb-cabroom-cv-${safeId}" width="${RB_CABROOM_W}" height="${RB_CABROOM_H}"
+                    class="rounded-lg border border-gray-800 cursor-crosshair w-full"
+                    style="touch-action:none;"></canvas>
+            <div class="flex items-center gap-1.5 flex-wrap">${micBtns}</div>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] text-gray-500 whitespace-nowrap">distancia</span>
+                <input type="range" min="0" max="6" step="0.5" value="${st.dist_in}"
+                       oninput="rbCabRoomSetDist('${safeId}','${g.rs_gear}',this.value)" class="flex-1">
+                <span id="rb-cabroom-dist-${safeId}" class="text-[11px] text-gray-400 w-8">${st.dist_in}"</span>
+                <button id="rb-cabroom-ang-${safeId}" onclick="rbCabRoomToggleAngle('${safeId}','${g.rs_gear}')"
+                        class="text-xs px-2.5 py-1 rounded border ${st.angle_deg ? 'bg-violet-700/60 text-violet-100 border-violet-500/60' : 'bg-dark-800 text-gray-400 border-gray-700'}">45°</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="rb-cabroom-play-${safeId}" onclick="rbCabRoomListen('${safeId}','${g.rs_gear}')"
+                        class="bg-violet-700 hover:bg-violet-600 text-white text-xs px-3 py-1.5 rounded">▶ Escuchar</button>
+                <button onclick="rbCabRoomAssign('${safeId}','${g.rs_gear}')"
+                        class="bg-emerald-800/70 hover:bg-emerald-700 text-emerald-100 text-xs px-3 py-1.5 rounded border border-emerald-600/40"
+                        title="Usar esta posición de mic como el sonido de este cab en TODAS las canciones">★ Usar en todas las canciones</button>
+                <span id="rb-cabroom-status-${safeId}" class="text-[11px] text-gray-500"></span>
+            </div>
+        </div>`;
+    const cv = box.querySelector('canvas');
+    cv.addEventListener('pointerdown', e => rbCabRoomPointer(e, safeId, g.rs_gear, true));
+    cv.addEventListener('pointermove', e => rbCabRoomPointer(e, safeId, g.rs_gear, false));
+    cv.addEventListener('pointerup', () => rbCabRoomDrop(safeId, g.rs_gear));
+    rbCabRoomDraw(safeId, entry);
+}
+
+function rbCabRoomDraw(safeId, entry) {
+    const cv = document.getElementById(`rb-cabroom-cv-${safeId}`);
+    const st = _rbCabRoom[safeId];
+    if (!cv || !st) return;
+    const g = cv.getContext('2d');
+    const W = RB_CABROOM_W, H = RB_CABROOM_H;
+    g.clearRect(0, 0, W, H);
+    // caja tolex + marco + rejilla
+    g.fillStyle = '#171310'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = '#3c3226'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, H - 10);
+    g.save(); g.beginPath(); g.rect(16, 16, W - 32, H - 32); g.clip();
+    g.fillStyle = '#221b12'; g.fillRect(16, 16, W - 32, H - 32);
+    g.strokeStyle = 'rgba(130,108,74,.15)'; g.lineWidth = 1.2;
+    for (let i = -H; i < W; i += 8) {
+        g.beginPath(); g.moveTo(i, 16); g.lineTo(i + H, H - 16); g.stroke();
+        g.beginPath(); g.moveTo(i + H, 16); g.lineTo(i, H - 16); g.stroke();
+    }
+    // parlantes
+    for (const [cx, cy, r] of rbCabRoomLayout(entry)) {
+        g.beginPath(); g.arc(cx, cy, r, 0, 7);
+        g.fillStyle = 'rgba(6,5,3,.78)'; g.fill();
+        g.strokeStyle = 'rgba(205,185,150,.55)'; g.lineWidth = 3; g.stroke();
+        g.beginPath(); g.arc(cx, cy, r * 0.66, 0, 7);
+        g.strokeStyle = 'rgba(150,130,100,.3)'; g.lineWidth = 1.2; g.stroke();
+        g.beginPath(); g.arc(cx, cy, r * 0.28, 0, 7);
+        g.fillStyle = 'rgba(34,27,19,.95)'; g.fill();
+        g.strokeStyle = 'rgba(205,185,150,.45)'; g.lineWidth = 1.5; g.stroke();
+    }
+    g.restore();
+    // micrófono (punto + caña), escala con la distancia
+    const [mx, my] = rbCabRoomMicPx(safeId, entry);
+    const sc = 1.0 - 0.3 * (st.dist_in / 6.0);
+    g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + 42 * sc, my + 54 * sc);
+    g.strokeStyle = '#cbb9ff'; g.lineWidth = 4 * sc; g.stroke();
+    g.beginPath(); g.arc(mx, my, 12 * sc, 0, 7);
+    g.fillStyle = st.angle_deg ? '#8f6fff' : '#b39dff'; g.fill();
+    g.strokeStyle = '#f0eaff'; g.lineWidth = 2; g.stroke();
+    g.fillStyle = 'rgba(235,228,255,.9)'; g.font = '12px sans-serif';
+    g.fillText(`${st.mic} · x=${st.x.toFixed(2)} · ${st.dist_in}"${st.angle_deg ? ' · 45°' : ''}`, 24, H - 26);
+}
+
+function rbCabRoomMicPx(safeId, entry) {
+    const st = _rbCabRoom[safeId];
+    if (st.micPx) return st.micPx;
+    const [cx, cy, r] = rbCabRoomLayout(entry)[0];
+    return [cx + st.x * r, cy];
+}
+
+function rbCabRoomEntry(gear) { return rbRealCabEntryFor(gear); }
+
+function rbCabRoomPointer(e, safeId, gear, isDown) {
+    if (!isDown && e.buttons !== 1) return;
+    const cv = e.currentTarget;
+    cv.setPointerCapture?.(e.pointerId);
+    const entry = rbCabRoomEntry(gear);
+    const st = _rbCabRoom[safeId];
+    if (!entry || !st) return;
+    const rect = cv.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (RB_CABROOM_W / rect.width);
+    const py = (e.clientY - rect.top) * (RB_CABROOM_H / rect.height);
+    // x = distancia radial al centro del parlante MÁS CERCANO / su radio
+    let best = null;
+    for (const [cx, cy, r] of rbCabRoomLayout(entry)) {
+        const d = Math.hypot(px - cx, py - cy) / r;
+        if (best === null || d < best) best = d;
+    }
+    st.x = Math.min(Math.max(best, 0.0), 1.0);
+    st.micPx = [Math.min(Math.max(px, 20), RB_CABROOM_W - 20),
+                Math.min(Math.max(py, 20), RB_CABROOM_H - 20)];
+    st._dirty = true;
+    rbCabRoomDraw(safeId, entry);
+}
+
+function rbCabRoomDrop(safeId, gear) {
+    const st = _rbCabRoom[safeId];
+    if (st && st._dirty) { st._dirty = false; rbCabRoomListen(safeId, gear); }
+}
+
+async function rbCabRoomSynth(safeId, gear, assign) {
+    const st = _rbCabRoom[safeId];
+    const status = document.getElementById(`rb-cabroom-status-${safeId}`);
+    if (status) status.textContent = '⏳ renderizando…';
+    const r = await fetch(`${window.RB_API}/cab/synthesize`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gear_type: gear, mic: st.mic, x: st.x,
+                               dist_in: st.dist_in, angle_deg: st.angle_deg,
+                               assign: !!assign }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    if (status) status.textContent = '';
+    return d;
+}
+
+window.rbCabRoomListen = async function (safeId, gear) {
+    try {
+        const d = await rbCabRoomSynth(safeId, gear, false);
+        await rbAuditionFile(d.name, 'ir', `rb-cabroom-play-${safeId}`);
+    } catch (e) {
+        const s = document.getElementById(`rb-cabroom-status-${safeId}`);
+        if (s) s.textContent = '✗ ' + (e.message || e);
+    }
+};
+
+window.rbCabRoomAssign = async function (safeId, gear) {
+    try {
+        const d = await rbCabRoomSynth(safeId, gear, true);
+        const s = document.getElementById(`rb-cabroom-status-${safeId}`);
+        if (s) s.textContent = `★ asignado a ${d.assigned} tono(s)`;
+    } catch (e) {
+        const s = document.getElementById(`rb-cabroom-status-${safeId}`);
+        if (s) s.textContent = '✗ ' + (e.message || e);
+    }
+};
+
+window.rbCabRoomSetMic = function (safeId, gear, mic) {
+    const st = _rbCabRoom[safeId];
+    if (!st) return;
+    st.mic = mic;
+    document.querySelectorAll(`#rb-cabroom-${safeId} .rb-cabroom-mic`).forEach(b => {
+        const on = b.dataset.mic === mic;
+        b.className = `rb-cabroom-mic px-2.5 py-1 rounded border text-xs ${on
+            ? 'bg-violet-700/60 text-violet-100 border-violet-500/60 font-semibold'
+            : 'bg-dark-800 text-gray-300 border-gray-700 hover:bg-violet-900/40'}`;
+    });
+    rbCabRoomDraw(safeId, rbCabRoomEntry(gear));
+    rbCabRoomListen(safeId, gear);
+};
+
+window.rbCabRoomSetDist = function (safeId, gear, v) {
+    const st = _rbCabRoom[safeId];
+    if (!st) return;
+    st.dist_in = parseFloat(v);
+    const lbl = document.getElementById(`rb-cabroom-dist-${safeId}`);
+    if (lbl) lbl.textContent = `${st.dist_in}"`;
+    rbCabRoomDraw(safeId, rbCabRoomEntry(gear));
+    clearTimeout(st._distT);
+    st._distT = setTimeout(() => rbCabRoomListen(safeId, gear), 400);
+};
+
+window.rbCabRoomToggleAngle = function (safeId, gear) {
+    const st = _rbCabRoom[safeId];
+    if (!st) return;
+    st.angle_deg = st.angle_deg ? 0 : 45;
+    const b = document.getElementById(`rb-cabroom-ang-${safeId}`);
+    if (b) b.className = `text-xs px-2.5 py-1 rounded border ${st.angle_deg
+        ? 'bg-violet-700/60 text-violet-100 border-violet-500/60'
+        : 'bg-dark-800 text-gray-400 border-gray-700'}`;
+    rbCabRoomDraw(safeId, rbCabRoomEntry(gear));
+    rbCabRoomListen(safeId, gear);
+};
+
 function rbAuditionGainForVariantLevel(level) {
     const TRIM_DB = {
         clean:    0,
@@ -11535,7 +11766,12 @@ function rbRenderGearDetail(g) {
             return `<button id="${vId}" onclick="rbAuditionFile('${rbEsc(v.ir_file).replace(/'/g,"\\'")}','ir','${vId}')"
                             class="text-[10px] px-2 py-0.5 rounded ${aud}">▶ ${rbEsc(v.label || v.suffix)}</button>`;
         }).join('')}</div>` : '';
-    const visualBlock = rbCatalogVisualForGear(g, 'large');
+    // Real Cab: los cabinets del catálogo muestran el CAB ROOM interactivo
+    // (canvas con mic arrastrable) en vez de la foto estática.
+    const cabRoomEntry = (g.category === 'cab') ? rbRealCabEntryFor(g.rs_gear) : null;
+    const visualBlock = cabRoomEntry
+        ? `<div id="rb-cabroom-${safeId}"></div>`
+        : rbCatalogVisualForGear(g, 'large');
 
     el.innerHTML = `<div class="bg-dark-700/40 border border-gray-800/50 rounded-xl p-4 space-y-4">
         <div class="flex items-start justify-between gap-3">
@@ -11570,6 +11806,9 @@ function rbRenderGearDetail(g) {
         rbOpenSelectedGearVst(g);
     }, 0);
 }
+    if (cabRoomEntry) {
+        setTimeout(() => rbCabRoomBuild(g, cabRoomEntry, safeId), 0);
+    }
 }
 
 function rbApplyGearFilters() {
