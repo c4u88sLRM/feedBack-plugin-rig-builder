@@ -178,6 +178,29 @@ _MOD12110_POINTS = [
 ]
 
 
+# Electro-Voice EVM-15L Pro-Line (speakers/EVM-15L Pro-line EDS.pdf, curva
+# en caja vented TL606). Fs=43 (free-air), Sd=855 cm². Plano y extendido
+# 80-1k, presencia suave 3-4k y cliff ~4.5k — el 15" full-range de EV.
+_EVM15L_POINTS = [
+    (50, 80.0), (60, 86.0), (80, 90.0), (100, 91.0), (150, 92.0), (200, 92.0),
+    (300, 92.0), (400, 92.5), (500, 92.5), (700, 93.0), (900, 93.0),
+    (1200, 93.5), (1600, 94.0), (2000, 94.5), (2500, 95.5), (3000, 96.5),
+    (3500, 97.0), (4200, 96.0), (5000, 92.0), (6000, 84.0), (7000, 79.0),
+    (8000, 76.0), (10000, 73.0), (12000, 72.0), (15000, 69.0), (20000, 65.0),
+]
+# Electro-Voice EVM12L (speakers/EVM12L Engineering Data Sheet.pdf, curva
+# 1W/1m en caja vented 1.3 ft³). El "classic lead guitar" de EV: 100 dB,
+# Fs=55, meseta alta 300-1k, punch 2-3k (~105) y cliff ~5.5k sin fizz.
+_EVM12L_POINTS = [
+    (60, 84.0), (80, 89.0), (100, 93.0), (150, 97.0), (200, 99.0),
+    (300, 100.0), (400, 100.5), (500, 101.0), (700, 101.5), (900, 102.0),
+    (1200, 102.5), (1600, 103.5), (2000, 104.5), (2500, 105.0), (3000, 104.5),
+    (3500, 103.5), (4200, 104.0), (5000, 105.0), (5500, 102.0), (6500, 90.0),
+    (7500, 80.0), (8500, 75.0), (10000, 72.0), (12000, 74.0), (15000, 73.0),
+    (20000, 68.0),
+]
+
+
 def _interp_points(points, f):
     pf = np.array([p[0] for p in points], float)
     pd = np.array([p[1] for p in points], float)
@@ -194,8 +217,8 @@ DRIVERS = {
     "c12n": lambda f: _interp_points(_C12N_POINTS, f),
     "p10q": lambda f: _interp_points(_P10Q_POINTS, f),
     "mod12110": lambda f: _interp_points(_MOD12110_POINTS, f),
-    # TODO datasheet EVM15L (Electro-Voice 15" del Mesa 2x15) — proxy g12h
-    "evm15l": lambda f: _interp_points(_G12H_POINTS, f),
+    "evm15l": lambda f: _interp_points(_EVM15L_POINTS, f),
+    "evm12l": lambda f: _interp_points(_EVM12L_POINTS, f),
 }
 
 

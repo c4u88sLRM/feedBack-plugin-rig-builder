@@ -93,14 +93,15 @@
       ]
     },
     "Cab_CA112C": {
-      "speaker": "v30",
+      "speaker": "evm12l",
       "drivers": 1,
       "size_in": 12,
       "back": "open",
       "baffle_m": 0.5,
-      "speaker_confidence": "medium",
+      "speaker_confidence": "high",
       "name": "Silla 1x12",
       "speakers": [
+        "evm12l",
         "v30",
         "g12t75"
       ]
