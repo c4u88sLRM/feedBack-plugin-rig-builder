@@ -4022,7 +4022,7 @@ function rbRenderStudioRoom() {
         if (i > 0) {
             const s = extraSlots[i - 1];
             cls += ' rb-amp-extra';
-            if (s) style = ` style="left:${s.left};bottom:${s.bottom};width:${s.w}px;transform:translateX(-50%) rotateY(${s.ry}deg) translateZ(${s.tz}px)"`;
+            if (s) style = ` style="left:${s.left};bottom:${s.bottom};width:calc(${s.w}px * var(--rb-scale,1));transform:translateX(-50%) rotateY(${s.ry}deg) translateZ(calc(${s.tz}px * var(--rb-scale,1)))"`;
         }
         return `<div class="${cls}" data-amp-idx="${entry.idx}"${style}
                      onclick="rbStudioClickAmp(${entry.idx})" title="${rbEsc(nm)} — click to zoom in">
@@ -4038,7 +4038,7 @@ function rbRenderStudioRoom() {
         const s = extraSlots[i];
         if (!s) return '';
         return `<div class="rb-amp-ground rb-amp-ground-extra"
-                     style="left:${s.left};top:78%;width:${Math.round(178 * s.w / 168)}px;transform:translateX(-50%) rotateX(66deg)"></div>`;
+                     style="left:${s.left};top:78%;width:calc(${Math.round(178 * s.w / 168)}px * var(--rb-scale,1));transform:translateX(-50%) rotateX(66deg)"></div>`;
     }).join('');
 
     // Rack tower on a table (right side), angled to point left + slightly frontal.
@@ -4157,13 +4157,16 @@ function rbStudioTintPedalEdges() {
 // (room height at 1080p); LINEAR — NO floor at 1.0, because that floor stopped
 // the gear shrinking when you zoomed in (Ctrl +), so the gear/rack blew up out
 // of proportion with the room. Wide clamp [0.4, 3.0] is just a sanity bound.
-const RB_STUDIO_REF_H = 1021;   // reference ROOM height (~1080p viewport minus the ~59px topbar)
+// Reference room height: LOWER than the actual 1080p room (~1021) so the gear
+// runs a bit bigger at every size — the tuned baseline read "too small". This
+// is the one knob to grow/shrink ALL studio gear uniformly.
+const RB_STUDIO_REF_H = 900;
 function rbStudioApplyScale() {
     const room = document.getElementById('rb-studio-room');
     if (!room) return;
     const h = room.clientHeight || room.getBoundingClientRect().height || window.innerHeight || 0;
     if (!h) return;
-    const scale = Math.max(0.4, Math.min(3.0, h / RB_STUDIO_REF_H));
+    const scale = Math.max(0.5, Math.min(3.0, h / RB_STUDIO_REF_H));
     room.style.setProperty('--rb-scale', scale.toFixed(3));
 }
 if (!window.__rbStudioScaleHook) {

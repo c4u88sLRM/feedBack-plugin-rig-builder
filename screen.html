@@ -457,15 +457,15 @@
        would flatten it and make the table's 3D faces vanish */
     .rb-rack-zone.rb-rack-empty:hover .rb-rack-placeholder{ color:var(--rb-accent); border-color:var(--rb-accent); }
     /* a long WOODEN desk: a top slab (front edge + horizontal top surface) on legs */
-    .rb-rack-table{ position:absolute; left:0; right:0; bottom:0; height:92px; transform-style:preserve-3d; }
+    .rb-rack-table{ position:absolute; left:0; right:0; bottom:0; height:calc(92px * var(--rb-scale,1)); transform-style:preserve-3d; }
     /* front edge of the top (the thickness seen straight on) — wood */
-    .rb-rack-tabletop{ position:absolute; left:-4%; right:-4%; bottom:76px; height:14px; transform-style:preserve-3d;
+    .rb-rack-tabletop{ position:absolute; left:-4%; right:-4%; bottom:calc(76px * var(--rb-scale,1)); height:calc(14px * var(--rb-scale,1)); transform-style:preserve-3d;
         background:
             repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 1px, transparent 1px 26px),
             linear-gradient(180deg,#5e4124,#3a2614);
         border-radius:2px; box-shadow:0 14px 26px rgba(0,0,0,.5); }
     /* the horizontal TOP surface (wood planks), lying flat, extending back */
-    .rb-rack-tabletop::before{ content:""; position:absolute; left:0; right:0; bottom:100%; height:64px;
+    .rb-rack-tabletop::before{ content:""; position:absolute; left:0; right:0; bottom:100%; height:calc(64px * var(--rb-scale,1));
         transform-origin:bottom center; transform:rotateX(90deg);
         background:
             repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 2px, transparent 2px 30px),
@@ -474,23 +474,23 @@
     /* thin dark underside */
     .rb-rack-tabletop::after{ content:""; position:absolute; left:0; right:0; top:100%; height:5px;
         background:#241809; }
-    .rb-rack-leg{ position:absolute; bottom:0; height:78px; width:13px;
+    .rb-rack-leg{ position:absolute; bottom:0; height:calc(78px * var(--rb-scale,1)); width:calc(13px * var(--rb-scale,1));
         background:linear-gradient(90deg,#5a3d22,#2a1c0e);
         border-radius:0 0 2px 2px; box-shadow:2px 7px 11px rgba(0,0,0,.5); }
-    .rb-rack-leg-back{ transform:translateZ(-60px); filter:brightness(.6); }
+    .rb-rack-leg-back{ transform:translateZ(calc(-60px * var(--rb-scale,1))); filter:brightness(.6); }
     /* rack tower sits on the FAR end of the desk (near end left open) */
-    .rb-rack-stack{ position:absolute; left:4%; width:56%; bottom:90px; display:flex; flex-direction:column-reverse;
+    .rb-rack-stack{ position:absolute; left:4%; width:56%; bottom:calc(90px * var(--rb-scale,1)); display:flex; flex-direction:column-reverse;
         align-items:center; gap:2px; transform-style:preserve-3d; }
     /* each rack is its own 3D box: a right SIDE face + a TOP face give it depth.
        The box hugs its image (capped height) so a tall/portrait rack like the
        G-550 EQ stays a thin, short unit instead of towering. */
     .rb-rack{ max-width:100%; cursor:pointer; position:relative; border-radius:2px;
         transform-style:preserve-3d; transition:filter .2s; box-shadow:0 2px 7px rgba(0,0,0,.55); }
-    .rb-rack::after{ content:""; position:absolute; top:0; bottom:0; right:0; width:44px;
+    .rb-rack::after{ content:""; position:absolute; top:0; bottom:0; right:0; width:calc(44px * var(--rb-scale,1));
         transform-origin:right center; transform:rotateY(-90deg);
         background:linear-gradient(90deg,#2b2f35,#0a0b0d);
         box-shadow:inset 0 0 16px rgba(0,0,0,.5); }
-    .rb-rack::before{ content:""; position:absolute; left:0; right:0; bottom:100%; height:44px;
+    .rb-rack::before{ content:""; position:absolute; left:0; right:0; bottom:100%; height:calc(44px * var(--rb-scale,1));
         transform-origin:bottom center; transform:rotateX(90deg);
         background:linear-gradient(180deg,#3a3f47,#16191d); }
     /* hover brightens the FACES only — a filter on the preserve-3d .rb-rack would
