@@ -62,6 +62,15 @@
     /* When a song's tonebar is shown it covers the top strip — drop the Advanced
        button below it so it stays reachable while a song is loaded. */
     #rb-stage-wrap.rb-songbar-on .rb-studio-adv-btn{ top:58px; }
+    /* Gear focus (amp/pedal/rack editor open, catalog on the right): hide the
+       floating "⚙ Advanced" button AND the song-tones bar. The focus bar's
+       "← Room" back button sits at top:0/z-index:7, but the tonebar is at
+       top:0/z-index:25 and was covering it. Both auto-restore on close — the
+       focus class drops off #rb-studio-room, so no JS teardown needed. */
+    #rb-stage-wrap:has(#rb-studio-room.rb-focus-active) .rb-studio-adv-btn,
+    #rb-stage-wrap:has(#rb-studio-room.rb-pfocus) .rb-studio-adv-btn,
+    #rb-stage-wrap:has(#rb-studio-room.rb-focus-active) .rb-song-tonebar,
+    #rb-stage-wrap:has(#rb-studio-room.rb-pfocus) .rb-song-tonebar{ display:none !important; }
     .rb-topbar-back:hover{ color:#fff; background:rgba(255,255,255,.12); }
     .rb-songbtn{ margin-left:auto; flex:0 0 auto; border:1px solid rgba(120,170,240,.3); border-radius:9px;
         padding:7px 13px; font-size:13px; color:#dbe4f2; background:rgba(120,160,220,.16); cursor:pointer;
