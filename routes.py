@@ -415,12 +415,13 @@ def _final_leveler_vst_path() -> Path | None:
     return p if p.exists() else None
 
 
-# Gear auditions play a single RAW amp/pedal at an unknown level, so the leveler
-# clamps much harder than for a finished tone — testing gear must never deafen
-# you. Tunable safety knobs (only applied when audition=True):
-_AUDITION_TARGET_LUFS = -20.0   # quieter AGC target than the tone default (−14)
-_AUDITION_CEILING_DB = -8.0     # lower peak cap than the tone default (−1)
-_AUDITION_MAX_CUT_DB = 30.0     # let the AGC pull very loud gear all the way down
+# Gear auditions play a single RAW amp/pedal at an unknown level. The leveler's
+# AGC NORMALISES it to a fixed target, so a loud amp can't deafen you (it gets
+# pulled down) and a quiet one is still audible (pulled up). Target sits a touch
+# ABOVE the −14 LUFS song loudness so previews read clearly. Tunable knobs (only
+# applied when audition=True):
+_AUDITION_TARGET_LUFS = -12.0   # a bit above the −14 song target — clearly audible, still controlled
+_AUDITION_MAX_CUT_DB = 30.0     # enough cut for the AGC to pull very loud gear down to that target
 
 
 def _final_leveler_params_state(gate_db_override: float | None = None,
@@ -476,10 +477,9 @@ def _final_leveler_params_state(gate_db_override: float | None = None,
     trim = chain_vol_db + float(s.get("final_leveler_trim_db", 0.0))
 
     if audition:
-        target_rms = min(target_rms, _AUDITION_TARGET_LUFS)
-        ceiling = min(ceiling, _AUDITION_CEILING_DB)
+        target_rms = _AUDITION_TARGET_LUFS      # FIXED preview level (not the tone target)
         max_cut = max(max_cut, _AUDITION_MAX_CUT_DB)
-        trim = min(trim, 0.0)   # never let the makeup/output trim BOOST an audition
+        trim = min(trim, 0.0)                   # never let the makeup/output trim BOOST a preview
 
     params = {
         "Target RMS dB":  norm(target_rms, -30.0, -6.0),
