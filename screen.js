@@ -11076,6 +11076,11 @@ async function rbLoadRealCabCatalog() {
     } catch (_) { /* sin catálogo = foto estática */ }
 }
 
+const RB_SPEAKER_LABELS = {
+    g12m: 'Greenback G12M', blue: 'Alnico Blue', v30: 'Vintage 30',
+    g12t75: 'G12T-75', g12h: 'G12H', c12n: 'Jensen C12N', p10q: 'Jensen P10Q',
+};
+
 const RB_CABROOM_W = 560, RB_CABROOM_H = 340;
 
 function rbCabRoomLayout(entry) {
@@ -11090,7 +11095,8 @@ function rbCabRoomBuild(g, entry, safeId) {
     const box = document.getElementById(`rb-cabroom-${safeId}`);
     if (!box) return;
     const st = _rbCabRoom[safeId] = _rbCabRoom[safeId]
-        || { mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0, micPx: null };
+        || { mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0, micPx: null,
+             speaker: (entry.speakers && entry.speakers[0]) || entry.speaker };
     const mics = [['sm57', 'Dynamic 57'], ['md421', 'MD421'], ['km84', 'KM84'],
                   ['r121', 'Ribbon R121'], ['tlm103', 'Condenser'], ['tube', 'Tube']];
     const micBtns = mics.map(([k, lbl]) =>
@@ -11101,13 +11107,22 @@ function rbCabRoomBuild(g, entry, safeId) {
     box.innerHTML = `
         <div class="bg-dark-800/60 border border-gray-800/50 rounded-lg p-3 space-y-2">
             <div class="flex items-center gap-2">
-                <span class="text-sm text-violet-300 font-medium">🎙 Cab Room</span>
-                <span class="text-[11px] text-gray-500">arrastra el micrófono — se escucha al soltar · ${rbEsc(entry.speaker)} ${entry.drivers}x${entry.size_in} ${entry.back === 'closed' ? 'cerrado' : 'open-back'}</span>
+                <span class="text-sm text-violet-300 font-medium">🎙 ${rbEsc(entry.name || 'Cab Room')}</span>
+                <span class="text-[11px] text-gray-500">arrastra el micrófono — se escucha al soltar · ${entry.drivers}x${entry.size_in} ${entry.back === 'closed' ? 'cerrado' : 'open-back'}</span>
             </div>
             <canvas id="rb-cabroom-cv-${safeId}" width="${RB_CABROOM_W}" height="${RB_CABROOM_H}"
                     class="rounded-lg border border-gray-800 cursor-crosshair w-full"
                     style="touch-action:none;"></canvas>
             <div class="flex items-center gap-1.5 flex-wrap">${micBtns}</div>
+            ${(entry.speakers && entry.speakers.length > 1) ? `
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[11px] text-gray-500">parlante:</span>
+                ${entry.speakers.map(sp =>
+                    `<button data-spk="${sp}" onclick="rbCabRoomSetSpeaker('${safeId}','${g.rs_gear}','${sp}')"
+                             class="rb-cabroom-spk px-2.5 py-1 rounded border text-xs ${st.speaker === sp
+                                 ? 'bg-amber-700/60 text-amber-100 border-amber-500/60 font-semibold'
+                                 : 'bg-dark-800 text-gray-300 border-gray-700 hover:bg-amber-900/40'}">${RB_SPEAKER_LABELS[sp] || sp}</button>`).join(' ')}
+            </div>` : ''}
             <div class="flex items-center gap-2">
                 <span class="text-[11px] text-gray-500 whitespace-nowrap">distancia</span>
                 <input type="range" min="0" max="6" step="0.5" value="${st.dist_in}"
@@ -11218,6 +11233,7 @@ async function rbCabRoomSynth(safeId, gear, assign) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gear_type: gear, mic: st.mic, x: st.x,
                                dist_in: st.dist_in, angle_deg: st.angle_deg,
+                               speaker: st.speaker || undefined,
                                assign: !!assign }),
     });
     const d = await r.json();
@@ -11245,6 +11261,19 @@ window.rbCabRoomAssign = async function (safeId, gear) {
         const s = document.getElementById(`rb-cabroom-status-${safeId}`);
         if (s) s.textContent = '✗ ' + (e.message || e);
     }
+};
+
+window.rbCabRoomSetSpeaker = function (safeId, gear, sp) {
+    const st = _rbCabRoom[safeId];
+    if (!st) return;
+    st.speaker = sp;
+    document.querySelectorAll(`#rb-cabroom-${safeId} .rb-cabroom-spk`).forEach(b => {
+        const on = b.dataset.spk === sp;
+        b.className = `rb-cabroom-spk px-2.5 py-1 rounded border text-xs ${on
+            ? 'bg-amber-700/60 text-amber-100 border-amber-500/60 font-semibold'
+            : 'bg-dark-800 text-gray-300 border-gray-700 hover:bg-amber-900/40'}`;
+    });
+    rbCabRoomListen(safeId, gear);
 };
 
 window.rbCabRoomSetMic = function (safeId, gear, mic) {
@@ -11776,7 +11805,7 @@ function rbRenderGearDetail(g) {
     el.innerHTML = `<div class="bg-dark-700/40 border border-gray-800/50 rounded-xl p-4 space-y-4">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-                <h3 class="text-white text-xl font-semibold leading-tight break-words">${rbEsc(g.real_name || g.rs_gear)}</h3>
+                <h3 class="text-white text-xl font-semibold leading-tight break-words">${rbEsc((cabRoomEntry && cabRoomEntry.name) || g.real_name || g.rs_gear)}</h3>
                 <div class="text-xs text-gray-500 mt-1">
                     ${rbEsc(g.rs_gear)} · ${rbEsc(RB_GEAR_LABEL[g.category] || g.category || 'gear')} · ${rbEsc(instrument === 'all' ? 'all instruments' : instrument)}
                 </div>

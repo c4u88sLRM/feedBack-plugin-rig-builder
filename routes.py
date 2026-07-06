@@ -8216,6 +8216,13 @@ def setup(app, context):
         out_dir = _config_dir / "nam_irs" / "realcab"
         out_dir.mkdir(parents=True, exist_ok=True)
         spk = entry.get("speaker", "g12m")
+        # override de parlante (el Cab Room deja elegir entre entry.speakers)
+        req_spk = str(data.get("speaker") or "").strip()
+        if req_spk:
+            allowed = entry.get("speakers") or [spk]
+            if req_spk not in allowed:
+                return JSONResponse({"error": f"speaker {req_spk} not offered for {base_gear}"}, 400)
+            spk = req_spk
         fname = (f"realcab_{spk}_{entry.get('drivers', 1)}x{entry.get('size_in', 12)}"
                  f"{'c' if entry.get('back') == 'closed' else 'o'}_{mic}"
                  f"_x{int(round(x * 100)):03d}_d{int(round(dist_in * 10)):03d}"

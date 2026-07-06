@@ -150,6 +150,20 @@ _C12N_POINTS = [
 ]
 
 
+# Jensen P10Q (speakers/Jensen P10Q.pdf, curva 8Ω en baffle IEC).
+# 10" ALNICO del Fender Bassman 4x10. Fs≈90, 93.8 dB, cono 330 cm².
+# Firma: hump 100-150 Hz, medios declinando suave, pico de presencia
+# 105-107 @3.5-4k y caída con notches >4.5k (el sparkle alnico de 10").
+_P10Q_POINTS = [
+    (50, 65.0), (70, 74.0), (90, 92.0), (100, 100.0), (120, 101.0),
+    (150, 100.5), (200, 98.5), (300, 97.5), (400, 97.0), (500, 96.5),
+    (700, 95.5), (900, 95.0), (1200, 95.5), (1600, 96.0), (2000, 97.0),
+    (2500, 100.0), (3000, 104.0), (3500, 106.0), (4000, 105.5), (4500, 102.0),
+    (5000, 97.0), (6000, 88.0), (7000, 82.0), (8000, 85.0), (9000, 80.0),
+    (10000, 78.0), (12000, 80.0), (15000, 74.0), (20000, 68.0),
+]
+
+
 def _interp_points(points, f):
     pf = np.array([p[0] for p in points], float)
     pd = np.array([p[1] for p in points], float)
@@ -164,6 +178,7 @@ DRIVERS = {
     "g12t75": lambda f: _interp_points(_G12T75_POINTS, f),
     "g12h": lambda f: _interp_points(_G12H_POINTS, f),
     "c12n": lambda f: _interp_points(_C12N_POINTS, f),
+    "p10q": lambda f: _interp_points(_P10Q_POINTS, f),
 }
 
 
