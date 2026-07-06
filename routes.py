@@ -7467,6 +7467,25 @@ def setup(app, context):
         each tone's gate stays its own (not the last-loaded tone's)."""
         return {"gate": _preset_gate(_resolve_tone_preset_id(source, name))}
 
+    @app.post("/api/plugins/rig_builder/tone_gate")
+    def set_tone_gate(data: dict = Body(...)):
+        """Persist ONLY the per-tone noise gate for the tone identified by
+        {source, name} + a `gate` object — decoupled from chain saves so an
+        audition re-save can't clobber it. 404 when the tone has no preset yet
+        (the client saves the chain first, then retries)."""
+        pid = _resolve_tone_preset_id(data.get("source", ""), data.get("name", ""))
+        if pid is None:
+            return JSONResponse({"error": "tone not saved yet"}, 404)
+        gk = _gate_kwargs_from(data)
+        cols = [c for c in ("gate_threshold", "gate_enabled", "gate_release", "gate_depth") if c in gk]
+        if cols:
+            sets = ", ".join(f"{c}=?" for c in cols)
+            args = [gk[c] for c in cols] + [pid]
+            with _lock:
+                _get_conn().execute(f"UPDATE presets SET {sets} WHERE id=?", args)
+                _get_conn().commit()
+        return {"ok": True, "gate": _preset_gate(pid)}
+
     @app.post("/api/plugins/rig_builder/default_tone/save")
     def save_default_tone(data: dict = Body(...)):
         """Persist the default tone chain. Body: `{pieces: [...]}` — same

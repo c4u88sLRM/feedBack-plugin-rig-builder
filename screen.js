@@ -3917,7 +3917,7 @@ function rbStudioPersist() {
         try {
             p = fetch(`${window.RB_API}/saved_tone/save`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: v.name, pieces: rbStudioChainToPayload(rbStudioCurrentChain()), gate: rbGateForSave() }),
+                body: JSON.stringify({ name: v.name, pieces: rbStudioChainToPayload(rbStudioCurrentChain()) }),
             }).then(async (r) => {
                 // Surface backend rejections (mirrors rbPersistTone) — a silent
                 // 4xx/5xx here looked like a successful save.
@@ -8392,8 +8392,7 @@ async function rbPersistMasterChain(role) {
     // role); master pre/post POST to the two-half master endpoint.
     const isDefault = role === 'default';
     const url  = isDefault ? `${window.RB_API}/default_tone/save` : `${window.RB_API}/master_chain/save`;
-    // The default tone carries a per-tone gate; master pre/post don't.
-    const body = isDefault ? { pieces, gate: rbGateForSave() } : { role, pieces };
+    const body = isDefault ? { pieces } : { role, pieces };
     const what = isDefault ? 'default tone' : `master ${role}`;
     try {
         const r = await fetch(url, {
@@ -10549,7 +10548,11 @@ async function rbPersistTone(toneIdx, filename) {
         tone_key: tone.key || tone.name,
         name: `${filename}::${tone.key || tone.name}`,
         pieces,
-        gate: rbGateForSave(),
+        // NOTE: the gate is NOT sent here on purpose. This runs on every tone
+        // audition (rbStudioLoadMonitor), and rbState._toneGate lags the switch,
+        // so sending it would write the PREVIOUS tone's gate onto this one. The
+        // gate is persisted separately via POST /tone_gate (rbSaveToneGate); the
+        // COALESCE UPSERT preserves the stored gate when it's absent here.
     };
     try {
         const r = await fetch(`${window.RB_API}/save_preset`, {
@@ -13720,7 +13723,8 @@ function rbAdvGateSyncUI() {
     const wrap = document.getElementById('rb-adv-gate-params');
     if (wrap) wrap.style.opacity = g.enabled ? '1' : '0.45';
 }
-// User edited the gate controls in the Advanced tab → apply live + persist.
+// User edited the gate controls in the Advanced tab → apply live + persist the
+// gate ONLY (via the dedicated endpoint, NOT a chain save).
 function rbAdvGateChange() {
     const en = document.getElementById('rb-adv-gate-enable');
     const val = id => { const el = document.getElementById(id); return el ? el.value : null; };
@@ -13729,7 +13733,30 @@ function rbAdvGateChange() {
         threshold: val('rb-adv-gate-threshold'),
         release: val('rb-adv-gate-release'),
         depth: val('rb-adv-gate-depth'),
-    }, { persist: true });
+    }, {});                 // apply to engine + UI; gate persistence is separate
+    rbSaveToneGate();
+}
+// Persist ONLY the gate to the current tone, DECOUPLED from chain saves — an
+// audition re-save (rbStudioLoadMonitor → rbPersistTone) must never carry the
+// gate, or it would write the previous tone's (stale) gate onto this one.
+async function rbSaveToneGate() {
+    const id = rbCurrentToneIdentity();
+    const gate = rbGateForSave();
+    const post = () => fetch(`${window.RB_API}/tone_gate`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: id.source, name: id.name, gate }),
+    });
+    try {
+        const r = await post();
+        if (r && r.status === 404) {
+            // No saved preset for this tone yet — save its chain first (creates
+            // the preset; the COALESCE UPSERT leaves the gate untouched), then
+            // retry the gate write.
+            try { await rbStudioPersist(); } catch (_) {}
+            if (rbState._studioPersistPromise) { try { await rbState._studioPersistPromise; } catch (_) {} }
+            await post();
+        }
+    } catch (_) {}
 }
 // Identity of the tone the Studio is showing, for the /tone_gate lookup.
 function rbCurrentToneIdentity() {
