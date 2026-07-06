@@ -18,6 +18,11 @@
 #define DISTRHO_PLUGIN_NUM_OUTPUTS   2
 #define DISTRHO_PLUGIN_WANT_PROGRAMS 0
 #define DISTRHO_PLUGIN_WANT_STATE    0
-#define DISTRHO_PLUGIN_VST3_CATEGORIES "Instrument|Synth"
+// MUST stay an "Fx" category: this is an input-processing stompbox (it
+// pitch-tracks the bass DI), not a MIDI instrument. Declaring it
+// "Instrument|Synth" made the effects host classify it as a VSTi and
+// skip it / not route the DI into it — i.e. the pedal "did nothing".
+// Every other pedal (incl. the pitch ones, e.g. bass_sub_octave) is "Fx|…".
+#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Pitch"
 
 #endif // DISTRHO_PLUGIN_INFO_H_INCLUDED
