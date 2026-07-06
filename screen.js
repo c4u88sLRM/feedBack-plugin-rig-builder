@@ -4151,21 +4151,19 @@ function rbStudioTintPedalEdges() {
 // pedals, racks, knobs) is authored in FIXED px, tuned at a ~1080p viewport, so
 // on a taller viewport it stayed the same physical size and read as tiny.
 // Expose a uniform --rb-scale that the gear CSS multiplies its px dimensions by.
-// Driven by the ROOM's OWN rendered height, not window.innerHeight — the gear
-// lives inside the room, so tying its size to the room keeps it a consistent
-// fraction of the room no matter how the room got sized (resolution, window
-// size, and crucially the host's "interface size" / zoom). Using the raw
-// viewport left the gear tiny in a zoomed-up room (1440p + "extra large
-// interface size"). Reference is the room height at 1080p (viewport − topbar);
-// clamped [1, 2.6] so ≤1080p is byte-for-byte unchanged and it grows on taller
-// rooms (1440p → ~1.35×, 4K → ~2×).
+// Driven by the ROOM's OWN rendered height so the gear is always the SAME
+// FRACTION of the room, no matter how the room got sized (resolution, window
+// size, host "interface size", and Ctrl +/- page zoom). scale = roomHeight /
+// (room height at 1080p); LINEAR — NO floor at 1.0, because that floor stopped
+// the gear shrinking when you zoomed in (Ctrl +), so the gear/rack blew up out
+// of proportion with the room. Wide clamp [0.4, 3.0] is just a sanity bound.
 const RB_STUDIO_REF_H = 1021;   // reference ROOM height (~1080p viewport minus the ~59px topbar)
 function rbStudioApplyScale() {
     const room = document.getElementById('rb-studio-room');
     if (!room) return;
     const h = room.clientHeight || room.getBoundingClientRect().height || window.innerHeight || 0;
     if (!h) return;
-    const scale = Math.max(1, Math.min(2.6, h / RB_STUDIO_REF_H));
+    const scale = Math.max(0.4, Math.min(3.0, h / RB_STUDIO_REF_H));
     room.style.setProperty('--rb-scale', scale.toFixed(3));
 }
 if (!window.__rbStudioScaleHook) {
@@ -14009,25 +14007,60 @@ function rbAdvPaletteRender() {
         const thumb = img
             ? `<img src="${img}" alt="" draggable="false" onerror="this.style.display='none'">`
             : `<span class="rb-adv-pal-ph">${rbAdvGearInitials(g)}</span>`;
-        return `<div class="rb-adv-pal-item" draggable="true"
+        return `<div class="rb-adv-pal-item" draggable="false"
                      data-adv-gear="${rbEsc(g.rs_gear)}" data-adv-cat="${cat}" data-adv-name="${name}">
                     <div class="rb-adv-pal-thumb">${thumb}</div>
                     <div class="rb-adv-pal-name">${name}</div>
                 </div>`;
     }).join('');
     host.querySelectorAll('.rb-adv-pal-item').forEach(el => {
-        el.addEventListener('dragstart', ev => {
-            const payload = JSON.stringify({
-                rs_gear: el.dataset.advGear, cat: el.dataset.advCat, name: el.dataset.advName,
-            });
-            ev.dataTransfer.setData('text/rb-adv-gear', payload);
-            // Windows/Chromium can drop custom MIME types mid-drag; text/plain is
-            // always preserved, so carry the same payload there as a fallback.
-            ev.dataTransfer.setData('text/plain', payload);
-            ev.dataTransfer.effectAllowed = 'copy';
-            console.log('[rb-adv] palette dragstart:', el.dataset.advName);
+        // MOUSE-based drag, NOT HTML5 drag-and-drop — Electron's webview drops
+        // custom dataTransfer payloads mid-drag, so amps/VSTs often couldn't be
+        // dragged onto the graph at all. Press and drag a gear onto the canvas
+        // to drop it where you release; a plain click drops it at a tidy spot.
+        // Either way the new node is draggable afterwards.
+        el.addEventListener('mousedown', ev => {
+            if (ev.button !== 0) return;
+            ev.preventDefault();   // block native drag / text selection
+            const data = { rs_gear: el.dataset.advGear, cat: el.dataset.advCat, name: el.dataset.advName };
+            rbAdvStartPaletteDrag(data, ev);
         });
     });
+}
+
+// Pointer-drag a palette gear onto the node canvas. A ghost follows the cursor;
+// release over the canvas drops the node there, release without moving (a plain
+// click) drops it at a tidy default spot, release off-canvas cancels.
+function rbAdvStartPaletteDrag(data, downEv) {
+    const canvas = document.getElementById('rb-adv-canvas');
+    if (!canvas) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'rb-adv-drag-ghost';
+    ghost.textContent = data.name || data.rs_gear;
+    const place = (x, y) => { ghost.style.left = x + 'px'; ghost.style.top = y + 'px'; };
+    place(downEv.clientX, downEv.clientY);
+    document.body.appendChild(ghost);
+    let moved = false;
+    const move = e => {
+        if (Math.abs(e.clientX - downEv.clientX) > 3 || Math.abs(e.clientY - downEv.clientY) > 3) moved = true;
+        place(e.clientX, e.clientY);
+    };
+    const up = e => {
+        document.removeEventListener('mousemove', move, true);
+        document.removeEventListener('mouseup', up, true);
+        try { ghost.remove(); } catch (_) {}
+        const r = canvas.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if (moved && inside) {
+            const p = rbAdvLayerPointXY(e.clientX, e.clientY);
+            rbAdvAddGearNode(data, p.x - 64, p.y - 46);
+        } else if (!moved) {
+            const n = rbAdvState().nodes.filter(nd => nd.kind === 'gear').length;
+            rbAdvAddGearNode(data, 40 + (n % 5) * 150, 60 + Math.floor(n / 5) * 96);
+        }
+    };
+    document.addEventListener('mousemove', move, true);
+    document.addEventListener('mouseup', up, true);
 }
 
 // ── Canvas render ───────────────────────────────────────────────────────
@@ -14419,11 +14452,13 @@ async function rbAdvDeleteNode(id) {
     } catch (_) {}
 }
 
-function rbAdvLayerPoint(ev) {
+function rbAdvLayerPoint(ev) { return rbAdvLayerPointXY(ev.clientX, ev.clientY); }
+function rbAdvLayerPointXY(clientX, clientY) {
     const layer = document.getElementById('rb-adv-nodes');
+    if (!layer) return { x: 0, y: 0 };
     const r = layer.getBoundingClientRect();
     const z = rbAdvState().zoom || 1;   // rect is the scaled box → back out the zoom
-    return { x: (ev.clientX - r.left) / z, y: (ev.clientY - r.top) / z };
+    return { x: (clientX - r.left) / z, y: (clientY - r.top) / z };
 }
 
 function rbAdvStartNodeDrag(ev, nodeId) {
@@ -14612,24 +14647,35 @@ function rbAdvBindCanvasOnce() {
                     'custom?', !!custom, 'plain?', !!plain);
         let data; try { data = JSON.parse(custom || plain); } catch (_) { return; }
         if (!data) { console.warn('[rb-adv] canvas drop: no usable payload — ADD failed (DnD payload lost)'); return; }
-        const adv = rbAdvState();
         const p = rbAdvLayerPoint(ev);
-        const id = Math.max(0, ...adv.nodes.map(n => n.id)) + 1;
-        // Resolve the gear's VST face from the catalog (copyright-free) — never
-        // the RS gear photo that came off the drag payload.
-        const lookup = ((rbState.gearCatalog && rbState.gearCatalog[data.cat]) || [])
-            .find(x => x.rs_gear === data.rs_gear) || null;
-        const node = {
-            id, kind: 'gear', pieceIdx: -1, rsGear: data.rs_gear,
-            label: data.name || data.rs_gear, kindLabel: data.cat,
-            img: rbAdvGearImg(lookup) || null,
-            x: Math.max(0, p.x - 64), y: Math.max(0, p.y - 46),
-            stereoOut: rbAdvCatalogCanStereoOut(lookup),
-        };
-        adv.nodes.push(node);
-        rbAdvRenderCanvas();
-        rbAdvMaterializeGear(node).catch(() => {});
+        rbAdvAddGearNode(data, p.x - 64, p.y - 46);
     });
+}
+
+// Add a gear node to the graph at (x,y) in layer coords and materialise it into
+// the current tone's chain. Shared by the palette drop AND the palette CLICK —
+// HTML5 drag-and-drop is flaky in the Electron webview (custom MIME types get
+// dropped mid-drag on Windows/Chromium), so a plain click is the reliable way
+// to add an amp/pedal/rack/VST to the node graph.
+function rbAdvAddGearNode(data, x, y) {
+    if (!data || !data.rs_gear) return null;
+    const adv = rbAdvState();
+    const id = Math.max(0, ...adv.nodes.map(n => n.id)) + 1;
+    // Resolve the gear's VST face from the catalog (copyright-free) — never the
+    // RS gear photo that came off the drag payload.
+    const lookup = ((rbState.gearCatalog && rbState.gearCatalog[data.cat]) || [])
+        .find(g => g.rs_gear === data.rs_gear) || null;
+    const node = {
+        id, kind: 'gear', pieceIdx: -1, rsGear: data.rs_gear,
+        label: data.name || data.rs_gear, kindLabel: data.cat,
+        img: rbAdvGearImg(lookup) || null,
+        x: Math.max(0, x), y: Math.max(0, y),
+        stereoOut: rbAdvCatalogCanStereoOut(lookup),
+    };
+    adv.nodes.push(node);
+    rbAdvRenderCanvas();
+    rbAdvMaterializeGear(node).catch(() => {});
+    return node;
 }
 
 // Turn a palette-dropped node into a REAL piece on the current Studio chain so

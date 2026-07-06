@@ -755,6 +755,11 @@
     .rb-adv-palette-list{ flex:1 1 auto; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:6px; }
     .rb-adv-pal-item{ display:flex; align-items:center; gap:9px; padding:6px 8px; border-radius:10px; cursor:grab;
         background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); transition:background .15s, border-color .15s; }
+    .rb-adv-pal-item:active{ cursor:grabbing; }
+    /* ghost that follows the cursor while dragging a palette gear onto the canvas */
+    .rb-adv-drag-ghost{ position:fixed; z-index:9999; pointer-events:none; transform:translate(-50%,-50%);
+        padding:6px 12px; border-radius:9px; font-size:12.5px; font-weight:600; color:#eaf1fb; white-space:nowrap;
+        background:rgba(48,72,118,.94); border:1px solid rgba(120,170,240,.6); box-shadow:0 6px 18px rgba(0,0,0,.5); }
     .rb-adv-pal-item:hover{ background:rgba(120,160,220,.14); border-color:rgba(120,170,240,.4); }
     .rb-adv-pal-item:active{ cursor:grabbing; }
     .rb-adv-pal-thumb{ flex:0 0 auto; width:52px; height:34px; border-radius:6px; overflow:hidden; background:#0b0d12;
@@ -1101,7 +1106,7 @@
             </aside>
             <div class="rb-adv-main">
                 <div class="rb-adv-toolbar">
-                    <span class="rb-adv-hint">Drag gear in · wire M by default · stereo pedals also expose L/R outs · double-click a cable to disconnect</span>
+                    <span class="rb-adv-hint">Click or drag gear in · wire M by default · stereo pedals also expose L/R outs · double-click a cable to disconnect</span>
                     <div class="rb-adv-actions">
                         <button onclick="rbAdvZoom(-0.15)" class="rb-adv-btn rb-adv-btn-icon" title="Zoom out">−</button>
                         <span id="rb-adv-zoom-label" class="rb-adv-zoom-label">100%</span>
