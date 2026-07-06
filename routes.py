@@ -415,7 +415,16 @@ def _final_leveler_vst_path() -> Path | None:
     return p if p.exists() else None
 
 
-def _final_leveler_params_state(gate_db_override: float | None = None) -> str:
+# Gear auditions play a single RAW amp/pedal at an unknown level, so the leveler
+# clamps much harder than for a finished tone — testing gear must never deafen
+# you. Tunable safety knobs (only applied when audition=True):
+_AUDITION_TARGET_LUFS = -20.0   # quieter AGC target than the tone default (−14)
+_AUDITION_CEILING_DB = -8.0     # lower peak cap than the tone default (−1)
+_AUDITION_MAX_CUT_DB = 30.0     # let the AGC pull very loud gear all the way down
+
+
+def _final_leveler_params_state(gate_db_override: float | None = None,
+                                audition: bool = False) -> str:
     """State envelope consumed by both the native restore and the JS reapply.
 
     CRITICAL: the params dict MUST be keyed by the VST's parameter DISPLAY
@@ -466,6 +475,12 @@ def _final_leveler_params_state(gate_db_override: float | None = None) -> str:
     chain_vol_db = 20.0 * math.log10(makeup) if makeup > 1.0e-4 else -24.0
     trim = chain_vol_db + float(s.get("final_leveler_trim_db", 0.0))
 
+    if audition:
+        target_rms = min(target_rms, _AUDITION_TARGET_LUFS)
+        ceiling = min(ceiling, _AUDITION_CEILING_DB)
+        max_cut = max(max_cut, _AUDITION_MAX_CUT_DB)
+        trim = min(trim, 0.0)   # never let the makeup/output trim BOOST an audition
+
     params = {
         "Target RMS dB":  norm(target_rms, -30.0, -6.0),
         "Max Boost dB":   norm(max_boost, 0.0, 24.0),
@@ -480,8 +495,11 @@ def _final_leveler_params_state(gate_db_override: float | None = None) -> str:
     return json.dumps({"params": params})
 
 def _final_leveler_stage(missing: list | None = None,
-                         gate_db_override: float | None = None) -> dict | None:
-    """Build the final VST stage, or None if disabled/missing."""
+                         gate_db_override: float | None = None,
+                         audition: bool = False) -> dict | None:
+    """Build the final VST stage, or None if disabled/missing. `audition=True`
+    clamps it harder (see _AUDITION_* knobs) so raw single-gear previews in the
+    Gear menu can't deafen you."""
     s = _load_settings()
 
     if not s.get("final_chain_normalize", True):
@@ -501,7 +519,7 @@ def _final_leveler_stage(missing: list | None = None,
         "VST3",
         bypassed=False,
         state=_vst_stage_state(str(p), "VST3",
-                               _final_leveler_params_state(gate_db_override)),
+                               _final_leveler_params_state(gate_db_override, audition=audition)),
         slot="master_post",
         rs_gear=_FINAL_LEVELER_RS_GEAR,
     )
@@ -543,9 +561,11 @@ def _bare_cab_boost_stage() -> dict | None:
     return st
 
 
-def _append_final_leveler(chain: list[dict], missing: list | None = None) -> None:
+def _append_final_leveler(chain: list[dict], missing: list | None = None,
+                          audition: bool = False) -> None:
     """Append RB Final Leveler as the very last stage (with the pre-leveler
-    bare-cab lift when the chain needs it)."""
+    bare-cab lift when the chain needs it). `audition=True` clamps it harder
+    (safe level for previewing raw gear)."""
     if any((s or {}).get("rs_gear") == _FINAL_LEVELER_RS_GEAR for s in chain):
         return
     gate_override = None
@@ -554,7 +574,7 @@ def _append_final_leveler(chain: list[dict], missing: list | None = None) -> Non
         if boost:
             chain.append(boost)
         gate_override = _BARE_CAB_GATE_DB
-    stage = _final_leveler_stage(missing, gate_db_override=gate_override)
+    stage = _final_leveler_stage(missing, gate_db_override=gate_override, audition=audition)
     if stage:
         chain.append(stage)
 
@@ -7184,8 +7204,9 @@ def setup(app, context):
 
     @app.get("/api/plugins/rig_builder/final_leveler_stage")
     def final_leveler_stage():
+        # Only used by the standalone-VST gear audition → clamp to the safe level.
         missing = []
-        stage = _final_leveler_stage(missing)
+        stage = _final_leveler_stage(missing, audition=True)
         return {
             "enabled": stage is not None,
             "stage": stage,
@@ -8859,7 +8880,7 @@ def setup(app, context):
         if kind == "vst" and _audition_trim:
             chain.append(_audition_trim)
         missing = []
-        _append_final_leveler(chain, missing)
+        _append_final_leveler(chain, missing, audition=True)   # single-gear preview → safe level
         return {"native_preset": {"version": 1, "chain": chain}, "missing": missing}
 
     # ── VST plugin endpoints (Fase C: known list + assign + state) ────
