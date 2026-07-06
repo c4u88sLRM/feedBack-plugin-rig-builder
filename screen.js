@@ -5338,6 +5338,21 @@ async function rbStudioFinishMonitorLoad(api, chain) {
     try { await rbStartFinalChainNormalizer(chain); } catch (_) {}
     if (api.startAudio) await api.startAudio().catch(() => {});
     try { await rbSignalChainLoaded(); } catch (_) {}   // un-mute AFTER the re-apply
+    // Belt-and-braces second pass: on a COLD first load the chain's plugins may
+    // not be fully instantiated when the re-apply above runs, so setParameter
+    // no-ops and the amp + EQ play at DEFAULTS (bright/harsh) until the user
+    // switches tones and comes back — the "screeks on select, clean when I go
+    // back" report. Re-apply the saved params again after a short settle,
+    // guarded to the still-current tone so a quick switch can't stamp a
+    // previous tone's params onto this one.
+    const _guardView = rbState.studioView;
+    const _reapplySettled = () => {
+        if (rbState.studioView !== _guardView) return;            // tone switched — skip
+        if (rbState.listeningTone != null || rbState._auditionId) return;   // playback owns the engine
+        rbReapplyVstParamsToChain(api, chain).catch(() => {});
+    };
+    setTimeout(_reapplySettled, 350);
+    setTimeout(_reapplySettled, 900);
 }
 
 // Load the CURRENTLY-SELECTED studio tone into the live monitor so switching
