@@ -3995,7 +3995,7 @@ function rbRenderStudioRoom() {
     // are pushed deep into the room via a big negative translateZ, so perspective
     // shrinks them AND they render BEHIND the racks (racks now sit near the
     // camera). rotateY is mirrored for the right-side amps. Tuned vs the primary.
-    const amps = g.amp.slice(0, 4);
+    const amps = g.amp.slice(0, 6);
     // The 2nd amp is an EXACT MIRROR of the primary (left:28% bottom:14% w:168
     // rotateY(32) translateZ(-140)) → left:72% rotateY(-32), everything else the
     // same: same size, same floor line, same depth. Its 3D side face shows via the
@@ -4010,6 +4010,8 @@ function rbRenderStudioRoom() {
         2: [{ left: '72%', bottom: '14%', w: 168, ry: -32, tz: -140 }],
         3: [{ left: '72%', bottom: '14%', w: 168, ry: -32, tz: -140 }, { left: '50%', bottom: '14%', w: 168, ry: 0, tz: -140 }],
         4: [{ left: '72%', bottom: '14%', w: 168, ry: -32, tz: -140 }, { left: '39%', bottom: '14%', w: 168, ry: 0, tz: -140 }, { left: '61%', bottom: '14%', w: 168, ry: 0, tz: -140 }],
+        5: [{ left: '84%', bottom: '14%', w: 150, ry: -32, tz: -140 }, { left: '44%', bottom: '14%', w: 150, ry: 0, tz: -140 }, { left: '57%', bottom: '14%', w: 150, ry: 0, tz: -140 }, { left: '70%', bottom: '14%', w: 150, ry: 0, tz: -140 }],
+        6: [{ left: '87%', bottom: '14%', w: 138, ry: -32, tz: -140 }, { left: '41%', bottom: '14%', w: 138, ry: 0, tz: -140 }, { left: '53%', bottom: '14%', w: 138, ry: 0, tz: -140 }, { left: '65%', bottom: '14%', w: 138, ry: 0, tz: -140 }, { left: '77%', bottom: '14%', w: 138, ry: 0, tz: -140 }],
     };
     const extraSlots = RB_AMP_EXTRA_SLOTS[amps.length] || [];
     const ampStack = (entry, i) => {
@@ -4172,6 +4174,39 @@ function rbStudioApplyScale() {
 if (!window.__rbStudioScaleHook) {
     window.__rbStudioScaleHook = true;
     window.addEventListener('resize', () => { try { rbStudioApplyScale(); } catch (_) {} });
+}
+
+// ── Mute output (topbar button, available from every menu) ───────────────
+async function rbToggleMute() {
+    rbState._userMuted = !rbState._userMuted;
+    try {
+        const api = rbAudioApi();
+        if (api && typeof api.setMonitorMute === 'function') await api.setMonitorMute(!!rbState._userMuted);
+    } catch (_) {}
+    rbSyncMuteBtn();
+}
+function rbSyncMuteBtn() {
+    const btn = document.getElementById('rb-mute-btn');
+    if (!btn) return;
+    const muted = !!rbState._userMuted;
+    btn.classList.toggle('rb-mute-on', muted);
+    btn.textContent = muted ? '🔇' : '🔊';
+    btn.title = muted ? 'Un-mute output' : 'Mute output';
+}
+
+// Escape leaves a gear focus (amp/pedal/rack editor) — same as the "← Room"
+// button. Bound once on the document.
+if (!window.__rbStudioEscHook) {
+    window.__rbStudioEscHook = true;
+    document.addEventListener('keydown', ev => {
+        if (ev.key !== 'Escape') return;
+        const tag = (ev.target && ev.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;
+        if (document.querySelector('#rb-studio-room.rb-pfocus, #rb-studio-room.rb-focus-active')) {
+            ev.preventDefault();
+            try { rbStudioCloseFocus(); } catch (_) {}
+        }
+    });
 }
 
 async function rbLoadStudioRoom() {
