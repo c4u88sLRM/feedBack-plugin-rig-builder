@@ -11108,6 +11108,7 @@ function rbCabRoomBuild(g, entry, safeId, opts) {
         || { mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0, micPx: null,
              speaker: (entry.speakers && entry.speakers[0]) || entry.speaker };
     st._studio = (opts && opts.studio) || null;
+    st._opts = opts || null;
     if (opts && opts.init) Object.assign(st, opts.init);
     const mics = [['sm57', 'Dynamic 57'], ['md421', 'MD421'], ['km84', 'KM84'],
                   ['r121', 'Ribbon R121'], ['tlm103', 'Condenser'], ['tube', 'Tube']];
@@ -11143,24 +11144,24 @@ function rbCabRoomBuild(g, entry, safeId, opts) {
                 <button id="rb-cabroom-ang-${safeId}" onclick="rbCabRoomToggleAngle('${safeId}','${g.rs_gear}')"
                         class="text-xs px-2.5 py-1 rounded border ${st.angle_deg ? 'bg-violet-700/60 text-violet-100 border-violet-500/60' : 'bg-dark-800 text-gray-400 border-gray-700'}">45°</button>
             </div>
-            ${(opts && opts.studio) ? `
+            ${(opts && opts.selector) ? `
             <div class="flex items-center gap-2">
                 <span class="text-[11px] text-gray-500">cab:</span>
-                <select onchange="rbStudioCabSwap(this.value)"
+                <select onchange="${(opts && opts.studio) ? 'rbStudioCabSwap(this.value)' : `rbCabRoomExplore('${safeId}', this.value)`}"
                         class="flex-1 bg-dark-800 border border-gray-700 rounded text-xs text-gray-300 px-1 py-1">
                     ${Object.entries(rbState.realCabCatalog.cabs).map(([k, e]) =>
                         `<option value="${k}" ${g.rs_gear.startsWith(k) ? 'selected' : ''}>${rbEsc(e.name || k)}</option>`).join('')}
                 </select>
-                <span id="rb-cabroom-status-${safeId}" class="text-[11px] text-gray-500"></span>
-            </div>` : `
+            </div>` : ''}
             <div class="flex items-center gap-2">
+                ${(opts && opts.studio) ? '' : `
                 <button id="rb-cabroom-play-${safeId}" onclick="rbCabRoomListen('${safeId}','${g.rs_gear}')"
                         class="bg-violet-700 hover:bg-violet-600 text-white text-xs px-3 py-1.5 rounded">▶ Escuchar</button>
                 <button onclick="rbCabRoomAssign('${safeId}','${g.rs_gear}')"
                         class="bg-emerald-800/70 hover:bg-emerald-700 text-emerald-100 text-xs px-3 py-1.5 rounded border border-emerald-600/40"
-                        title="Usar esta posición de mic como el sonido de este cab en TODAS las canciones">★ Usar en todas las canciones</button>
+                        title="Usar esta posición de mic como el sonido de este cab en TODAS las canciones">★ Usar en todas las canciones</button>`}
                 <span id="rb-cabroom-status-${safeId}" class="text-[11px] text-gray-500"></span>
-            </div>`}
+            </div>
         </div>`;
     const cv = box.querySelector('canvas');
     cv.addEventListener('pointerdown', e => rbCabRoomPointer(e, safeId, g.rs_gear, true));
@@ -11378,11 +11379,21 @@ function rbCabRoomStateFromPiece(piece) {
 
 window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
     const v = rbState.studioView || {};
-    if (v.source !== 'song') { alert('Carga un tono de canción para editar su cab.'); return; }
-    const found = rbStudioCabPiece();
-    if (!found) { alert('Este tono no tiene pieza de cabinet.'); return; }
-    const entry = rbRealCabEntryFor(found.piece.type || found.piece.rs_gear);
-    if (!entry) { alert('Este cab no está en el catálogo Real Cab (¿bajo?).'); return; }
+    const isSong = v.source === 'song';
+    const found = isSong ? rbStudioCabPiece() : null;
+    // Sin canción (o sin pieza de cab): modo EXPLORADOR — elige cualquier cab
+    // del catálogo, arrastra el mic y audiciona; nada se persiste.
+    let gearName, entry;
+    if (found) {
+        gearName = found.piece.type || found.piece.rs_gear;
+        entry = rbRealCabEntryFor(gearName);
+    }
+    if (!entry) {
+        const cat = rbState.realCabCatalog;
+        if (!cat) { alert('Catálogo Real Cab no cargado aún.'); return; }
+        gearName = rbState._lastExploreCab || 'Cab_EN212C';
+        entry = cat.cabs[gearName] || cat.cabs[Object.keys(cat.cabs)[0]];
+    }
     const room = document.getElementById('rb-studio-room');
     if (!room) return;
     let ov = document.getElementById('rb-studio-cabroom');
@@ -11396,10 +11407,23 @@ window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
         <div id="rb-cabroom-studio"></div></div>`;
     room.appendChild(ov);
     delete _rbCabRoom['studio'];   // estado fresco por apertura
-    rbCabRoomBuild({ rs_gear: found.piece.type || found.piece.rs_gear }, entry, 'studio', {
-        studio: { toneIdx: v.toneIdx, pIdx: found.pIdx },
-        init: rbCabRoomStateFromPiece(found.piece),
+    rbCabRoomBuild({ rs_gear: gearName }, entry, 'studio', {
+        selector: true,
+        studio: found ? { toneIdx: v.toneIdx, pIdx: found.pIdx } : null,
+        init: found ? rbCabRoomStateFromPiece(found.piece) : {},
     });
+};
+
+window.rbCabRoomExplore = function (safeId, newBase) {
+    rbState._lastExploreCab = newBase;
+    const cat = rbState.realCabCatalog;
+    const entry = cat && cat.cabs[newBase];
+    if (!entry) return;
+    const st = _rbCabRoom[safeId] || {};
+    const opts = st._opts || { selector: true };
+    delete _rbCabRoom[safeId];
+    rbCabRoomBuild({ rs_gear: newBase }, entry, safeId, opts);
+    rbCabRoomListen(safeId, newBase, true);
 };
 
 async function rbStudioCabRoomApply(safeId, gear) {
@@ -14787,6 +14811,27 @@ async function rbAdvEditNode(id) {
     panel = document.createElement('div');
     panel.id = 'rb-adv-editor';
     panel.className = 'rb-adv-editor';
+    // Cabinet → Cab Room (Real Cab) dentro del editor del Advanced. Con un
+    // tono de canción cargado, los cambios PERSISTEN al tono (modo studio);
+    // si no, funciona como explorador con audición.
+    const _isCabPiece = (piece.slot || '').toLowerCase() === 'cabinet' || piece.rs_category === 'cab';
+    const _cabEntry = _isCabPiece ? rbRealCabEntryFor(piece.type || piece.rs_gear) : null;
+    if (_cabEntry) {
+        const v = rbState.studioView || {};
+        panel.innerHTML = `<div class="rb-adv-editor-bar">
+                <span class="rb-adv-editor-name">${rbEsc(_cabEntry.name || piece.type || 'Cab')}</span>
+                <button class="rb-adv-editor-close" onclick="rbAdvCloseEditor()">✕</button>
+            </div>
+            <div id="rb-cabroom-adv" style="padding:8px;"></div>`;
+        host.appendChild(panel);
+        delete _rbCabRoom['adv'];
+        rbCabRoomBuild({ rs_gear: piece.type || piece.rs_gear }, _cabEntry, 'adv', {
+            selector: true,
+            studio: (v.source === 'song') ? { toneIdx: v.toneIdx, pIdx: n.pieceIdx } : null,
+            init: rbCabRoomStateFromPiece(piece),
+        });
+        return;
+    }
     if (!(window.RBPedalCanvas && (window.RBPedalCanvas.has(stem) || (piece._vst_param_meta || []).length))) {
         panel.innerHTML = `<div class="rb-adv-editor-bar">
                 <span class="rb-adv-editor-name">${rbEsc(piece.real_name || piece.type || 'Gear')}</span>
