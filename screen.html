@@ -72,12 +72,12 @@
     #rb-stage-wrap:has(#rb-studio-room.rb-focus-active) .rb-song-tonebar,
     #rb-stage-wrap:has(#rb-studio-room.rb-pfocus) .rb-song-tonebar{ display:none !important; }
     .rb-topbar-back:hover{ color:#fff; background:rgba(255,255,255,.12); }
-    .rb-mute-btn{ flex:0 0 auto; border:1px solid rgba(120,170,240,.3); border-radius:9px; padding:7px 11px;
+    .rb-mute-btn{ margin-left:auto; flex:0 0 auto; border:1px solid rgba(120,170,240,.3); border-radius:9px; padding:7px 11px;
         font-size:14px; line-height:1; color:#dbe4f2; background:rgba(120,160,220,.14); cursor:pointer;
         transition:background .15s, color .15s, border-color .15s; }
     .rb-mute-btn:hover{ background:rgba(120,160,220,.24); }
     .rb-mute-btn.rb-mute-on{ color:#ffd7d7; background:rgba(200,60,60,.34); border-color:rgba(220,90,90,.6); }
-    .rb-songbtn{ margin-left:auto; flex:0 0 auto; border:1px solid rgba(120,170,240,.3); border-radius:9px;
+    .rb-songbtn{ flex:0 0 auto; border:1px solid rgba(120,170,240,.3); border-radius:9px;
         padding:7px 13px; font-size:13px; color:#dbe4f2; background:rgba(120,160,220,.16); cursor:pointer;
         white-space:nowrap; transition:background .15s, color .15s; }
     .rb-songbtn:hover{ color:#fff; background:rgba(120,160,220,.28); }
@@ -909,11 +909,11 @@
         <!-- No in-plugin back button: the host's left nav already returns home. -->
         <button data-rb-tab="studio" onclick="rbShowTab('studio')" class="rb-tab">Studio</button>
         <button data-rb-tab="gear" onclick="rbShowTab('gear')" class="rb-tab">Gear</button>
-        <button data-rb-tab="advanced" onclick="rbShowTab('advanced')" class="rb-tab">Advanced</button>
         <button data-rb-tab="master" onclick="rbShowTab('master')" class="rb-tab">Master chain</button>
         <button data-rb-tab="settings" onclick="rbShowTab('settings')" class="rb-tab">Setup</button>
-        <!-- Mute the output — handy when a tone loads and you don't know what you're in for. -->
-        <button id="rb-mute-btn" class="rb-mute-btn" onclick="rbToggleMute()" title="Mute output">🔊</button>
+        <!-- Mute the output (also the 'm' key) — handy when a tone loads and you
+             don't know what you're in for. Sits at the left of the right-hand group. -->
+        <button id="rb-mute-btn" class="rb-mute-btn" onclick="rbToggleMute()" title="Mute output (m)">🔊</button>
         <!-- Song search is an action (opens the bottom dock), not a tab -->
         <button id="rb-song-btn" class="rb-songbtn" onclick="rbToggleSongSearch()" title="Load a song's tones">🔎 Song</button>
         <!-- Tone selector: current tone + a searchable dropdown to switch / save -->
@@ -968,6 +968,10 @@
                 <button onclick="rbGearFilter('files')" data-rb-gear-filter="files"
                         class="rb-gear-filter-btn px-3 py-1.5 rounded text-xs text-gray-300 transition">
                     Files
+                </button>
+                <button onclick="rbShowTab('advanced')" title="Open the node-graph chain editor"
+                        class="rb-gear-filter-btn px-3 py-1.5 rounded text-xs text-cyan-300 transition">
+                    ⚙ Advanced
                 </button>
             </div>
             <div class="flex gap-2 flex-wrap">

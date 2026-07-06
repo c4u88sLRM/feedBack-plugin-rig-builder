@@ -4194,17 +4194,24 @@ function rbSyncMuteBtn() {
     btn.title = muted ? 'Un-mute output' : 'Mute output';
 }
 
-// Escape leaves a gear focus (amp/pedal/rack editor) — same as the "← Room"
-// button. Bound once on the document.
+// Global keys, bound once: Esc leaves a gear focus (like "← Room"); 'm' toggles
+// output mute. Both are suppressed while typing (e.g. the save-tone name field)
+// so they don't fire mid-word.
 if (!window.__rbStudioEscHook) {
     window.__rbStudioEscHook = true;
     document.addEventListener('keydown', ev => {
-        if (ev.key !== 'Escape') return;
         const tag = (ev.target && ev.target.tagName) || '';
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;
-        if (document.querySelector('#rb-studio-room.rb-pfocus, #rb-studio-room.rb-focus-active')) {
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;  // don't hijack typing
+        if (ev.key === 'Escape') {
+            if (document.querySelector('#rb-studio-room.rb-pfocus, #rb-studio-room.rb-focus-active')) {
+                ev.preventDefault();
+                try { rbStudioCloseFocus(); } catch (_) {}
+            }
+            return;
+        }
+        if ((ev.key === 'm' || ev.key === 'M') && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
             ev.preventDefault();
-            try { rbStudioCloseFocus(); } catch (_) {}
+            try { rbToggleMute(); } catch (_) {}
         }
     });
 }
