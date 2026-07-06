@@ -233,7 +233,8 @@ _preload_state: dict = {
     "downloaded": 0,
     "already_present": 0,
     "wired": 0,
-    "failed": [],
+    "failed": [],           # human strings, each ending in a reason
+    "failed_permanent": 0,  # subset of failed that re-running won't fix (404)
     "errors": [],
     "started_at": None,
     "finished_at": None,
@@ -3562,6 +3563,51 @@ def _disk_budget_reached(settings: dict) -> bool:
     return _batch_disk_bytes >= cap_mb * 1024 * 1024
 
 
+# Records WHY the most recent `_download_candidate()` call on THIS thread
+# returned None. `_download_candidate` swallows failures to None so the
+# batch/preload loops keep going, but that erased the reason — a deleted
+# capture (permanent 404) looked identical to a transient network blip.
+# The preload worker reads this after a falsy result to label each failure
+# ("removed from tone3000 (404)" vs a temporary error) so the user can
+# tell which re-running will fix and which it won't. Thread-local because
+# the preload runs 3 workers in parallel.
+_t3k_dl_error = threading.local()
+
+# Captures whose model download 404'd (deleted/renamed on tone3000). Keyed
+# by (tone3000_id, model_id). Process-scoped negative cache: once a capture
+# is confirmed gone we skip the network on subsequent preload runs and
+# report it immediately, so re-running no longer silently re-attempts the
+# same dead captures. Cleared on backend restart (cheap re-probe if the
+# capture ever comes back).
+_t3k_gone: set = set()
+_t3k_gone_lock = threading.Lock()
+
+
+def _classify_dl_error(exc: BaseException) -> str:
+    """Human-readable, one-line reason for a failed capture download."""
+    import urllib.error
+    if isinstance(exc, urllib.error.HTTPError):
+        if exc.code == 404:
+            return "removed from tone3000 (404)"
+        if exc.code in (401, 403):
+            return f"not authorized ({exc.code})"
+        if exc.code == 429:
+            return "rate-limited (429)"
+        return f"HTTP {exc.code}"
+    if isinstance(exc, urllib.error.URLError):
+        return "network error"
+    return type(exc).__name__
+
+
+def _set_dl_error(reason: str | None) -> None:
+    _t3k_dl_error.reason = reason
+
+
+def _dl_error_is_permanent(reason: str | None) -> bool:
+    """True for reasons that re-running won't fix (capture is gone)."""
+    return bool(reason) and "404" in reason
+
+
 def _download_candidate(
     *,
     tone3000_id: int,
@@ -3592,19 +3638,24 @@ def _download_candidate(
     download_model_file is itself idempotent on dest existence).
     """
     global _batch_disk_bytes
+    _set_dl_error(None)
     if _disk_budget_reached(settings):
+        _set_dl_error("disk budget reached")
         return None
 
     client = _get_t3k_client()
     if not client.has_api_access:
+        _set_dl_error("tone3000 not connected")
         return None
 
     try:
         models_payload = client.list_models(tone3000_id)
-    except Exception:
+    except Exception as e:
         log.warning("list_models failed for tone_id=%s", tone3000_id, exc_info=True)
+        _set_dl_error(_classify_dl_error(e))
         return None
     if not models_payload:
+        _set_dl_error("no models for this tone")
         return None
 
     from rb_core.tone3000_client import pick_best_model
@@ -3626,10 +3677,12 @@ def _download_candidate(
     if model is None:
         model = pick_best_model(models_payload, preferred_size=settings.get("preferred_size", "standard"))
     if not model:
+        _set_dl_error("no matching capture")
         return None
 
     model_url = model.get("model_url") or ""
     if not model_url:
+        _set_dl_error("capture has no download URL")
         return None
     model_id = model.get("id")
 
@@ -3680,8 +3733,9 @@ def _download_candidate(
         tmp_path = irs_dir / (bare_name + ".raw")
         try:
             client.download_model_file(model_url, str(tmp_path))
-        except Exception:
+        except Exception as e:
             log.warning("IR download failed for %s", rs_gear, exc_info=True)
+            _set_dl_error(_classify_dl_error(e))
             try:
                 tmp_path.unlink(missing_ok=True)
             except Exception:
@@ -3725,8 +3779,9 @@ def _download_candidate(
         return ("nam", final_name)
     try:
         written = client.download_model_file(model_url, str(final_path))
-    except Exception:
+    except Exception as e:
         log.warning("NAM download failed for %s", rs_gear, exc_info=True)
+        _set_dl_error(_classify_dl_error(e))
         try:
             final_path.unlink(missing_ok=True)
         except Exception:
@@ -5556,9 +5611,26 @@ def _preload_worker(jobs):
                 _preload_state["done"] += 1
             return
 
+        # Skip captures we've already confirmed are gone from tone3000
+        # (permanent 404) earlier in this process. Re-attempting them
+        # just burns an API round-trip to fail identically, so report
+        # the known reason and move on — this is what stops the user
+        # from having to re-click the download hoping the count drops.
+        with _t3k_gone_lock:
+            already_gone = (tone3000_id, model_id) in _t3k_gone
+        if already_gone:
+            with _preload_lock:
+                _preload_state["failed"].append(
+                    f"{rs_gear}/{level} — removed from tone3000 (404) "
+                    f"(tone={tone3000_id}, model={model_id})"
+                )
+                _preload_state["failed_permanent"] += 1
+                _preload_state["done"] += 1
+            return
+
         # Gate the network call. The retry-on-429 inside
-        # download_model_file is the second line of defence; if the
-        # gate is correctly sized we never trigger it.
+        # download_model_file (and now list_models) is the second line
+        # of defence; if the gate is correctly sized we never trigger it.
         _t3k_rate_gate()
         try:
             res = _download_candidate(
@@ -5579,11 +5651,22 @@ def _preload_worker(jobs):
             if res:
                 _preload_state["downloaded"] += 1
             else:
+                # _download_candidate swallows failures to None but records
+                # why on a thread-local; surface it so the user can tell a
+                # dead capture (won't fix on re-run) from a transient error.
+                reason = getattr(_t3k_dl_error, "reason", None) or "unavailable"
+                permanent = _dl_error_is_permanent(reason)
                 _preload_state["failed"].append(
-                    f"{rs_gear}/{level} "
+                    f"{rs_gear}/{level} — {reason} "
                     f"(tone={tone3000_id}, model={model_id})"
                 )
+                if permanent:
+                    _preload_state["failed_permanent"] += 1
             _preload_state["done"] += 1
+        if not res and _dl_error_is_permanent(
+                getattr(_t3k_dl_error, "reason", None)):
+            with _t3k_gone_lock:
+                _t3k_gone.add((tone3000_id, model_id))
 
     # Phase 1: rename legacy cryptic files to readable names BEFORE
     # downloading. This way the skip-pre-existing pre-check inside
@@ -9715,7 +9798,9 @@ def setup(app, context):
                 "current": "",
                 "downloaded": 0,
                 "already_present": 0,
+                "wired": 0,
                 "failed": [],
+                "failed_permanent": 0,
                 "errors": [],
                 "started_at": time.time(),
                 "finished_at": None,

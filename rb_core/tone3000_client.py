@@ -118,25 +118,51 @@ class Tone3000Client:
         # Refresh proactively if the access token is about to expire, then
         # do the request. A 401 still triggers a one-shot refresh + retry in
         # case the server expired it early.
-        self._ensure_fresh_token()
-        try:
-            return self._raw_get(url)
-        except urllib.error.HTTPError as e:
-            if e.code == 401:
-                if self.access_token and self._refresh_token():
+        #
+        # 429 (rate limit) gets the same backoff-and-retry treatment as
+        # download_model_file: the JSON API (`list_models`/`get_model`)
+        # shares tone3000's ~100 req/min budget with file downloads, and
+        # the curated-variants preload runs 3 workers in parallel, so a
+        # burst of listing calls can briefly overshoot the budget. Without
+        # this, a transient 429 bubbled up as a hard failure and the
+        # capture got miscounted as "failed to download" — which is why
+        # re-running the preload made the failure count shrink each pass
+        # (the earlier "failures" were really rate-limits that cleared).
+        max_attempts = 4
+        for attempt in range(max_attempts):
+            self._ensure_fresh_token()
+            try:
+                return self._raw_get(url)
+            except urllib.error.HTTPError as e:
+                if e.code == 401:
+                    if self.access_token and self._refresh_token():
+                        try:
+                            return self._raw_get(url)
+                        except urllib.error.HTTPError as e2:
+                            if e2.code == 401:
+                                self.has_api_access = False
+                                return None
+                            raise
+                    # No recoverable credential — just means the user hasn't
+                    # connected / pasted a key. The UI handles the fallback
+                    # flow; callers see an empty payload.
+                    self.has_api_access = False
+                    return None
+                if e.code == 429 and attempt < max_attempts - 1:
+                    # Honour Retry-After when present, else exponential
+                    # backoff with a little slope so parallel workers don't
+                    # resynchronise on the same tick. tone3000's budget
+                    # refills every ~0.6s so even one short pause clears it.
+                    retry_after = 0
                     try:
-                        return self._raw_get(url)
-                    except urllib.error.HTTPError as e2:
-                        if e2.code == 401:
-                            self.has_api_access = False
-                            return None
-                        raise
-                # No recoverable credential — just means the user hasn't
-                # connected / pasted a key. The UI handles the fallback flow;
-                # callers see an empty payload.
-                self.has_api_access = False
-                return None
-            raise
+                        retry_after = int(e.headers.get("Retry-After", "0"))
+                    except (TypeError, ValueError):
+                        retry_after = 0
+                    sleep_s = retry_after if retry_after > 0 else (
+                        2 ** attempt + 0.5 * attempt)
+                    time.sleep(sleep_s)
+                    continue
+                raise
 
     # ── OAuth (PKCE) ────────────────────────────────────────────────────
 

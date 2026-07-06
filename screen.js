@@ -3816,6 +3816,7 @@ function rbShowTab(name) {
         rbLoadCoverage();        // batch / coverage panel (was dashboard)
         rbLoadSettings();        // tone3000 + prefs
         rbUpdateScanStatus();
+        rbSetupPreloadCheck();   // show capture-download progress if a run is live
         rbCheckPluginUpdate({ auto: true });   // silent version check, once per session
     }
 }
@@ -5787,6 +5788,67 @@ function rbPreloadStopPolling() {
     }
 }
 
+// Mirror the curated-variants preload progress onto the Setup page so the
+// user doesn't have to switch to Gear → Files to know a download is
+// working. Reads the same /preload_status snapshot; shows the card while a
+// run is in flight and leaves it up with a final tally afterwards. The
+// tally calls out permanent (404) failures separately so the user knows
+// re-running won't recover them — the source of the "re-click and the
+// failure count drops" confusion.
+function rbRenderSetupPreload(st) {
+    const card = document.getElementById('rb-setup-preload');
+    if (!card) return;
+    const total = st.total || 0;
+    const done = st.done || 0;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const bar = document.getElementById('rb-setup-preload-bar');
+    const pctEl = document.getElementById('rb-setup-preload-pct');
+    const countEl = document.getElementById('rb-setup-preload-count');
+    const curEl = document.getElementById('rb-setup-preload-current');
+    const sumEl = document.getElementById('rb-setup-preload-summary');
+    if (st.running) {
+        card.classList.remove('hidden');
+        if (bar) bar.style.width = pct + '%';
+        if (pctEl) pctEl.textContent = pct + '%';
+        if (countEl) countEl.textContent = `${done} / ${total}`;
+        if (curEl) curEl.textContent = st.current ? `Downloading: ${st.current}` : '…';
+        if (sumEl) sumEl.classList.add('hidden');
+    } else if (st.started_at) {
+        // Most recent run finished — keep the card up with a summary.
+        card.classList.remove('hidden');
+        if (bar) bar.style.width = '100%';
+        if (pctEl) pctEl.textContent = '100%';
+        if (countEl) countEl.textContent = `${done} / ${total}`;
+        if (curEl) curEl.textContent = '';
+        if (sumEl) {
+            const failed = (st.failed || []).length;
+            const perm = st.failed_permanent || 0;
+            const temp = Math.max(0, failed - perm);
+            const bits = [`${st.downloaded || 0} downloaded`,
+                          `${st.already_present || 0} already cached`];
+            if (failed) bits.push(`${failed} failed`);
+            let html = rbEsc(bits.join(' · '));
+            if (perm) html += `<br><span class="text-amber-400">${perm} no longer on tone3000 (404) — re-running won't recover these.</span>`;
+            if (temp) html += `<br><span class="text-gray-400">${temp} temporary error(s) — click download again to retry just these.</span>`;
+            sumEl.innerHTML = html;
+            sumEl.className = 'text-xs mt-2 ' + (failed ? 'text-gray-300' : 'text-emerald-300');
+        }
+    } else {
+        card.classList.add('hidden');
+    }
+}
+
+// Called when opening Setup: reveal the progress card if a run is in
+// flight (or just finished) and latch onto the poll so it stays live.
+async function rbSetupPreloadCheck() {
+    try {
+        const st = await (await fetch(`${window.RB_API}/preload_status`)).json();
+        if (!st) return;
+        rbRenderSetupPreload(st);
+        if (st.running) rbPreloadStartPolling();
+    } catch (_) { /* non-fatal */ }
+}
+
 async function rbPreloadPollOnce() {
     let st;
     try {
@@ -5794,6 +5856,7 @@ async function rbPreloadPollOnce() {
     } catch (e) {
         return;
     }
+    rbRenderSetupPreload(st);
     const summary = document.getElementById('rb-manage-summary');
     const total = st.total || 0;
     const done = st.done || 0;
@@ -5814,7 +5877,11 @@ async function rbPreloadPollOnce() {
             `${st.already_present} already cached`,
         ];
         if ((st.failed || []).length) {
-            lines.push(`${st.failed.length} failed:\n  ` + st.failed.slice(0, 5).join('\n  '));
+            const perm = st.failed_permanent || 0;
+            const temp = st.failed.length - perm;
+            let head = `${st.failed.length} failed`;
+            if (perm) head += ` (${perm} removed from tone3000 — permanent; ${temp} temporary — retry to fix)`;
+            lines.push(head + ':\n  ' + st.failed.slice(0, 5).join('\n  '));
         }
         if ((st.errors || []).length) {
             lines.push(`${st.errors.length} errors:\n  ` + st.errors.slice(0, 5).join('\n  '));

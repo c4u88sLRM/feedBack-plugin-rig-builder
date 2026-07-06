@@ -1152,6 +1152,24 @@
             </div>
         </div>
 
+        <!-- Capture-download progress, mirrored from the Gear → Files
+             preload so the user can watch tone3000 captures download
+             without leaving Setup (e.g. right after a reset re-triggers
+             downloads). Driven by the same GET /preload_status poll as the
+             Gear tab; hidden unless a run is in flight or just finished. -->
+        <div id="rb-setup-preload" class="bg-dark-700/50 border border-gray-800/50 rounded-xl p-5 mb-6 hidden">
+            <h3 class="text-white font-semibold mb-2">Downloading captures from tone3000</h3>
+            <div class="flex items-center gap-3 mb-2 text-sm text-gray-400">
+                <span id="rb-setup-preload-pct">0%</span>
+                <span id="rb-setup-preload-count">0 / 0</span>
+            </div>
+            <div class="h-2 bg-dark-800 rounded-full overflow-hidden">
+                <div id="rb-setup-preload-bar" class="h-full bg-accent transition-all" style="width:0%"></div>
+            </div>
+            <p id="rb-setup-preload-current" class="text-gray-500 text-xs mt-2"></p>
+            <p id="rb-setup-preload-summary" class="text-xs mt-2 hidden"></p>
+        </div>
+
         <!-- Batch operations (was Dashboard) -->
         <div class="bg-dark-700/50 border border-gray-800/50 rounded-xl p-5 mb-6">
             <h3 class="text-white font-semibold mb-2">Scan library &amp; auto-assign captures</h3>
