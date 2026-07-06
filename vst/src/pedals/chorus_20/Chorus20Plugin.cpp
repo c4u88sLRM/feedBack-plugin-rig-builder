@@ -52,8 +52,11 @@ class VibeCore
     void updateFilters()
     {
         inputHp.setHz(28.0f, sampleRate);
-        inputLp.setHz(9000.0f, sampleRate);
-        outputLp.setHz(7600.0f, sampleRate);
+        // Raised from 9 k / 7.6 k: the pair (plus the dry−wet comb) rolled the
+        // top off from ~1 kHz and left the vibe sounding muffled/dark. A
+        // Uni-Vibe is warm, not lifeless — keep some air up top.
+        inputLp.setHz(13000.0f, sampleRate);
+        outputLp.setHz(11000.0f, sampleRate);
     }
 
 public:
@@ -123,8 +126,13 @@ public:
         const float wetLevel = mode >= 0.5f ? 0.96f : 0.86f;
         const float mixed = mode >= 0.5f ? wet * wetLevel
                                          : dry - wet * wetLevel;
-        const float outGain = 0.18f + 1.65f * rbmod::audioTaper(volume);
-        return rbmod::softClip(mixed * outGain) * 0.72f;   // -2 dB to level-match the chorus group
+        // Level-match to the chorus group at UNITY. The old curve (0.18+1.65·t
+        // then ×0.72) left the pinned Volume (0.62) at ~-6.7 dB and low RS-Mix
+        // settings near-inaudible; only full Volume reached ~unity. Raised the
+        // base + span and dropped the -2.9 dB output trim so ~0.62 lands near
+        // unity and the knob spans a usable ±6 dB instead of collapsing.
+        const float outGain = 0.45f + 1.35f * rbmod::audioTaper(volume);
+        return rbmod::softClip(mixed * outGain);
     }
 };
 
