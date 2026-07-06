@@ -1091,6 +1091,26 @@
                         <button onclick="rbAdvResetToChain()" class="rb-adv-btn">Reset to chain</button>
                     </div>
                 </div>
+                <!-- Per-tone noise gate — saved WITH this tone (distinct from the
+                     app-wide gate in audio settings). Applied to the engine when
+                     the tone loads; edits save to the tone. -->
+                <div class="rb-adv-gate-bar" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid rgba(120,165,225,.12);">
+                    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;color:#dbe4f2;font-weight:500;">
+                        <input type="checkbox" id="rb-adv-gate-enable" onchange="rbAdvGateChange()" style="accent-color:#78a0dc;width:15px;height:15px;">
+                        🔇 Noise gate <span style="color:#7e8aa3;font-weight:400;">(this tone)</span>
+                    </label>
+                    <div id="rb-adv-gate-params" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;opacity:.45;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#9fb0cc;">Threshold
+                            <input type="range" id="rb-adv-gate-threshold" min="-96" max="0" step="1" value="-60" oninput="rbAdvGateChange()" style="width:96px;accent-color:#78a0dc;">
+                            <span id="rb-adv-gate-threshold-label" style="min-width:46px;color:#cdd6e6;">-60 dB</span></label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#9fb0cc;">Release
+                            <input type="range" id="rb-adv-gate-release" min="5" max="2000" step="5" value="100" oninput="rbAdvGateChange()" style="width:84px;accent-color:#78a0dc;">
+                            <span id="rb-adv-gate-release-label" style="min-width:48px;color:#cdd6e6;">100 ms</span></label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#9fb0cc;">Depth
+                            <input type="range" id="rb-adv-gate-depth" min="-100" max="0" step="1" value="-60" oninput="rbAdvGateChange()" style="width:84px;accent-color:#78a0dc;">
+                            <span id="rb-adv-gate-depth-label" style="min-width:46px;color:#cdd6e6;">-60 dB</span></label>
+                    </div>
+                </div>
                 <div id="rb-adv-canvas" class="rb-adv-canvas">
                     <div id="rb-adv-zoom" class="rb-adv-zoom">
                         <svg id="rb-adv-cables" class="rb-adv-cables" preserveAspectRatio="none"></svg>

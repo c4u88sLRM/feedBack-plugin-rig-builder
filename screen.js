@@ -1287,6 +1287,7 @@ async function rbPreLoadMute(chainLen, targetGain, opts) {
             // Goes through our patched loadPreset (mute + chain-gain 0)
             // so the AMP-on transient is suppressed just like a tone change.
             await api.loadPreset(JSON.stringify(full.native_preset));
+            try { rbApplyToneGate(full.gate, {}); } catch (_) {}
             await rbReapplyVstParamsToChain(api, chain).catch((e) =>
                 console.warn('[rig_builder] AMP auto-apply re-apply VST params:', e));
             console.log(`[rig_builder] AMP auto-apply: ${chain.length} stages for tone "${tone || '(base)'}"`
@@ -1329,6 +1330,7 @@ let rbState = {
     _previewMode: null,     // 'native' (full chain) | 'nam' (WASM fallback)
     _previewStartedAudio: false,
     _previewPayload: null,  // last native_preset_full payload (for bypass reloads)
+    _toneGate: null,        // current tone's per-tone noise gate {enabled,threshold,release,depth}
     _auditionId: null,      // DOM id of the catalog/candidate ▶ button now playing
     knownVsts: [],          // list of installed VST3/AU plugins (synced from engine)
     _vstScanInProgress: false,
@@ -1680,6 +1682,12 @@ async function rbActivateSegmentWithHost(segmentId, toneKey) {
 async function rbLoadNativePresetPayload(api, payload, options) {
     const ready = await rbEnsureNativeAudioReady(api, options);
     if (!ready.ok) throw new Error(ready.reason || 'Native audio input is not ready');
+
+    // Push this tone's per-tone noise gate to the engine as the tone loads, so
+    // the saved gate governs while this tone plays (no-op without an audio
+    // device / setNoiseGate bridge). Covers saved + song tones; the default
+    // tone applies its own via rbReloadDefaultTone.
+    try { rbApplyToneGate(payload && payload.gate, {}); } catch (_) {}
 
     let audioEffectsError = null;
     try {
@@ -3909,7 +3917,7 @@ function rbStudioPersist() {
         try {
             p = fetch(`${window.RB_API}/saved_tone/save`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: v.name, pieces: rbStudioChainToPayload(rbStudioCurrentChain()) }),
+                body: JSON.stringify({ name: v.name, pieces: rbStudioChainToPayload(rbStudioCurrentChain()), gate: rbGateForSave() }),
             }).then(async (r) => {
                 // Surface backend rejections (mirrors rbPersistTone) — a silent
                 // 4xx/5xx here looked like a successful save.
@@ -8159,6 +8167,7 @@ async function rbReloadDefaultTone() {
             enabled = !!d.enabled;
             window.__rbDefaultToneSetting = enabled;
             rbState.master.default = Array.isArray(d.pieces) ? d.pieces : [];
+            try { rbApplyToneGate(d.gate, {}); } catch (_) {}
         } catch (_) {}
     }
     if (!enabled) { rbState._defaultToneActive = false; return false; }
@@ -8367,7 +8376,8 @@ async function rbPersistMasterChain(role) {
     // role); master pre/post POST to the two-half master endpoint.
     const isDefault = role === 'default';
     const url  = isDefault ? `${window.RB_API}/default_tone/save` : `${window.RB_API}/master_chain/save`;
-    const body = isDefault ? { pieces } : { role, pieces };
+    // The default tone carries a per-tone gate; master pre/post don't.
+    const body = isDefault ? { pieces, gate: rbGateForSave() } : { role, pieces };
     const what = isDefault ? 'default tone' : `master ${role}`;
     try {
         const r = await fetch(url, {
@@ -10523,6 +10533,7 @@ async function rbPersistTone(toneIdx, filename) {
         tone_key: tone.key || tone.name,
         name: `${filename}::${tone.key || tone.name}`,
         pieces,
+        gate: rbGateForSave(),
     };
     try {
         const r = await fetch(`${window.RB_API}/save_preset`, {
@@ -13642,6 +13653,69 @@ function rbAdvRestore() {
     return true;
 }
 
+// ── Per-tone noise gate ──────────────────────────────────────────────────
+// A noise gate saved WITH the tone (not the app-wide gate in audio settings),
+// edited in the Advanced tab. Reuses the host's single native gate DSP: on
+// tone load we push the tone's gate to the engine via setNoiseGate, so while a
+// Rig Builder tone plays its own gate governs (the general gate applies when
+// no RB tone is active). Ranges mirror the global gate (screen.html audio
+// settings): threshold −96..0 dBFS, release 5..2000 ms, depth −100..0 dB.
+const RB_GATE_DEFAULT = { enabled: false, threshold: -60, release: 100, depth: -60 };
+function rbNormalizeGate(g) {
+    g = g || {};
+    const cl = (v, lo, hi, d) => { v = Number(v); return isFinite(v) ? Math.max(lo, Math.min(hi, Math.round(v))) : d; };
+    return {
+        enabled: !!g.enabled,
+        threshold: cl(g.threshold, -96, 0, -60),
+        release: cl(g.release, 5, 2000, 100),
+        depth: cl(g.depth, -100, 0, -60),
+    };
+}
+function rbGateForSave() { return rbNormalizeGate(rbState._toneGate || RB_GATE_DEFAULT); }
+// Apply a tone's gate: store it, drive the live engine gate (a no-op when no
+// audio device is configured or the bridge lacks setNoiseGate), and refresh
+// the Advanced controls. persist:true only from the user-edit handler — a
+// tone-load apply just reflects what's already saved.
+function rbApplyToneGate(gate, opts) {
+    opts = opts || {};
+    rbState._toneGate = rbNormalizeGate(gate);
+    const g = rbState._toneGate;
+    try {
+        const api = rbAudioApi();
+        if (api && typeof api.setNoiseGate === 'function') {
+            api.setNoiseGate({ enabled: g.enabled, thresholdDb: g.threshold, releaseMs: g.release, depthDb: g.depth });
+        }
+    } catch (_) {}
+    rbAdvGateSyncUI();
+    if (opts.persist) { try { rbStudioPersist(); } catch (_) {} }
+}
+function rbAdvGateSyncUI() {
+    const g = rbNormalizeGate(rbState._toneGate || RB_GATE_DEFAULT);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    const en = document.getElementById('rb-adv-gate-enable');
+    if (en) en.checked = g.enabled;
+    set('rb-adv-gate-threshold', g.threshold);
+    set('rb-adv-gate-release', g.release);
+    set('rb-adv-gate-depth', g.depth);
+    const lbl = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    lbl('rb-adv-gate-threshold-label', `${g.threshold} dB`);
+    lbl('rb-adv-gate-release-label', `${g.release} ms`);
+    lbl('rb-adv-gate-depth-label', `${g.depth} dB`);
+    const wrap = document.getElementById('rb-adv-gate-params');
+    if (wrap) wrap.style.opacity = g.enabled ? '1' : '0.45';
+}
+// User edited the gate controls in the Advanced tab → apply live + persist.
+function rbAdvGateChange() {
+    const en = document.getElementById('rb-adv-gate-enable');
+    const val = id => { const el = document.getElementById(id); return el ? el.value : null; };
+    rbApplyToneGate({
+        enabled: en ? en.checked : false,
+        threshold: val('rb-adv-gate-threshold'),
+        release: val('rb-adv-gate-release'),
+        depth: val('rb-adv-gate-depth'),
+    }, { persist: true });
+}
+
 async function rbLoadAdvanced() {
     if (!rbState.gearCatalog) {
         try { const d = await (await fetch(`${window.RB_API}/gear_catalog`)).json(); rbState.gearCatalog = (d && d.categories) || {}; }
@@ -13667,6 +13741,7 @@ async function rbLoadAdvanced() {
     rbAdvPaletteRender();
     rbAdvRenderCanvas();
     rbAdvBindCanvasOnce();
+    rbAdvGateSyncUI();                                 // reflect this tone's saved noise gate
     rbStudioApplyStereoToEngine().catch(() => {});   // push pan/branch to the live engine
     rbAdvApplyConnectivity();                         // mute if Input/Output is unwired
 }

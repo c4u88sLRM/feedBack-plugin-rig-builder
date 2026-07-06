@@ -752,6 +752,22 @@ def _get_conn_locked() -> sqlite3.Connection:
             "CREATE INDEX IF NOT EXISTS idx_preset_pieces_rs_gear "
             "ON preset_pieces(rs_gear_type)"
         )
+        # Per-tone noise gate: the `presets` table (created by nam_tone) already
+        # carries `gate_threshold`; add the rest of the gate's parameters so a
+        # tone can store a full gate (enabled/threshold/release/depth) mirroring
+        # the app's global noise gate. ALTER isn't idempotent, so guard on the
+        # column list; tolerate the presets table not existing yet.
+        try:
+            pcols = {r[1] for r in _conn.execute("PRAGMA table_info(presets)")}
+            if pcols:  # table exists
+                if "gate_enabled" not in pcols:
+                    _conn.execute("ALTER TABLE presets ADD COLUMN gate_enabled INTEGER NOT NULL DEFAULT 0")
+                if "gate_release" not in pcols:
+                    _conn.execute("ALTER TABLE presets ADD COLUMN gate_release REAL NOT NULL DEFAULT 100.0")
+                if "gate_depth" not in pcols:
+                    _conn.execute("ALTER TABLE presets ADD COLUMN gate_depth REAL NOT NULL DEFAULT -60.0")
+        except Exception:
+            log.exception("presets gate-column migration failed")
         # Re-home bundled-VST absolute paths to the CURRENT plugin dir FIRST —
         # before the slash-only segment rewrites below and before any
         # existence-checking migration (e.g. _migrate_assign_bundled_primary_
@@ -3794,6 +3810,47 @@ def _download_candidate(
 # ── Persistence: presets + preset_pieces + tone_mappings ─────────────
 
 
+def _gate_kwargs_from(data: dict) -> dict:
+    """Extract a per-tone noise gate from a save payload's `gate` object into
+    _persist_preset_chain kwargs. Shape: `{"gate": {enabled, threshold,
+    release, depth}}`. Keys that are absent/None are omitted so the persist
+    PRESERVES whatever the preset already had (the UPSERT COALESCEs NULLs to
+    the existing row) — a plain chain edit never wipes a saved gate."""
+    g = data.get("gate")
+    if not isinstance(g, dict):
+        return {}
+    out: dict = {}
+    if g.get("threshold") is not None:
+        out["gate_threshold"] = float(g["threshold"])
+    if g.get("enabled") is not None:
+        out["gate_enabled"] = 1 if g.get("enabled") else 0
+    if g.get("release") is not None:
+        out["gate_release"] = float(g["release"])
+    if g.get("depth") is not None:
+        out["gate_depth"] = float(g["depth"])
+    return out
+
+
+def _preset_gate(preset_id) -> dict:
+    """Read a preset's per-tone noise gate as {enabled, threshold, release,
+    depth}. Falls back to the gate's defaults (off, −60/100/−60) when the
+    preset or its row is missing."""
+    default = {"enabled": False, "threshold": -60.0, "release": 100.0, "depth": -60.0}
+    if preset_id is None:
+        return default
+    try:
+        row = _get_conn().execute(
+            "SELECT gate_threshold, gate_enabled, gate_release, gate_depth "
+            "FROM presets WHERE id = ?", (preset_id,),
+        ).fetchone()
+    except Exception:
+        return default
+    if not row:
+        return default
+    gt, ge, gr, gd = row
+    return {"enabled": bool(ge), "threshold": gt, "release": gr, "depth": gd}
+
+
 def _persist_preset_chain(
     *,
     filename: str,
@@ -3802,7 +3859,10 @@ def _persist_preset_chain(
     pieces: list[dict],
     input_gain: float = 1.0,
     output_gain: float = 1.0,
-    gate_threshold: float = -60.0,
+    gate_threshold: float | None = None,
+    gate_enabled: int | None = None,
+    gate_release: float | None = None,
+    gate_depth: float | None = None,
     assigned_mode: str = "manual",
 ) -> int:
     """Insert/replace a preset + chain pieces + tone mapping. Returns
@@ -3867,13 +3927,22 @@ def _persist_preset_chain(
 
     with _lock:
         cur = conn.execute(
-            "INSERT INTO presets (name, model_file, ir_file, input_gain, output_gain, gate_threshold, settings_json) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?) "
+            "INSERT INTO presets (name, model_file, ir_file, input_gain, output_gain, "
+            "  gate_threshold, gate_enabled, gate_release, gate_depth, settings_json) "
+            "VALUES (?, ?, ?, ?, ?, COALESCE(?,-60.0), COALESCE(?,0), COALESCE(?,100.0), COALESCE(?,-60.0), ?) "
             "ON CONFLICT(name) DO UPDATE SET "
             "  model_file=excluded.model_file, ir_file=excluded.ir_file, "
             "  input_gain=excluded.input_gain, output_gain=excluded.output_gain, "
-            "  gate_threshold=excluded.gate_threshold",
-            (name, primary_model, primary_ir, input_gain, output_gain, gate_threshold, "{}"),
+            # Gate columns preserve the existing row when the caller passes NULL
+            # (most chain saves don't touch the gate), and only overwrite when a
+            # value is supplied — so editing the chain never wipes a saved gate.
+            "  gate_threshold=COALESCE(?, presets.gate_threshold), "
+            "  gate_enabled=COALESCE(?, presets.gate_enabled), "
+            "  gate_release=COALESCE(?, presets.gate_release), "
+            "  gate_depth=COALESCE(?, presets.gate_depth)",
+            (name, primary_model, primary_ir, input_gain, output_gain,
+             gate_threshold, gate_enabled, gate_release, gate_depth, "{}",
+             gate_threshold, gate_enabled, gate_release, gate_depth),
         )
         preset_id_row = conn.execute(
             "SELECT id FROM presets WHERE name = ?", (name,)
@@ -7351,7 +7420,6 @@ def setup(app, context):
                 pieces=pieces,
                 input_gain=1.0,
                 output_gain=1.0,
-                gate_threshold=-60.0,
                 assigned_mode="master",
             )
         except Exception as e:
@@ -7369,6 +7437,7 @@ def setup(app, context):
             "pieces": _load_default_tone_chain(),
             "preset_id": _get_default_tone_preset_id(),
             "enabled": bool(_load_settings().get("default_tone_enabled", False)),
+            "gate": _preset_gate(_get_default_tone_preset_id()),
         }
 
     @app.post("/api/plugins/rig_builder/default_tone/save")
@@ -7390,8 +7459,8 @@ def setup(app, context):
                 pieces=pieces,
                 input_gain=1.0,
                 output_gain=1.0,
-                gate_threshold=-60.0,
                 assigned_mode="default",
+                **_gate_kwargs_from(data)
             )
         except Exception as e:
             log.exception("save_default_tone failed")
@@ -7430,8 +7499,9 @@ def setup(app, context):
                 tone_key=name,
                 name=_SAVED_TONE_PREFIX + name,
                 pieces=pieces,
-                input_gain=1.0, output_gain=1.0, gate_threshold=-60.0,
+                input_gain=1.0, output_gain=1.0,
                 assigned_mode="manual",
+                **_gate_kwargs_from(data)
             )
         except Exception as e:
             log.exception("save_saved_tone failed")
@@ -7985,13 +8055,18 @@ def setup(app, context):
         # 1.0 unity — see `_persist_preset_chain` docstring for the
         # double-attenuation fix that motivated dropping the 0.5 default.
         out_gain = float(data.get("output_gain", 1.0))
-        gate = float(data.get("gate_threshold", -60.0))
+        # Per-tone gate: prefer the `gate` object; fall back to the legacy flat
+        # `gate_threshold` field for older callers.
+        gate_kwargs = _gate_kwargs_from(data)
+        if "gate_threshold" not in gate_kwargs and data.get("gate_threshold") is not None:
+            gate_kwargs["gate_threshold"] = float(data["gate_threshold"])
         mode = data.get("assigned_mode", "manual")
         try:
             preset_id = _persist_preset_chain(
                 filename=filename, tone_key=tone_key, name=name, pieces=pieces,
-                input_gain=in_gain, output_gain=out_gain, gate_threshold=gate,
+                input_gain=in_gain, output_gain=out_gain,
                 assigned_mode=mode,
+                **gate_kwargs
             )
         except Exception as e:
             log.exception("save_preset failed")
@@ -8013,8 +8088,9 @@ def setup(app, context):
                 mirror_preset_id = _persist_preset_chain(
                     filename=sib, tone_key=tone_key,
                     name=f"{sib}::{tone_key or 'tone'}", pieces=pieces,
-                    input_gain=in_gain, output_gain=out_gain, gate_threshold=gate,
+                    input_gain=in_gain, output_gain=out_gain,
                     assigned_mode=mode,
+                    **gate_kwargs
                 )
                 mirrored.append(sib)
                 mirrored_presets.append({"filename": sib, "preset_id": mirror_preset_id})
@@ -8157,13 +8233,15 @@ def setup(app, context):
         """
         conn = _get_conn()
         prow = conn.execute(
-            "SELECT id, name, input_gain, output_gain, gate_threshold "
+            "SELECT id, name, input_gain, output_gain, gate_threshold, "
+            "       gate_enabled, gate_release, gate_depth "
             "FROM presets WHERE id = ?",
             (preset_id,),
         ).fetchone()
         if not prow:
             return JSONResponse({"error": "preset not found"}, 404)
-        _, name, input_gain, output_gain, gate_threshold = prow
+        (_, name, input_gain, output_gain, gate_threshold,
+         gate_enabled, gate_release, gate_depth) = prow
 
         rows = conn.execute(
             "SELECT slot, kind, file, rs_gear_type, bypassed, slot_order, "
@@ -8286,6 +8364,12 @@ def setup(app, context):
             "input_gain": input_gain,
             "output_gain": output_gain,
             "gate_threshold": gate_threshold,
+            "gate": {
+                "enabled": bool(gate_enabled),
+                "threshold": gate_threshold,
+                "release": gate_release,
+                "depth": gate_depth,
+            },
             "native_preset": {"version": 1, "chain": chain},
             "nam_stage_count": sum(1 for s in chain if s["type"] == 1),
             "vst_stage_count": sum(1 for s in chain if s["type"] == 0),
