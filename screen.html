@@ -501,8 +501,11 @@
         padding:4px; font-size:11px; color:#9aa3af; border-radius:2px;
         background:linear-gradient(180deg,#1c1f24,#101114); border:1px solid rgba(255,255,255,.06); }
     .rb-rack-bypassed{ opacity:.45; filter:grayscale(.6); }
-    .rb-rack-placeholder{ height:42px; display:flex; align-items:center; justify-content:center;
-        color:#7c848f; font-size:11px; border-radius:3px; border:1.5px dashed rgba(255,255,255,.12); }
+    .rb-rack-placeholder{ height:calc(78px * var(--rb-scale,1)); min-width:calc(96px * var(--rb-scale,1));
+        display:flex; align-items:center; justify-content:center;
+        color:#9fb4d6; font-size:calc(15px * var(--rb-scale,1)); font-weight:700; letter-spacing:.03em;
+        border-radius:7px; border:2px dashed rgba(120,170,240,.42); background:rgba(30,46,76,.3);
+        transition:color .15s, border-color .15s, background .15s; }
     /* contact shadow under the rack table */
     .rb-rack-ground{ position:absolute; right:12%; bottom:4%; width:calc(230px * var(--rb-scale,1)); height:calc(30px * var(--rb-scale,1)); pointer-events:none;
         transform:translateZ(-35px) rotateX(66deg) rotateZ(-12deg); transform-origin:bottom right;
@@ -534,6 +537,13 @@
         display:flex; gap:calc(18px * var(--rb-scale,1)); align-items:flex-end; justify-content:center;
         padding:calc(8px * var(--rb-scale,1)) calc(18px * var(--rb-scale,1)) calc(6px * var(--rb-scale,1)); border-radius:9px; transition:opacity .4s ease, filter .2s; }
     .rb-pedalboard-empty:hover{ filter:brightness(1.25); }
+    /* "＋ pedals" prompt on the empty pedalboard (matches the ＋amp / ＋rack). */
+    .rb-pedal-placeholder{ height:calc(46px * var(--rb-scale,1)); min-width:calc(104px * var(--rb-scale,1));
+        display:flex; align-items:center; justify-content:center;
+        color:#9fb4d6; font-size:calc(13px * var(--rb-scale,1)); font-weight:700; letter-spacing:.03em;
+        border:2px dashed rgba(120,170,240,.42); border-radius:8px; background:rgba(30,46,76,.28);
+        transition:color .15s, border-color .15s, background .15s; }
+    .rb-pedalboard-empty:hover .rb-pedal-placeholder{ color:var(--rb-accent); border-color:var(--rb-accent); background:rgba(48,72,118,.42); }
     .rb-pedalboard{
         background:
             repeating-linear-gradient(90deg, rgba(0,0,0,.30) 0 3px, transparent 3px 27px),

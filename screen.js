@@ -4070,7 +4070,7 @@ function rbRenderStudioRoom() {
     const pedalHtml = `
         <div class="rb-pedalboard ${g.pedal.length ? '' : 'rb-pedalboard-empty'}"
              onclick="rbStudioBrowsePedals()" title="${g.pedal.length ? 'Pedalboard' : 'Click to add a pedal'}">
-            ${g.pedal.map(pd => {
+            ${g.pedal.length ? g.pedal.map(pd => {
                 const img = rbStudioPedalImg(pd.p);
                 const name = pd.p.real_name || pd.p.type || 'Pedal';
                 const byp = rbStudioIsBypassed(pd.p) ? 'rb-pedal-bypassed' : '';
@@ -4078,7 +4078,7 @@ function rbRenderStudioRoom() {
                     ${img ? `<img src="${img}" alt="${rbEsc(name)}">`
                           : `<div class="rb-pedal-fallback">${rbEsc(name)}</div>`}
                 </div>`;
-            }).join('')}
+            }).join('') : `<div class="rb-pedal-placeholder">＋ pedals</div>`}
         </div>`;
 
     el.innerHTML = `
