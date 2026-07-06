@@ -4151,17 +4151,21 @@ function rbStudioTintPedalEdges() {
 // pedals, racks, knobs) is authored in FIXED px, tuned at a ~1080p viewport, so
 // on a taller viewport it stayed the same physical size and read as tiny.
 // Expose a uniform --rb-scale that the gear CSS multiplies its px dimensions by.
-// Driven by the LOGICAL viewport height (shell-independent; DPI is already
-// handled by the canvas backing store) against a 1080p reference, clamped to
-// [1, 2.2]: 1.0 at ≤1080p so normal screens are byte-for-byte unchanged, and it
-// grows only on genuinely taller viewports (1440p → 1.33×, 4K → 2×).
-const RB_STUDIO_REF_H = 1080;   // reference viewport height the gear px was tuned at
+// Driven by the ROOM's OWN rendered height, not window.innerHeight — the gear
+// lives inside the room, so tying its size to the room keeps it a consistent
+// fraction of the room no matter how the room got sized (resolution, window
+// size, and crucially the host's "interface size" / zoom). Using the raw
+// viewport left the gear tiny in a zoomed-up room (1440p + "extra large
+// interface size"). Reference is the room height at 1080p (viewport − topbar);
+// clamped [1, 2.6] so ≤1080p is byte-for-byte unchanged and it grows on taller
+// rooms (1440p → ~1.35×, 4K → ~2×).
+const RB_STUDIO_REF_H = 1021;   // reference ROOM height (~1080p viewport minus the ~59px topbar)
 function rbStudioApplyScale() {
     const room = document.getElementById('rb-studio-room');
     if (!room) return;
-    const vh = window.innerHeight || room.clientHeight || 0;
-    if (!vh) return;
-    const scale = Math.max(1, Math.min(2.2, vh / RB_STUDIO_REF_H));
+    const h = room.clientHeight || room.getBoundingClientRect().height || window.innerHeight || 0;
+    if (!h) return;
+    const scale = Math.max(1, Math.min(2.6, h / RB_STUDIO_REF_H));
     room.style.setProperty('--rb-scale', scale.toFixed(3));
 }
 if (!window.__rbStudioScaleHook) {
@@ -5678,11 +5682,23 @@ window.rbStudioDeleteSavedTone = async function rbStudioDeleteSavedTone(idx) {
 
 // Load the user's saved tones from the backend into rbState.savedTones.
 async function rbStudioLoadSavedTones() {
-    try {
-        const r = await fetch(`${window.RB_API}/saved_tones`);
-        const d = await r.json().catch(() => ({}));
-        rbState.savedTones = Array.isArray(d.tones) ? d.tones : [];
-    } catch (_) { rbState.savedTones = []; }
+    // Retry transient failures and, on total failure, KEEP the previously-loaded
+    // list instead of blanking it. A single failed fetch on entry used to leave
+    // rbState.savedTones = [] so the tone menu showed only Default until you
+    // saved another tone (which reloaded and repopulated) — the "saved tones
+    // sometimes don't appear" bug.
+    let tones = null;
+    for (let attempt = 0; attempt < 3 && tones === null; attempt++) {
+        try {
+            const r = await fetch(`${window.RB_API}/saved_tones`);
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const d = await r.json();
+            tones = Array.isArray(d.tones) ? d.tones : [];
+        } catch (_) {
+            if (attempt < 2) await new Promise(res => setTimeout(res, 150 * (attempt + 1)));
+        }
+    }
+    if (tones !== null) rbState.savedTones = tones;   // else preserve the prior list
     rbState._savedTonesLoaded = true;   // the override dropdown may now safely prune a deleted selection
     try { rbStudioRenderToneChips(); } catch (_) {}
     try { rbPopulateToneOverrideSelect(); } catch (_) {}   // keep the Setup override dropdown in sync
