@@ -4160,7 +4160,7 @@ function rbStudioTintPedalEdges() {
 // Reference room height: LOWER than the actual 1080p room (~1021) so the gear
 // runs a bit bigger at every size — the tuned baseline read "too small". This
 // is the one knob to grow/shrink ALL studio gear uniformly.
-const RB_STUDIO_REF_H = 900;
+const RB_STUDIO_REF_H = 720;
 function rbStudioApplyScale() {
     const room = document.getElementById('rb-studio-room');
     if (!room) return;
