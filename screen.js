@@ -8040,10 +8040,22 @@ async function rbLoadMasterChain() {
 
 async function rbLoadDefaultToneEditor() {
     const statusEl = document.getElementById('rb-default-tone-status');
-    try {
-        const r = await fetch(`${window.RB_API}/default_tone`);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const data = await r.json();
+    // Retry transient failures — a single failed fetch on entry must NOT wipe a
+    // default tone that's already loaded (that was the intermittent "No default
+    // tone yet — add gear" flash: this runs on every Studio entry, and one
+    // hiccup used to clobber rbState.master.default with []).
+    let data = null, lastErr = null;
+    for (let attempt = 0; attempt < 3 && data === null; attempt++) {
+        try {
+            const r = await fetch(`${window.RB_API}/default_tone`);
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            data = await r.json();
+        } catch (e) {
+            lastErr = e;
+            if (attempt < 2) await new Promise(res => setTimeout(res, 150 * (attempt + 1)));
+        }
+    }
+    if (data) {
         rbState.master.default = Array.isArray(data.pieces) ? data.pieces : [];
         const cb = document.getElementById('rb-default-tone-enabled');
         if (cb) cb.checked = !!data.enabled;
@@ -8051,9 +8063,10 @@ async function rbLoadDefaultToneEditor() {
         if (statusEl) statusEl.textContent = rbState.master.default.length
             ? `${rbState.master.default.length} piece(s).` + (data.enabled ? '' : ' Enable the toggle to hear it when idle.')
             : 'No pieces yet — use ＋ Add piece to build your idle rig.';
-    } catch (e) {
-        if (statusEl) statusEl.textContent = `Failed to load default tone: ${e.message || e}`;
-        rbState.master.default = [];
+    } else {
+        // All retries failed — keep whatever default tone was already loaded
+        // instead of blanking the room.
+        if (statusEl) statusEl.textContent = `Failed to load default tone: ${(lastErr && lastErr.message) || lastErr}`;
     }
     rbRenderMasterChain('default');
     // Opening the Default tone tab is a safe, deliberate moment (audio is up by
