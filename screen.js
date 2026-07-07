@@ -11452,6 +11452,13 @@ window.rbCabRoomExplore = function (safeId, newBase) {
 const _RB_CR_MIC_TOK = { sm57: 'dyn', tlm103: 'cond', r121: 'ribbon', tube: 'tube',
                          md421: 'dyn', km84: 'cond' };   // 421/km84 → arquetipo más cercano
 
+// Filesystem-safe clone-name slug — MUST match clone_slug() in
+// tools/generate_real_cab_irs.py and the layout of assets/cab_irs/<Clone>/.
+function rbCloneSlug(name) {
+    return String(name || '').trim().replace(/\./g, '')
+        .replace(/[^0-9A-Za-z_-]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+}
+
 function rbCabRoomSnapPos(st) {
     if ((st.angle_deg || 0) >= 22) return 'offaxis';
     return (st.x < 0.5) ? 'cone' : 'edge';
@@ -11482,7 +11489,10 @@ async function rbCabRoomPreloadVariants(safeId, gear) {
         if (!(cat.cabs && cat.cabs[base]) && base.includes('_'))
             base = base.replace(/_[a-z0-9]{2}$/i, '');
         if (!(cat.cabs && cat.cabs[base])) return false;
-        const prefix = 'RC_' + base.replace('Cab_', '');
+        // New layout: cabs live in per-cab clone-named subfolders
+        // (cabs/<Clone>/<mic>_<pos>.wav), so derive the folder from the catalog
+        // clone name — NOT the old flat `RC_<gear>_<mic>_<pos>.wav`.
+        const sub = rbCloneSlug((cat.cabs[base] && cat.cabs[base].name) || base);
         const m = /^(.*nam_irs)\//i.exec((orig.path || '').replace(/\\/g, '/'));
         const root = m ? m[1] : null;
         if (!root) return false;
@@ -11494,9 +11504,9 @@ async function rbCabRoomPreloadVariants(safeId, gear) {
         for (const mic of ['dyn', 'cond', 'ribbon', 'tube']) {
             for (const pos of ['cone', 'edge', 'offaxis']) {
                 const key = `${mic}_${pos}`;
-                const path = `${root}/cabs/${prefix}_${key}.wav`;
+                const path = `${root}/cabs/${sub}/${key}.wav`;
                 const stage = Object.assign({}, orig, {
-                    name: `${prefix}_${key}`, path,
+                    name: `${sub}/${key}`, path,
                     bypassed: key !== activeKey,
                 });
                 if (stObj && stObj.irPath) {
@@ -13939,10 +13949,8 @@ async function rbLoadSettings() {
     // setting is still `curated_only`; the UI just shows the opposite.
     const allowFuzzy = document.getElementById('rb-allow-tone3000-fallback');
     if (allowFuzzy) allowFuzzy.checked = !s.curated_only;
-    // "Bypass all the game cabs" — reflects the persisted setting; toggling
-    // it POSTs to /settings which bulk-flips preset_pieces.bypassed for cabs.
-    const bypassCabs = document.getElementById('rb-bypass-all-cabs');
-    if (bypassCabs) bypassCabs.checked = !!s.bypass_all_cabs;
+    // ("Bypass all cabs" was removed — cabs are always on now that the modeled
+    // cabs replaced the game cabs.)
     // Mirror the persisted flag onto the runtime mirror so RbMegaChain
     // sees it even if the user never opens Settings. rbLoadSettings is
     // called from rbInit so this runs at page-load.
@@ -14067,27 +14075,6 @@ async function rbSetAllowTone3000Fallback(checked) {
             body: JSON.stringify({ curated_only: !checked }),
         });
     } catch (e) { /* best-effort */ }
-}
-
-// "Bypass all the game cabs" toggle. Posting bypass_all_cabs to /settings
-// bulk-flips preset_pieces.bypassed for every cabinet stage (backend side-
-// effect), so every tone skips its RS cab and the user can add their own.
-async function rbSetBypassAllCabs(checked) {
-    const status = document.getElementById('rb-bypass-all-cabs-status');
-    if (status) status.textContent = checked ? 'Bypassing every cab…' : 'Re-enabling cabs…';
-    try {
-        const r = await fetch(`${window.RB_API}/settings`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bypass_all_cabs: !!checked }),
-        });
-        if (!r.ok) throw new Error('save failed');
-        if (status) status.textContent = checked
-            ? '✓ All cabs bypassed. Add your own cab/IR per tone; reopen the song to hear it.'
-            : '✓ Cabs re-enabled.';
-    } catch (e) {
-        if (status) status.textContent = '⚠ Could not save — try again.';
-    }
 }
 
 // Triggered from the Suggest modal: download a specific tone3000

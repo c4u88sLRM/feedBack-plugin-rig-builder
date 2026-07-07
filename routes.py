@@ -362,13 +362,12 @@ _DEFAULT_SETTINGS = {
     # Studio tone's name. Used by the Setup-tab "specific tone" control.
     "tone_override_enabled": False,
     "tone_override_name": "",
-    # When ON, bypasses the cabinet slot on EVERY song's tones — for users who'd
-    # rather run no cab (raw amp) or their own external cab sim. Default ON: the
-    # extracted the game cab IRs are weak/colourless, so out of the box we skip
-    # them and let the user add their own cab/IR. Enforced two ways: the /settings
-    # toggle bulk-flips per-piece `bypassed` (UI state for opened songs) AND the
-    # chain builder force-bypasses RS cabs at build time (authoritative, all songs).
-    "bypass_all_cabs": True,
+    # DEPRECATED / always OFF. Cabs are always on now that the modeled cabs
+    # (rb_cab_overrides + _resolve_cab_for_effect) replaced the weak game cab IRs.
+    # The Setup "Bypass all cabs" toggle was removed and `_load_settings` forces
+    # this False even for settings files that still carry a stale True, so cabs
+    # can never be bypassed globally again. Kept as a key so old files load clean.
+    "bypass_all_cabs": False,
     # Bass DI + Cab blend (real bass rigs run mostly DI with a little mic'd cab).
     # When on, every BASS cab IR is replaced by a single IR that bakes a fixed
     # 70% DI (dry) + 30% cab blend, level-matched so the cab is audible and the
@@ -1184,6 +1183,10 @@ def _load_settings() -> dict:
             _settings = dict(_DEFAULT_SETTINGS)
     else:
         _settings = dict(_DEFAULT_SETTINGS)
+    # Cabs are always on now — force the deprecated 'bypass all cabs' flag off
+    # even if a stale settings file (or a legacy /settings POST) still carries a
+    # True. The Setup toggle that used to set it was removed.
+    _settings["bypass_all_cabs"] = False
     return _settings
 
 
@@ -2224,8 +2227,9 @@ def _load_cab_overrides() -> dict:
     """Load (and cache) `rb_cab_overrides.json` — OUR own synthesized/captured
     cab IRs that OVERRIDE the Rocksmith-extracted mic-position table for a cab.
 
-    Schema (one entry per cab gear key):
-      { "Cab_MARSHALL1960A": { "ir_dir": "cabs", "prefix": "Marsten_4x12" } }
+    Schema (one entry per cab gear key; ir_dir carries the clone-named
+    per-cab subfolder, prefix is empty):
+      { "Cab_MARSHALL1960A": { "ir_dir": "cabs/Marsten_1960A_4x12", "prefix": "" } }
 
     The per-suffix file is NOT listed here — it is derived from the *authoritative*
     Wwise `effect_name` of each RS mic-map entry (see `_override_variant`), which
@@ -2264,8 +2268,12 @@ def _override_variant(ovr: dict, entry: dict) -> dict | None:
         return None
     ir_dir = str(ovr.get("ir_dir") or "cabs").strip("/")
     prefix = str(ovr.get("prefix") or "")
+    # New layout: ir_dir carries the clone-named subfolder and prefix is empty,
+    # so files are `cabs/<Clone>/<mic>_<pos>.wav`. Legacy overrides that still
+    # carry a prefix fall back to `<ir_dir>/<prefix>_<mic>_<pos>.wav`.
+    stem = f"{prefix}_{mic}_{pos}" if prefix else f"{mic}_{pos}"
     return {
-        "ir_file": f"{ir_dir}/{prefix}_{mic}_{pos}.wav",
+        "ir_file": f"{ir_dir}/{stem}.wav",
         "label": f"{_OVR_MIC_LABEL[mic]} {_OVR_POS_LABEL[pos]}",
         "position": _OVR_POS_DESC[pos],
     }
@@ -2318,11 +2326,11 @@ def _install_bundled_cab_irs() -> None:
     """Install OUR bundled, distributable cab IRs into <config>/nam_irs/cabs/.
 
     The override layer (rb_cab_overrides.json) points songs/catalog at
-    `cabs/<prefix>_<mic>_<pos>.wav`, which the engine loads from nam_irs/. So a
-    fresh install needs those files on disk. We ship them under
-    `<plugin>/assets/cab_irs/` and copy any that are MISSING here — never
-    overwriting, so a user's own re-synthesized IR is preserved. Runs once at
-    `setup()`; no-op when either dir is absent."""
+    `cabs/<Clone>/<mic>_<pos>.wav` (per-cab clone-named subfolders), which the
+    engine loads from nam_irs/. So a fresh install needs those files on disk. We
+    ship them under `<plugin>/assets/cab_irs/` and copy any that are MISSING here
+    — never overwriting, so a user's own re-synthesized IR is preserved. Runs
+    once at `setup()`; no-op when either dir is absent."""
     if not _config_dir:
         return
     src = Path(__file__).resolve().parent / "assets" / "cab_irs"
@@ -2332,9 +2340,13 @@ def _install_bundled_cab_irs() -> None:
     try:
         dst.mkdir(parents=True, exist_ok=True)
         n = 0
-        for wav in sorted(src.glob("*.wav")):
-            target = dst / wav.name
+        # Recursive: cab IRs now live in per-cab clone-named subfolders
+        # (cabs/<Clone>/<mic>_<pos>.wav), so mirror the tree. `_legacy/` and any
+        # stray files copy too — harmless, nothing references them.
+        for wav in sorted(src.rglob("*.wav")):
+            target = dst / wav.relative_to(src)
             if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(wav, target)
                 n += 1
         if n:
@@ -2686,6 +2698,18 @@ def _resolve_cab_for_effect(effect_name: str, irs_root) -> tuple[str, str] | Non
         f = (spec or {}).get("ir_file")
         if f and irs_root and (irs_root / f).exists():
             return (base, f)
+        # The game's rocksmith/ mic IR isn't extracted on disk, but we ship OUR
+        # own modeled cab for this base → use it AT THE SAME mic position the
+        # Cabinet.Key names (derived from spec.effect_name, not a default), so
+        # the cab plays and the node's bypass works instead of the piece being
+        # left empty (kind='none'). `_apply_cab_override` can't help here — it
+        # only fires on a rocksmith/ file, which this song has none of.
+        if spec:
+            ovr = _load_cab_overrides().get(base)
+            if isinstance(ovr, dict):
+                o = _override_variant(ovr, spec)
+                if o and irs_root and (irs_root / o["ir_file"]).exists():
+                    return (base, o["ir_file"])
     # Tier 2 — bare base cab via rs_cab_to_ir default IR
     entry = (_load_rs_cab_to_ir() or {}).get(effect_name)
     if isinstance(entry, dict):

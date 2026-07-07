@@ -8,16 +8,19 @@ Para cada cab de `data/real_cab_catalog.json` renderiza el modelo físico
     mic: dyn (SM57) · cond (TLM103) · ribbon (R121) · tube (U47 prov.)
     pos: cone (x=0.15, 1") · edge (x=0.85, 1") · offaxis (x=0.30, 2", 45°)
 
-Los wav caen en `assets/cab_irs/RC_<CAB>_<mic>_<pos>.wav` (el instalador de
-setup() los copia a <config>/nam_irs/cabs/) y `data/rb_cab_overrides.json`
-se reescribe apuntando cada cab a su set — con eso `_apply_cab_override`
-hace que TODAS las canciones usen estos IRs sin re-seed, y el mic-position
-picker del editor los sirve como "IR propio".
+Los wav caen en `assets/cab_irs/<NombreClon>/<mic>_<pos>.wav` — una carpeta
+por cab, nombrada con el nombre CLON del catálogo (no el real/marca), ej.
+`assets/cab_irs/Box_AC30_2x12/dyn_cone.wav`. El instalador de setup() copia el
+árbol a <config>/nam_irs/cabs/ y `data/rb_cab_overrides.json` se reescribe
+(ir_dir=cabs/<NombreClon>, prefix="") — con eso `_apply_cab_override` hace que
+TODAS las canciones usen estos IRs sin re-seed, y el mic-position picker del
+editor los sirve como "IR propio".
 
 Uso:  cd rig_builder && python3 tools/generate_real_cab_irs.py
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -33,6 +36,15 @@ POSITIONS = {
 }
 
 
+def clone_slug(name: str) -> str:
+    """Filesystem-safe folder name from a catalog clone name.
+    "Mr. Y Maz 4x12" -> "Mr_Y_Maz_4x12";  "Ronald JC-120 2x12" -> "Ronald_JC-120_2x12".
+    Must stay in sync with the migration used to lay out assets/cab_irs."""
+    s = name.strip().replace(".", "")
+    s = re.sub(r"[^0-9A-Za-z_-]+", "_", s)
+    return re.sub(r"_+", "_", s).strip("_")
+
+
 def main():
     cat = json.load(open(HERE / "data" / "real_cab_catalog.json"))
     out_dir = HERE / "assets" / "cab_irs"
@@ -46,14 +58,17 @@ def main():
                   "+ spec-sheet mic models, validated vs measured reference grids "
                   "(see Cabs/CAB_MODELING_GUIDE.md). 100%% distributable — no "
                   "third-party IRs. One entry per cab gear key; files derive as "
-                  "<ir_dir>/<prefix>_<mic>_<pos>.wav."),
+                  "<ir_dir>/<mic>_<pos>.wav (ir_dir already includes the "
+                  "clone-named per-cab subfolder)."),
     }
     n = 0
     for gear, entry in sorted(cat["cabs"].items()):
-        prefix = "RC_" + gear.replace("Cab_", "")
+        sub = clone_slug(entry.get("name") or gear)   # clone name, NOT the real brand
+        cab_dir = out_dir / sub
+        cab_dir.mkdir(parents=True, exist_ok=True)
         for mic_tok, mic in MICS.items():
             for pos_tok, pp in POSITIONS.items():
-                out = out_dir / f"{prefix}_{mic_tok}_{pos_tok}.wav"
+                out = cab_dir / f"{mic_tok}_{pos_tok}.wav"
                 cab_synth.synthesize_ir_wav(
                     str(out), speaker=entry["speaker"], mic=mic,
                     x=pp["x"], dist_in=pp["dist_in"], angle_deg=pp["angle_deg"],
@@ -61,13 +76,13 @@ def main():
                     back=entry["back"], baffle_m=float(entry["baffle_m"]))
                 n += 1
         overrides[gear] = {
-            "ir_dir": "cabs",
-            "prefix": prefix,
+            "ir_dir": "cabs/" + sub,
+            "prefix": "",
             "source": (f"Real Cab parametric model: {entry['speaker']} "
                        f"{entry['drivers']}x{entry['size_in']} {entry['back']}-back "
                        f"(datasheet-driven, cab_synth.py)"),
         }
-        print(f"  ✓ {gear:<24} → {prefix} ({entry['speaker']} "
+        print(f"  ✓ {gear:<24} → cabs/{sub} ({entry['speaker']} "
               f"{entry['drivers']}x{entry['size_in']} {entry['back']})")
 
     with open(HERE / "data" / "rb_cab_overrides.json", "w", encoding="utf-8") as fh:
