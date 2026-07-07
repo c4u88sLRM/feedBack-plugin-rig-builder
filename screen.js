@@ -5052,16 +5052,29 @@ function rbStudioRenderSwapList(search) {
     const idx = rbState._studioFocusIdx;
     const cur = (rbStudioCurrentChain())[idx];
     const curGear = cur && cur.type;
+    const curBase = (curGear || '').replace(/_[a-z0-9]{2}$/i, '');
     const q = rbNorm(search || '').trim();
-    let items = ((rbState.gearCatalog && rbState.gearCatalog[kind]) || [])
-        .filter(g => rbGearHasVst(g) && (!q || rbGearSearchHaystack(g).includes(q)));
+    let items;
+    if (kind === 'cab') {
+        // Cabs aren't VSTs — list the FULL cab catalog (all 49, clone names)
+        // instead of the VST-filtered gear_catalog, so any cab is swappable.
+        const cabs = (rbState.realCabCatalog && rbState.realCabCatalog.cabs) || {};
+        items = Object.entries(cabs)
+            .map(([rs_gear, e]) => ({ rs_gear, real_name: e.name || rs_gear }))
+            .filter(g => !q || rbNorm(g.real_name + ' ' + g.rs_gear).includes(q));
+    } else {
+        items = ((rbState.gearCatalog && rbState.gearCatalog[kind]) || [])
+            .filter(g => rbGearHasVst(g) && (!q || rbGearSearchHaystack(g).includes(q)));
+    }
     if (!items.length) {
-        list.innerHTML = `<div style="text-align:center;color:#8893a8;font-size:12px;padding:24px 0">No ${kind === 'pedal' ? 'pedals' : (kind === 'rack' ? 'racks' : 'amps')} found</div>`;
+        const label = kind === 'pedal' ? 'pedals' : (kind === 'rack' ? 'racks' : (kind === 'cab' ? 'cabs' : 'amps'));
+        list.innerHTML = `<div style="text-align:center;color:#8893a8;font-size:12px;padding:24px 0">No ${label} found</div>`;
         return;
     }
     list.innerHTML = items.map(g => {
         const name = g.real_name || g.rs_gear;
-        return `<div class="rb-swap-item ${g.rs_gear === curGear ? 'rb-swap-current' : ''}"
+        const isCur = g.rs_gear === curGear || g.rs_gear === curBase;
+        return `<div class="rb-swap-item ${isCur ? 'rb-swap-current' : ''}"
                      onclick="rbStudioSwapToGear(${rbEsc(JSON.stringify(g.rs_gear))})" title="${rbEsc(name)}">
             <span class="rb-swap-thumb">${rbStudioAmpThumb(g)}</span>
             <span class="rb-swap-name">${rbEsc(name)}</span>
@@ -5139,6 +5152,20 @@ async function rbStudioReloadLiveChainAfterSwap() {
 
 function rbStudioSwapToGear(rsGear) {
     const kind = rbState._swapKind || 'amp';
+    if (kind === 'cab') {
+        // Cabs swap by rs_gear (IR), not by VST. Song: /gear/replace_with via
+        // rbStudioCabSwap, which reopens the Cab Room (re-entering focus + rail).
+        // Explorer: just re-audition the chosen cab. Then refresh the rail.
+        const v = rbState.studioView || {};
+        if (v.source === 'song' && _rbCabRoom['studio'] && _rbCabRoom['studio']._studio) {
+            rbStudioCabSwap(rsGear);
+        } else {
+            rbState._lastExploreCab = rsGear;
+            try { rbCabRoomExplore('studio', rsGear); } catch (_) {}
+            rbStudioRenderSwapList('');
+        }
+        return;
+    }
     const g = ((rbState.gearCatalog && rbState.gearCatalog[kind]) || []).find(x => x.rs_gear === rsGear);
     if (!g) return;
     // Add mode (empty pedalboard / rack tower): create a new piece, append it to
@@ -11394,6 +11421,10 @@ function rbCabRoomStateFromPiece(piece) {
 }
 
 window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
+    const room = document.getElementById('rb-studio-room');
+    if (!room) return;
+    // Toggle: clicking the cab again (or its close) exits the cab focus.
+    if (document.getElementById('rb-studio-cabroom')) { rbStudioCloseCabFocus(); return; }
     const v = rbState.studioView || {};
     const isSong = v.source === 'song';
     const found = isSong ? rbStudioCabPiece() : null;
@@ -11410,25 +11441,48 @@ window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
         gearName = rbState._lastExploreCab || 'Cab_EN212C';
         entry = cat.cabs[gearName] || cat.cabs[Object.keys(cat.cabs)[0]];
     }
-    const room = document.getElementById('rb-studio-room');
-    if (!room) return;
-    let ov = document.getElementById('rb-studio-cabroom');
-    if (ov) { ov.remove(); return; }   // toggle
-    ov = document.createElement('div');
+    // Enter focus — zoom/dim the room like the amp & pedal editors do.
+    rbState._studioFocusKind = 'cab';
+    rbState._studioFocusIdx = found ? found.pIdx : -1;
+    room.classList.add('rb-focus-active');
+    // Floating "← Room" bar (reuses the amp focus bar element + styles).
+    let bar = document.getElementById('rb-studio-focus-bar');
+    if (!bar) { bar = document.createElement('div'); bar.id = 'rb-studio-focus-bar'; room.appendChild(bar); }
+    bar.className = 'rb-focus-bar2';
+    bar.innerHTML = `<button class="rb-focus-back" onclick="rbStudioCloseCabFocus()">← Room</button>
+        <div class="rb-focus-actions" style="min-width:80px"></div>`;
+    requestAnimationFrame(() => bar.classList.add('rb-focus-open'));
+    // The cab room (drawn cab + mic) is the main editor — sits centre-left so
+    // the catalog rail can pin to the right (mirrors amp: gear left, rail right).
+    const ov = document.createElement('div');
     ov.id = 'rb-studio-cabroom';
-    ov.style.cssText = 'position:absolute; right:12px; top:12px; z-index:60; width:600px; max-width:92%;';
-    ov.innerHTML = `<div class="relative">
-        <button onclick="document.getElementById('rb-studio-cabroom').remove()"
-                class="absolute -top-2 -right-2 z-10 bg-dark-700 border border-gray-600 rounded-full w-6 h-6 text-gray-300 text-xs">✕</button>
-        <div id="rb-cabroom-studio"></div></div>`;
+    ov.style.cssText = 'position:absolute; left:46%; top:16px; transform:translateX(-50%); z-index:60; width:560px; max-width:56%;';
+    ov.innerHTML = `<div class="relative"><div id="rb-cabroom-studio"></div></div>`;
     room.appendChild(ov);
     delete _rbCabRoom['studio'];   // estado fresco por apertura
     rbCabRoomBuild({ rs_gear: gearName }, entry, 'studio', {
-        selector: true,
+        selector: false,   // the catalog rail replaces the old cab dropdown
         studio: found ? { toneIdx: v.toneIdx, pIdx: found.pIdx } : null,
         init: found ? rbCabRoomStateFromPiece(found.piece) : {},
     });
     if (found) rbCabRoomPreloadVariants('studio', gearName).catch(() => {});
+    // Catalog on the right — reuse the amp/pedal swap rail with kind='cab'.
+    rbStudioOpenSwap(rbState._studioFocusIdx, 'cab');
+};
+
+// Tear down the cab focus (own path — no VST/knob teardown, unlike the
+// amp/pedal rbStudioCloseFocus). Closes the rail, the ← Room bar and the
+// cab-room overlay, and un-zooms the room.
+window.rbStudioCloseCabFocus = function rbStudioCloseCabFocus() {
+    const room = document.getElementById('rb-studio-room');
+    try { rbStudioCloseSwap(); } catch (_) {}
+    const bar = document.getElementById('rb-studio-focus-bar');
+    if (bar) { bar.classList.remove('rb-focus-open'); setTimeout(() => { try { bar.remove(); } catch (_) {} }, 220); }
+    const ov = document.getElementById('rb-studio-cabroom');
+    if (ov) ov.remove();
+    delete _rbCabRoom['studio'];
+    if (room) room.classList.remove('rb-focus-active');
+    rbState._studioFocusKind = null;
 };
 
 window.rbCabRoomExplore = function (safeId, newBase) {
