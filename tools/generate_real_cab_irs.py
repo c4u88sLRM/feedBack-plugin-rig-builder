@@ -73,17 +73,21 @@ def main():
                     str(out), speaker=entry["speaker"], mic=mic,
                     x=pp["x"], dist_in=pp["dist_in"], angle_deg=pp["angle_deg"],
                     drivers=int(entry["drivers"]), size_in=float(entry["size_in"]),
-                    back=entry["back"], baffle_m=float(entry["baffle_m"]))
+                    back=entry["back"], baffle_m=float(entry["baffle_m"]),
+                    voicing=entry.get("voicing"))
                 n += 1
-        overrides[gear] = {
-            "ir_dir": "cabs/" + sub,
-            "prefix": "",
-            "source": (f"Real Cab parametric model: {entry['speaker']} "
-                       f"{entry['drivers']}x{entry['size_in']} {entry['back']}-back "
-                       f"(datasheet-driven, cab_synth.py)"),
-        }
-        print(f"  ✓ {gear:<24} → cabs/{sub} ({entry['speaker']} "
-              f"{entry['drivers']}x{entry['size_in']} {entry['back']})")
+        if entry.get("voicing"):
+            desc = f"voicing '{entry['voicing']}'"
+            source = (f"Real Cab novelty voicing model: {entry['voicing']} "
+                      f"(character curve, cab_synth.py VOICINGS)")
+        else:
+            desc = (f"{entry['speaker']} {entry['drivers']}x{entry['size_in']} "
+                    f"{entry['back']}")
+            source = (f"Real Cab parametric model: {entry['speaker']} "
+                      f"{entry['drivers']}x{entry['size_in']} {entry['back']}-back "
+                      f"(datasheet-driven, cab_synth.py)")
+        overrides[gear] = {"ir_dir": "cabs/" + sub, "prefix": "", "source": source}
+        print(f"  ✓ {gear:<24} → cabs/{sub} ({desc})")
 
     with open(HERE / "data" / "rb_cab_overrides.json", "w", encoding="utf-8") as fh:
         json.dump(overrides, fh, indent=1, ensure_ascii=False)

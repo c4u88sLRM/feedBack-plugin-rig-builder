@@ -389,18 +389,77 @@ def _enclosure_db(f, drivers=4, size_in=12.0, back="closed", baffle_m=0.76):
 
 
 # ── síntesis del IR ──────────────────────────────────────────────────────
+# ── cabs NOVELTY (radio/gramófono/jukebox/boombox/hi-fi/PA) ───────────────
+# No son cabs de parlante con datasheet: se modelan como CURVAS DE VOICING
+# (bandpass del arquetipo + resonancias características). El bandpass usa
+# skirts tipo Butterworth; los bumps dan el "honk" de bocina / la caja de
+# madera / el hype barato del boombox. `mic` sigue teniendo un efecto leve
+# (0.35×) para que el Cab Room mueva algo, pero aquí no hay mic real.
+def _hp_db(f, fc, order=2):
+    r = (np.maximum(f, 1.0) / fc) ** (2 * order)
+    return 10.0 * np.log10(r / (1.0 + r))
+
+
+def _lp_db(f, fc, order=2):
+    r = (np.maximum(f, 1.0) / fc) ** (2 * order)
+    return 10.0 * np.log10(1.0 / (1.0 + r))
+
+
+VOICINGS = {
+    # bocina acústica: banda muy angosta 250-3k, honk peaky ~700/1.8k, papelosa
+    "gramophone": lambda f: (_hp_db(f, 260, 3) + _lp_db(f, 3000, 3)
+        + _bump(f, 700, 7.0, 0.35) + _bump(f, 1800, 6.0, 0.4)
+        + _bump(f, 350, -4.0, 0.5)),
+    # radio de consola a tubos, parlante ~6" en mueble de madera
+    "cabinetradio": lambda f: (_hp_db(f, 170, 2) + _lp_db(f, 4200, 2)
+        + _bump(f, 220, 3.0, 0.6) + _bump(f, 1500, 4.0, 0.7)
+        + _bump(f, 3200, -3.0, 0.5)),
+    # jukebox: caja grande, más grave y cálido, agudos rodados
+    "jukebox": lambda f: (_hp_db(f, 90, 2) + _lp_db(f, 6000, 2)
+        + _bump(f, 120, 4.0, 0.5) + _bump(f, 900, 2.5, 0.8)
+        + _bump(f, 4500, -3.0, 0.6)),
+    # boombox 80s: graves porteados hinchados, medios scoopeados, presencia dura
+    "boombox": lambda f: (_hp_db(f, 80, 3) + _lp_db(f, 10000, 2)
+        + _bump(f, 100, 5.0, 0.4) + _bump(f, 550, -5.0, 0.8)
+        + _bump(f, 3500, 5.5, 0.6) + _bump(f, 8000, 3.0, 0.5)),
+    # audiophile: full-range plano hi-fi, leve rolloff en extremos
+    "audiophile": lambda f: (_hp_db(f, 42, 2) + _lp_db(f, 18000, 2)
+        + _bump(f, 60, 1.5, 0.7) + _bump(f, 12000, 1.5, 0.8)),
+    # vintage hi-fi: cálido, agudos rodados, presencia recesiva
+    "vintagehifi": lambda f: (_hp_db(f, 50, 2) + _lp_db(f, 11000, 2)
+        + _bump(f, 90, 3.0, 0.7) + _bump(f, 2500, -2.5, 0.9)
+        + _hi_shelf(f, 6000, -3.0, 1.2)),
+    # PA PS-600: full-range con horn de presencia
+    "pa600c": lambda f: (_hp_db(f, 62, 3) + _lp_db(f, 16000, 2)
+        + _bump(f, 3000, 3.0, 0.8) + _bump(f, 800, -1.5, 1.0)),
+    # PA-999C: PA mayor, más extensión de graves
+    "pa999c": lambda f: (_hp_db(f, 50, 3) + _lp_db(f, 16000, 2)
+        + _bump(f, 2500, 2.5, 0.9) + _bump(f, 700, -2.0, 1.0)),
+    # PS-115.2C: 15" + horn, graves extendidos, medios scoopeados, top brillante
+    "pa1152c": lambda f: (_hp_db(f, 45, 3) + _lp_db(f, 17000, 2)
+        + _bump(f, 70, 2.5, 0.6) + _bump(f, 650, -3.5, 1.0)
+        + _bump(f, 3500, 3.5, 0.8)),
+}
+
+
 def synthesize_ir(speaker="g12m", mic="sm57", x=0.15, dist_in=1.0,
                   angle_deg=0.0, drivers=4, size_in=12.0, back="closed",
-                  baffle_m=0.76, sr=48000, n_fft=8192, n_out=2048):
-    """Parámetros físicos → IR float32 fase-mínima listo para el engine."""
+                  baffle_m=0.76, voicing=None, sr=48000, n_fft=8192, n_out=2048):
+    """Parámetros físicos → IR float32 fase-mínima listo para el engine.
+
+    Si `voicing` está en VOICINGS (cabs novelty), se usa esa curva de
+    carácter en vez del motor driver+caja; el mic aporta un tilt leve."""
     f = np.fft.rfftfreq(n_fft, 1.0 / sr)
     f[0] = f[1]
     dist = float(dist_in) * 0.0254 + 0.015    # + offset de rejilla
-    db = DRIVERS[speaker](f)
-    db = db + _position_db(f, x, dist, size_in)
-    db = db + _directivity_db(f, np.deg2rad(angle_deg), dist, size_in)
-    db = db + MICS[mic][0](f) + _proximity_db(f, dist, mic)
-    db = db + _enclosure_db(f, drivers, size_in, back, baffle_m)
+    if voicing and voicing in VOICINGS:
+        db = VOICINGS[voicing](f) + 0.35 * MICS[mic][0](f)
+    else:
+        db = DRIVERS[speaker](f)
+        db = db + _position_db(f, x, dist, size_in)
+        db = db + _directivity_db(f, np.deg2rad(angle_deg), dist, size_in)
+        db = db + MICS[mic][0](f) + _proximity_db(f, dist, mic)
+        db = db + _enclosure_db(f, drivers, size_in, back, baffle_m)
     db -= np.max(db)
 
     mag = np.maximum(10.0 ** (db / 20.0), 1e-6)

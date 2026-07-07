@@ -11793,6 +11793,15 @@ async function rbLoadRealCabCatalog() {
 const RB_SPEAKER_LABELS = {
     g12m: 'Greenback G12M', blue: 'Alnico Blue', v30: 'Vintage 30',
     g12t75: 'G12T-75', g12h: 'G12H', c12n: 'Jensen C12N', p10q: 'Jensen P10Q', mod12110: 'Jensen MOD 12-110', evm15l: 'EV EVM15L', evm12l: 'EV EVM12L',
+    // parlantes de BAJO
+    bp102: 'Legend BP102', cb158: 'Legend CB158',
+    deltalite2510: 'Deltalite 2510', deltalite2512: 'Deltalite 2512',
+    p15n: 'Jensen P15N', c15n: 'Jensen C15N', pulse15: 'Pulse 15',
+    // voicings NOVELTY (radio/gramófono/jukebox/boombox/hi-fi/PA)
+    gramophone: 'Bocina acústica', cabinetradio: 'Radio de consola',
+    jukebox: 'Jukebox', boombox: 'Boombox', audiophile: 'Hi-Fi plano',
+    vintagehifi: 'Hi-Fi vintage', pa600c: 'PA full-range',
+    pa999c: 'PA full-range', pa1152c: 'PA 15"+horn',
 };
 
 const RB_CABROOM_W = 560, RB_CABROOM_H = 340;
