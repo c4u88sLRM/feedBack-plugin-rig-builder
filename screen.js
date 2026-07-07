@@ -11512,6 +11512,7 @@ async function rbAuditionFile(file, kind, btnId, gain, rsGear) {
     // Reservar la audición YA (antes del load): el fallback-al-default de
     // rbStopPreview corre a los 150 ms y solo respeta audiciones marcadas.
     rbState._auditionId = auditionKey;
+    console.log(`[rig_builder audition] ▶ ${kind || 'nam'} · ${file}${(typeof gain === 'number' && isFinite(gain)) ? ' · gain=' + gain : ''}`);
     // Stash the button's original label (e.g. "▶ clean", "▶ Listen")
     // so we can restore it after the user stops or switches buttons.
     // The previous implementation hard-coded "▶" on restore, which
