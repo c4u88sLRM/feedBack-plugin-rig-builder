@@ -3940,6 +3940,37 @@ function rbCabArtRect(aspect) {
     if (aspect < W / H) { bh = H; bw = H * aspect; } else { bw = W; bh = W / aspect; }
     return [(W - bw) / 2, (H - bh) / 2, bw, bh];
 }
+// The badge font as base64 so cab art can be an <img> (SVG-in-img can't use the
+// document's @font-face). Fetched once; art data-URLs rebuild when it lands.
+let RB_BEBAS_B64 = '';
+const _rbCabArtUrl = {};
+async function rbLoadCabFont() {
+    if (RB_BEBAS_B64) return;
+    try {
+        const bytes = new Uint8Array(await (await fetch(`${window.RB_API}/asset/font/bebas`)).arrayBuffer());
+        let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        RB_BEBAS_B64 = btoa(bin);
+        for (const k in _rbCabArtUrl) delete _rbCabArtUrl[k];
+    } catch (_) {}
+}
+// Cab recreation as an <img> src (data URL) — the cab's "photo" everywhere it
+// used to show the RS gear photo: room face, Gear cards, catalog thumbs, nodes.
+function rbCabArtDataUrl(gear) {
+    if (!gear) return '';
+    let key = gear;
+    if (!RB_CAB_ART[key] && String(gear).includes('_')) key = String(gear).replace(/_[a-z0-9]{2}$/i, '');
+    if (!RB_CAB_ART[key]) return '';
+    if (_rbCabArtUrl[key]) return _rbCabArtUrl[key];
+    let svg = RB_CAB_ART[key]('u');
+    if (!/xmlns=/.test(svg)) svg = svg.replace(/^<svg /, '<svg xmlns="http://www.w3.org/2000/svg" ');
+    if (RB_BEBAS_B64) {
+        const fs = `<style>@font-face{font-family:'PKBebas';src:url('data:font/ttf;base64,${RB_BEBAS_B64}')}</style>`;
+        svg = svg.includes('<defs>') ? svg.replace('<defs>', '<defs>' + fs) : svg.replace(/(<svg[^>]*>)/, '$1' + fs);
+    }
+    const url = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svg);
+    if (RB_BEBAS_B64) _rbCabArtUrl[key] = url;   // cache only once the font is in
+    return url;
+}
 
 function rbStudioPieceStem(p) {
     const vp = rbEffVstPath(p);
@@ -4100,8 +4131,8 @@ function rbRenderStudioRoom() {
     const extraSlots = RB_AMP_EXTRA_SLOTS[amps.length] || [];
     const ampStack = (entry, i) => {
         const nm = entry.p.real_name || entry.p.type || 'Amp';
-        const cabArt = rbCabArtFor(cabGear, i);   // recreated cab SVG (or '')
-        const cabAspect = rbCabArtAspect(cabGear); // real width/height → sizes the room cab
+        const cabArtUrl = rbCabArtDataUrl(cabGear);   // recreated cab as an <img> src (or '')
+        const cabAspect = rbCabArtAspect(cabGear);    // real width/height → sizes the room cab
         const img = rbStudioPedalImg(entry.p);
         const head = img
             ? `<div class="rb-amp-face"><img src="${img}" alt="${rbEsc(nm)}"></div>`
@@ -4115,9 +4146,9 @@ function rbRenderStudioRoom() {
         return `<div class="${cls}" data-amp-idx="${entry.idx}"${style}
                      onclick="rbStudioClickAmp(${entry.idx})" title="${rbEsc(nm)} — click to zoom in">
                     ${head}
-                    <div class="rb-amp-cab${cabArt ? ' has-art' : ''}" title="${rbEsc(cabName)} — click: Cab Room"
-                         style="cursor:pointer${cabArt && cabAspect ? `;aspect-ratio:${cabAspect}` : ''}"
-                         onclick="event.stopPropagation(); rbStudioOpenCabRoom()">${cabArt}</div>
+                    <div class="rb-amp-cab${cabArtUrl ? ' has-art' : ''}" title="${rbEsc(cabName)} — click: Cab Room"
+                         style="cursor:pointer${cabArtUrl && cabAspect ? `;aspect-ratio:${cabAspect}` : ''}"
+                         onclick="event.stopPropagation(); rbStudioOpenCabRoom()">${cabArtUrl ? `<img src="${cabArtUrl}" alt="">` : ''}</div>
                 </div>`;
     };
     const ampHtml = amps.map(ampStack).join('');
@@ -5131,6 +5162,8 @@ function rbStudioCloseSwap() {
 }
 
 function rbStudioAmpThumb(g) {
+    const cabUrl = g && rbCabArtDataUrl(g.rs_gear);   // recreated cab beats the RS photo
+    if (cabUrl) return `<img src="${cabUrl}" alt="">`;
     const stem = rbGearCanvasStem(g);
     if (stem && window.RBPedalCanvas && window.RBPedalCanvas.has(stem)) {
         try { return `<img src="${window.RBPedalCanvas.dataURL(stem, {})}" alt="">`; } catch (_) {}
@@ -6962,7 +6995,7 @@ function rbRenderPieceCard(p, toneIdx, pIdx, isSelected, total) {
     // this rs_gear. The onerror swaps the broken <img> for the sibling
     // placeholder via plain DOM properties — avoids HTML-in-attribute
     // escaping bugs.
-    const imgUrl = `${window.RB_API}/gear_photo/${encodeURIComponent(p.type)}${_RB_GEAR_PHOTO_CB}`;
+    const imgUrl = rbCabArtDataUrl(p.type) || `${window.RB_API}/gear_photo/${encodeURIComponent(p.type)}${_RB_GEAR_PHOTO_CB}`;
     const onerr = "this.style.display='none'; var n=this.nextElementSibling; if(n) n.classList.remove('hidden');";
     // For pieces backed by one of our canvas-UI VSTs, show the recreated
     // plugin face (at the piece's current param values) instead of RS art.
@@ -7159,7 +7192,7 @@ function rbRenderPieceEditor(p, toneIdx, pIdx, filename) {
     // Big photo for the editor (same source as the chain cards).
     // Same sibling-swap pattern as rbRenderPieceCard — see comment there
     // for why we avoid the `JSON.stringify` inside an attribute approach.
-    const imgUrl = `${window.RB_API}/gear_photo/${encodeURIComponent(p.type)}${_RB_GEAR_PHOTO_CB}`;
+    const imgUrl = rbCabArtDataUrl(p.type) || `${window.RB_API}/gear_photo/${encodeURIComponent(p.type)}${_RB_GEAR_PHOTO_CB}`;
     const onerrBig = "this.style.display='none'; var n=this.nextElementSibling; if(n) n.classList.remove('hidden');";
     // Plugin-UI face for our canvas-backed VSTs (current param values).
     const pStemBig = rbCanvasStem(p);
@@ -11208,6 +11241,7 @@ function rbRealCabEntryFor(gear) {
 }
 
 async function rbLoadRealCabCatalog() {
+    rbLoadCabFont();   // so cab-art <img>s render the badge font (fire-and-forget)
     try {
         const r = await fetch(`${window.RB_API}/cab/catalog`);
         if (r.ok) rbState.realCabCatalog = await r.json();
@@ -12233,7 +12267,7 @@ function rbRenderGearListItem(g) {
     const selected = rbState.gearSelected === g.rs_gear;
     const assigned = rbGearIsAssigned(g);
     const instrument = rbGearInstrument(g);
-    const rsArt = `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
+    const rsArt = rbCabArtDataUrl(g.rs_gear) || `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
     const stem = rbGearCanvasStem(g);
     const vstArt = (stem && window.RBPedalCanvas && window.RBPedalCanvas.has(stem))
         ? window.RBPedalCanvas.dataURL(stem, {}) : null;
@@ -12294,7 +12328,7 @@ function rbCatalogVisualForGear(g, size) {
                 </div>
             </div>`;
     }
-    const rsArt = `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
+    const rsArt = rbCabArtDataUrl(g.rs_gear) || `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
     const fallback = g.image
         ? `<img src="${rbEsc(g.image)}" alt="" loading="lazy"
                  style="display:none;max-width:100%;max-height:100%;object-fit:contain"
@@ -12591,7 +12625,7 @@ function rbRenderCatalogCard(g) {
     // trick avoids the HTML-in-attribute escaping issue we hit in the
     // song editor — onerror just hides this img and reveals the next
     // sibling, which is the next photo source down the chain.
-    const rsArt = `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
+    const rsArt = rbCabArtDataUrl(g.rs_gear) || `${window.RB_API}/gear_photo/${encodeURIComponent(g.rs_gear)}${_RB_GEAR_PHOTO_CB}`;
     const onerrChain = "this.style.display='none'; var n=this.nextElementSibling; if(n){ if(n.tagName==='IMG'){n.style.display=''} else {n.classList.remove('hidden')} }";
     // For gears we've built a VST canvas UI for, show the recreated plugin
     // face as the thumbnail (instead of the game art). dataURL renders
@@ -14852,6 +14886,8 @@ function rbAdvAutoLayout() {
 // — NEVER the RS gear photo (/gear_photo/...), which must not be shown. Returns a
 // data URL when the VST's canvas face is available, else null (text placeholder).
 function rbAdvGearImg(g) {
+    const cabUrl = g && rbCabArtDataUrl(g.rs_gear || g.type);   // recreated cab photo
+    if (cabUrl) return cabUrl;
     const vp = g && (g.vst_path || g._vst_path);
     if (!vp || !window.RBPedalCanvas) return null;
     const stem = vp.split(/[\\/]/).pop().replace(/\.(vst3|component)$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
