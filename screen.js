@@ -4101,6 +4101,7 @@ function rbRenderStudioRoom() {
     const ampStack = (entry, i) => {
         const nm = entry.p.real_name || entry.p.type || 'Amp';
         const cabArt = rbCabArtFor(cabGear, i);   // recreated cab SVG (or '')
+        const cabAspect = rbCabArtAspect(cabGear); // real width/height → sizes the room cab
         const img = rbStudioPedalImg(entry.p);
         const head = img
             ? `<div class="rb-amp-face"><img src="${img}" alt="${rbEsc(nm)}"></div>`
@@ -4114,7 +4115,8 @@ function rbRenderStudioRoom() {
         return `<div class="${cls}" data-amp-idx="${entry.idx}"${style}
                      onclick="rbStudioClickAmp(${entry.idx})" title="${rbEsc(nm)} — click to zoom in">
                     ${head}
-                    <div class="rb-amp-cab${cabArt ? ' has-art' : ''}" title="${rbEsc(cabName)} — click: Cab Room" style="cursor:pointer"
+                    <div class="rb-amp-cab${cabArt ? ' has-art' : ''}" title="${rbEsc(cabName)} — click: Cab Room"
+                         style="cursor:pointer${cabArt && cabAspect ? `;aspect-ratio:${cabAspect}` : ''}"
                          onclick="event.stopPropagation(); rbStudioOpenCabRoom()">${cabArt}</div>
                 </div>`;
     };
