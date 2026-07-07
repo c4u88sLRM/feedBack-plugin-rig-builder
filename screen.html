@@ -355,6 +355,11 @@
             repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 2px, transparent 2px 5px),
             repeating-linear-gradient(-45deg, rgba(0,0,0,.22) 0 2px, transparent 2px 5px);
         box-shadow:inset 0 0 0 1px rgba(255,255,255,.04); }
+    /* Recreated cab artwork present → drop the generic grille + let the SVG show
+       on a dark backdrop (it fits inside, letterboxed for non-square cabs). */
+    .rb-amp-cab.has-art{ background:#0a0a0b; overflow:hidden; }
+    .rb-amp-cab.has-art::before{ display:none; }
+    .rb-amp-cab.has-art > svg{ position:absolute; inset:0; width:100%; height:100%; }
 
     /* camera = perspective viewport. On focus the viewpoint re-aims toward the
        amp's corner (perspective-origin shifts there) so it reads as the camera

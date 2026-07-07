@@ -3859,6 +3859,58 @@ const RB_STUDIO_KNOB_ANGLES = [-135, -70, -10, 45, 110];
 const RB_MAX_PEDALS = 4;   // pedalboard capacity
 const RB_MAX_RACKS = 4;    // rack-tower capacity
 
+// ── Recreated cab artwork (copyright-free clones) ────────────────────────────
+// Inline SVG per cab gear, shown on the Studio room cab face (.rb-amp-cab). Uses
+// the amps' own PKBebas face (already loaded by RBPedalCanvas) for the badge, so
+// the branding matches the amp heads. Each id is suffixed per-instance (u) so two
+// amp stacks sharing one cab don't collide on gradient/pattern ids. Cabs without
+// art fall back to the CSS default. Add one entry per approved cab.
+const RB_CAB_ART = {
+    // Sampleg 1x15 — Ampeg Portaflex clone
+    'Bass_Cab_AT1150BC': u => `<svg viewBox="0 0 460 480" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2a2c"/><stop offset=".5" stop-color="#161617"/><stop offset="1" stop-color="#0c0c0d"/></linearGradient>
+        <pattern id="dm${u}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H8M0 4H8" stroke="#000" stroke-opacity=".28" stroke-width="1"/></pattern>
+        <linearGradient id="gb${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3b3e"/><stop offset="1" stop-color="#232427"/></linearGradient>
+        <pattern id="rb${u}" width="6" height="7" patternUnits="userSpaceOnUse"><rect width="6" height="7" fill="url(#gb${u})"/><rect width="6" height="2.4" fill="#c9cbce" opacity=".85"/><rect y="2.4" width="6" height="1.2" fill="#7f8286" opacity=".6"/></pattern>
+        <linearGradient id="ch${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9ebee"/><stop offset=".5" stop-color="#9a9ea3"/><stop offset="1" stop-color="#c7cace"/></linearGradient></defs>
+        <rect x="24" y="20" width="412" height="440" rx="16" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="24" y="20" width="412" height="440" rx="16" fill="url(#dm${u})"/>
+        <text x="230" y="58" text-anchor="middle" font-family="PKBebas,Georgia,serif" font-size="38" letter-spacing="1.5" fill="#e2e4e8">Sampleg</text>
+        <rect x="52" y="80" width="356" height="356" rx="7" fill="#101012"/>
+        <rect x="58" y="86" width="344" height="344" rx="5" fill="url(#rb${u})"/>
+        <rect x="58" y="86" width="344" height="344" rx="5" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
+        <circle cx="230" cy="258" r="122" fill="#000" opacity=".16"/>
+        <g fill="url(#ch${u})" stroke="#5c5f63" stroke-width="1">
+          <path d="M24 44 V36 a16 16 0 0 1 16-16 h8 v6 h-8 a10 10 0 0 0-10 10 v8 z"/><path d="M436 44 V36 a16 16 0 0 0-16-16 h-8 v6 h8 a10 10 0 0 1 10 10 v8 z"/>
+          <path d="M24 436 v8 a16 16 0 0 0 16 16 h8 v-6 h-8 a10 10 0 0 1-10-10 v-8 z"/><path d="M436 436 v8 a16 16 0 0 1-16 16 h-8 v-6 h8 a10 10 0 0 0 10-10 v-8 z"/></g></svg>`,
+    // Sampleg SVT 8x10 — Ampeg SVT-810E clone
+    'Bass_Cab_AT810BC': u => `<svg viewBox="0 0 320 580" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141415"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H8M0 4H8" stroke="#000" stroke-opacity=".3" stroke-width="1"/></pattern>
+        <pattern id="wv${u}" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#0c0c0d"/><path d="M0 0H5M0 2.5H5" stroke="#1d1d20" stroke-width="1"/><path d="M0 0V5M2.5 0V5" stroke="#161618" stroke-width="1"/></pattern>
+        <linearGradient id="ch${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9ebee"/><stop offset=".5" stop-color="#9a9ea3"/><stop offset="1" stop-color="#c7cace"/></linearGradient></defs>
+        <rect x="14" y="14" width="292" height="552" rx="15" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="14" y="14" width="292" height="552" rx="15" fill="url(#dm${u})"/>
+        <rect x="25" y="25" width="270" height="530" rx="10" fill="none" stroke="url(#ch${u})" stroke-width="2.4"/>
+        <rect x="31" y="31" width="258" height="518" rx="6" fill="#0c0c0d"/>
+        <rect x="31" y="31" width="258" height="518" rx="6" fill="url(#wv${u})"/>
+        <rect x="31" y="31" width="258" height="518" rx="6" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="1.5"/>
+        <g transform="translate(56 66) rotate(45)"><rect x="-12" y="-12" width="24" height="24" rx="2.5" fill="#283460" stroke="#d0d4dc" stroke-width="1.4"/></g>
+        <text x="56" y="66" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="16" fill="#dee2ea">S</text>
+        <text x="76" y="66" text-anchor="start" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="26" letter-spacing="1" fill="#e8eaee">Sampleg</text>
+        <g transform="translate(239 532)"><rect x="0" y="0" width="50" height="14.5" rx="2.5" fill="#0f0f10" stroke="url(#ch${u})" stroke-width="1"/><text x="25" y="7.6" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="10" letter-spacing="1.3" fill="#c7cace">CLASSIC</text></g>
+        <g fill="url(#ch${u})" stroke="#5c5f63" stroke-width="1">
+          <path d="M14 34 V26 a12 12 0 0 1 12-12 h7 v5 h-7 a7 7 0 0 0-7 7 v8 z"/><path d="M306 34 V26 a12 12 0 0 0-12-12 h-7 v5 h7 a7 7 0 0 1 7 7 v8 z"/>
+          <path d="M14 546 v8 a12 12 0 0 0 12 12 h7 v-5 h-7 a7 7 0 0 1-7-7 v-8 z"/><path d="M306 546 v8 a12 12 0 0 1-12 12 h-7 v-5 h7 a7 7 0 0 0 7-7 v-8 z"/></g></svg>`,
+};
+function rbCabArtFor(gear, uid) {
+    if (!gear) return '';
+    let key = gear;
+    if (!RB_CAB_ART[key] && String(gear).includes('_')) key = String(gear).replace(/_[a-z0-9]{2}$/i, '');
+    const fn = RB_CAB_ART[key];
+    return fn ? fn('c' + (uid == null ? 0 : uid)) : '';
+}
+
 function rbStudioPieceStem(p) {
     const vp = rbEffVstPath(p);
     if (!vp) return '';
@@ -3982,6 +4034,7 @@ function rbRenderStudioRoom() {
     const g = rbStudioGroupDefault();
     const amp = g.amp[0];
     const cabName = g.cab[0] ? (g.cab[0].p.real_name || 'Cab') : 'Cab';
+    const cabGear = g.cab[0] ? (g.cab[0].p.type || g.cab[0].p.rs_gear) : null;
     const knobs = RB_STUDIO_KNOB_ANGLES
         .map(deg => `<span class="rb-knob" style="--rb-knob-rot:${deg}deg"></span>`).join('');
 
@@ -4017,6 +4070,7 @@ function rbRenderStudioRoom() {
     const extraSlots = RB_AMP_EXTRA_SLOTS[amps.length] || [];
     const ampStack = (entry, i) => {
         const nm = entry.p.real_name || entry.p.type || 'Amp';
+        const cabArt = rbCabArtFor(cabGear, i);   // recreated cab SVG (or '')
         const img = rbStudioPedalImg(entry.p);
         const head = img
             ? `<div class="rb-amp-face"><img src="${img}" alt="${rbEsc(nm)}"></div>`
@@ -4030,8 +4084,8 @@ function rbRenderStudioRoom() {
         return `<div class="${cls}" data-amp-idx="${entry.idx}"${style}
                      onclick="rbStudioClickAmp(${entry.idx})" title="${rbEsc(nm)} — click to zoom in">
                     ${head}
-                    <div class="rb-amp-cab" title="${rbEsc(cabName)} — click: Cab Room" style="cursor:pointer"
-                         onclick="event.stopPropagation(); rbStudioOpenCabRoom()"></div>
+                    <div class="rb-amp-cab${cabArt ? ' has-art' : ''}" title="${rbEsc(cabName)} — click: Cab Room" style="cursor:pointer"
+                         onclick="event.stopPropagation(); rbStudioOpenCabRoom()">${cabArt}</div>
                 </div>`;
     };
     const ampHtml = amps.map(ampStack).join('');
