@@ -11277,10 +11277,10 @@ async function rbCabRoomSynth(safeId, gear, assign) {
 window.rbCabRoomListen = async function (safeId, gear, restart) {
     const stx = _rbCabRoom[safeId];
     if (stx && stx._studio) {
-        // En el Studio, explorar NO recarga el tono (recargar re-instancia el
-        // amp VST → segundos de silencio, eterno con amps pesados como el
-        // Super-Sonic). El drag audiciona el CAB SOLO al instante; el botón
-        // "✓ Aplicar al tono" hace la recarga UNA vez, cuando tú decides.
+        // Cambio EN CONTEXTO e instantáneo vía las variantes pre-cargadas
+        // (setBypass). Si no están (preload falló), cae a la audición rápida
+        // del cab solo. "✓ Aplicar al tono" persiste la posición EXACTA.
+        if (await rbCabRoomSwitchVariant(safeId)) return;
         const status = document.getElementById(`rb-cabroom-status-${safeId}`);
         if (status) status.textContent = '🎧 escuchando cab solo — "Aplicar" para oírlo en el tono';
     }
@@ -11428,6 +11428,7 @@ window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
         studio: found ? { toneIdx: v.toneIdx, pIdx: found.pIdx } : null,
         init: found ? rbCabRoomStateFromPiece(found.piece) : {},
     });
+    if (found) rbCabRoomPreloadVariants('studio', gearName).catch(() => {});
 };
 
 window.rbCabRoomExplore = function (safeId, newBase) {
@@ -11441,6 +11442,113 @@ window.rbCabRoomExplore = function (safeId, newBase) {
     rbCabRoomBuild({ rs_gear: newBase }, entry, safeId, opts);
     rbCabRoomListen(safeId, newBase, true);
 };
+
+// ── Variantes pre-cargadas: cambio de mic/posición EN CONTEXTO e instantáneo ──
+// Al abrir el Cab Room de un tono, el monitor se carga UNA vez con la cadena
+// completa donde el stage del cab se expande a las 12 variantes RC_ (4 mics ×
+// 3 posiciones), todas bypasseadas menos la activa. Cambiar mic/posición =
+// api.setBypass (instantáneo) → se oye CON amp y pedales, sin recargar. La
+// posición fina exacta se persiste con "✓ Aplicar al tono" (una recarga).
+const _RB_CR_MIC_TOK = { sm57: 'dyn', tlm103: 'cond', r121: 'ribbon', tube: 'tube',
+                         md421: 'dyn', km84: 'cond' };   // 421/km84 → arquetipo más cercano
+
+function rbCabRoomSnapPos(st) {
+    if ((st.angle_deg || 0) >= 22) return 'offaxis';
+    return (st.x < 0.5) ? 'cone' : 'edge';
+}
+
+async function rbCabRoomPreloadVariants(safeId, gear) {
+    const st = _rbCabRoom[safeId];
+    const info = st && st._studio;
+    const api = rbAudioApi();
+    if (!info || !api) return false;
+    const status = document.getElementById(`rb-cabroom-status-${safeId}`);
+    if (status) status.textContent = '⏳ cargando el tono con las variantes del cab…';
+    try {
+        const presetId = await rbPersistTone(info.toneIdx, rbState.currentSongFile);
+        if (presetId == null) return false;
+        const r = await fetch(`${window.RB_API}/native_preset_full/${presetId}`);
+        if (!r.ok) return false;
+        const payload = await r.json();
+        const chain = payload && payload.native_preset && payload.native_preset.chain;
+        if (!Array.isArray(chain) || !chain.length) return false;
+        let ci = chain.findIndex(sg => sg && sg.type === 2
+            && ((sg.slot || '') === 'cabinet' || /(^|\/)(cabs|realcab|rocksmith)\//i.test(sg.path || '')));
+        if (ci < 0) ci = chain.findIndex(sg => sg && sg.type === 2);
+        if (ci < 0) return false;
+        const orig = chain[ci];
+        const cat = rbState.realCabCatalog || {};
+        let base = gear;
+        if (!(cat.cabs && cat.cabs[base]) && base.includes('_'))
+            base = base.replace(/_[a-z0-9]{2}$/i, '');
+        if (!(cat.cabs && cat.cabs[base])) return false;
+        const prefix = 'RC_' + base.replace('Cab_', '');
+        const m = /^(.*nam_irs)\//i.exec((orig.path || '').replace(/\\/g, '/'));
+        const root = m ? m[1] : null;
+        if (!root) return false;
+        let stObj = null;
+        try { stObj = JSON.parse(atob(orig.state || '')); } catch (_) { stObj = null; }
+        const activeKey = `${_RB_CR_MIC_TOK[st.mic] || 'dyn'}_${rbCabRoomSnapPos(st)}`;
+        const variants = [];
+        const vmap = {};
+        for (const mic of ['dyn', 'cond', 'ribbon', 'tube']) {
+            for (const pos of ['cone', 'edge', 'offaxis']) {
+                const key = `${mic}_${pos}`;
+                const path = `${root}/cabs/${prefix}_${key}.wav`;
+                const stage = Object.assign({}, orig, {
+                    name: `${prefix}_${key}`, path,
+                    bypassed: key !== activeKey,
+                });
+                if (stObj && stObj.irPath) {
+                    const o2 = Object.assign({}, stObj, { irPath: path });
+                    stage.state = btoa(JSON.stringify(o2));
+                }
+                vmap[key] = variants.length;
+                variants.push(stage);
+            }
+        }
+        chain.splice(ci, 1, ...variants);
+        delete payload.id;
+        await rbCloseActiveVstEditor();
+        await rbLoadNativePresetPayload(api, payload, { mode: 'preview', authorization: 'user-action' });
+        await rbStudioFinishMonitorLoad(api, chain);
+        rbState._defaultToneActive = true;
+        st._variantBase = ci;
+        st._variantMap = vmap;
+        st._variantActive = activeKey;
+        if (status) status.textContent = `✓ en contexto — cambia mic/posición al instante (${activeKey.replace('_', ' @ ')})`;
+        return true;
+    } catch (e) {
+        if (status) status.textContent = '⚠ variantes no disponibles — usando audición de cab solo';
+        return false;
+    }
+}
+
+async function rbCabRoomSwitchVariant(safeId) {
+    const st = _rbCabRoom[safeId];
+    if (!st || !st._variantMap) return false;
+    const api = rbAudioApi();
+    if (!api || typeof api.setBypass !== 'function') return false;
+    const key = `${_RB_CR_MIC_TOK[st.mic] || 'dyn'}_${rbCabRoomSnapPos(st)}`;
+    if (st._variantMap[key] == null) return false;
+    try {
+        let ids = null;
+        try {
+            const loaded = await api.getChainState();
+            if (Array.isArray(loaded))
+                ids = loaded.map((sl, i) => (sl && (sl.id ?? sl.slotId)) ?? i);
+        } catch (_) {}
+        const slotOf = idx => (ids ? ids[st._variantBase + idx] : st._variantBase + idx);
+        if (st._variantActive && st._variantActive !== key
+            && st._variantMap[st._variantActive] != null)
+            await api.setBypass(slotOf(st._variantMap[st._variantActive]), true);
+        await api.setBypass(slotOf(st._variantMap[key]), false);
+        st._variantActive = key;
+        const status = document.getElementById(`rb-cabroom-status-${safeId}`);
+        if (status) status.textContent = `✓ sonando en contexto: ${key.replace('_', ' @ ')} — "Aplicar" guarda la posición exacta`;
+        return true;
+    } catch (_) { return false; }
+}
 
 async function rbStudioCabRoomApply(safeId, gear) {
     const st = _rbCabRoom[safeId];
