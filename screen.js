@@ -14656,22 +14656,28 @@ function rbAdvPaletteRender() {
     const host = document.getElementById('rb-adv-palette-list');
     if (!host) return;
     const cat = rbAdvState().palette;
+    // Cab palette is locked once a cab is on the graph — only one cab allowed.
+    const cabLocked = rbAdvGearIsCab(cat, '') && rbAdvHasCab();
     const q = rbNorm(((document.getElementById('rb-adv-pal-search') || {}).value || '').trim());
     const items = ((rbState.gearCatalog && rbState.gearCatalog[cat]) || [])
         .filter(g => !q || rbNorm(`${g.name || ''} ${g.rs_gear || ''} ${g.real_name || ''}`).includes(q));
     if (!items.length) { host.innerHTML = `<div class="rb-adv-pal-empty">No ${cat}s${q ? ' match' : ' yet'}.</div>`; return; }
-    host.innerHTML = items.map(g => {
+    host.innerHTML = (cabLocked
+        ? `<div class="rb-adv-pal-empty" style="padding:6px 8px;line-height:1.35">Ya hay un cab en el grafo. Todos los amps comparten el mismo cab, así que solo se permite uno — bórralo para poner otro.</div>`
+        : '') + items.map(g => {
         const name = rbEsc(g.name || g.real_name || g.rs_gear || 'Gear');
         const img = rbAdvGearImg(g);   // VST face only — never the RS gear photo
         const thumb = img
             ? `<img src="${img}" alt="" draggable="false" onerror="this.style.display='none'">`
             : `<span class="rb-adv-pal-ph">${rbAdvGearInitials(g)}</span>`;
-        return `<div class="rb-adv-pal-item" draggable="false"
+        const lock = cabLocked ? ' style="opacity:.4;cursor:not-allowed;pointer-events:none" title="Solo se permite un cab"' : '';
+        return `<div class="rb-adv-pal-item" draggable="false"${lock}
                      data-adv-gear="${rbEsc(g.rs_gear)}" data-adv-cat="${cat}" data-adv-name="${name}">
                     <div class="rb-adv-pal-thumb">${thumb}</div>
                     <div class="rb-adv-pal-name">${name}</div>
                 </div>`;
     }).join('');
+    if (cabLocked) return;   // locked items are inert; no drag handlers to wire
     host.querySelectorAll('.rb-adv-pal-item').forEach(el => {
         // MOUSE-based drag, NOT HTML5 drag-and-drop — Electron's webview drops
         // custom dataTransfer payloads mid-drag, so amps/VSTs often couldn't be
@@ -15121,6 +15127,7 @@ async function rbAdvDeleteNode(id) {
     }));
     adv.nodes = adv.nodes.filter(x => x.id !== id);
     rbAdvRenderCanvas();
+    try { rbAdvPaletteRender(); } catch (_) {}   // removing a cab re-unlocks the palette
     rbAdvPersist();
     try { await rbStudioPersist(); } catch (_) {}
     try { if (rbState._studioPersistPromise) await rbState._studioPersistPromise; } catch (_) {}
@@ -15337,9 +15344,27 @@ function rbAdvBindCanvasOnce() {
 // HTML5 drag-and-drop is flaky in the Electron webview (custom MIME types get
 // dropped mid-drag on Windows/Chromium), so a plain click is the reliable way
 // to add an amp/pedal/rack/VST to the node graph.
+// Cab detection + the single-cab rule. The native engine runs ONE shared cab on
+// the merged bus (every amp plays through it) — a per-amp cab can't be routed
+// (it falls back to a serial chain), so the node editor allows only one cab.
+function rbAdvGearIsCab(cat, rsGear) {
+    return /^cabs?$/i.test(cat || '') || /^(bass_)?cab_/i.test(rsGear || '');
+}
+function rbAdvNodeIsCab(n) {
+    return !!n && n.kind === 'gear' && rbAdvGearIsCab(n.kindLabel, n.rsGear);
+}
+function rbAdvHasCab() {
+    return rbAdvState().nodes.some(rbAdvNodeIsCab);
+}
+
 function rbAdvAddGearNode(data, x, y) {
     if (!data || !data.rs_gear) return null;
     const adv = rbAdvState();
+    // Only ONE cab allowed — all amps share it (see rbAdvGearIsCab).
+    if (rbAdvGearIsCab(data.cat, data.rs_gear) && rbAdvHasCab()) {
+        alert('Solo se permite un cab: todos los amps comparten el mismo cab.');
+        return null;
+    }
     const id = Math.max(0, ...adv.nodes.map(n => n.id)) + 1;
     // Resolve the gear's VST face from the catalog (copyright-free) — never the
     // RS gear photo that came off the drag payload.
@@ -15354,6 +15379,7 @@ function rbAdvAddGearNode(data, x, y) {
     };
     adv.nodes.push(node);
     rbAdvRenderCanvas();
+    try { rbAdvPaletteRender(); } catch (_) {}   // refresh cab lock in the palette
     rbAdvMaterializeGear(node).catch(() => {});
     return node;
 }
