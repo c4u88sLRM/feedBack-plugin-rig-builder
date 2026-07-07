@@ -5228,15 +5228,23 @@ function rbStudioSwapToGear(rsGear) {
     if (kind === 'cab') {
         // Cabs swap by rs_gear (IR), not by VST. Song: /gear/replace_with via
         // rbStudioCabSwap, which reopens the Cab Room (re-entering focus + rail).
-        // Explorer: just re-audition the chosen cab. Then refresh the rail.
+        // Explorer: just re-audition the chosen cab.
+        const q = rbState._swapSearch || '';   // keep the query across the rebuild
         const v = rbState.studioView || {};
         if (v.source === 'song' && _rbCabRoom['studio'] && _rbCabRoom['studio']._studio) {
             rbStudioCabSwap(rsGear);
         } else {
             rbState._lastExploreCab = rsGear;
             try { rbCabRoomExplore('studio', rsGear); } catch (_) {}
-            rbStudioRenderSwapList('');
         }
+        // The swap rebuilds the room + rail ASYNCHRONOUSLY (monitor reload), which
+        // can wipe the search after we restore it — re-assert it a few times so
+        // the rail keeps showing the searched result instead of jumping to the top.
+        [80, 300, 650].forEach(t => setTimeout(() => {
+            rbState._swapSearch = q;
+            const inp = document.querySelector('#rb-swap-panel .rb-swap-head input');
+            if (inp) { if (inp.value !== q) inp.value = q; try { rbStudioRenderSwapList(q); } catch (_) {} }
+        }, t));
         return;
     }
     const g = ((rbState.gearCatalog && rbState.gearCatalog[kind]) || []).find(x => x.rs_gear === rsGear);
@@ -11216,6 +11224,8 @@ function rbCabRoomBuild(g, entry, safeId, opts) {
     st._studio = (opts && opts.studio) || null;
     st._opts = opts || null;
     if (opts && opts.init) Object.assign(st, opts.init);
+    const cabArt = rbCabArtFor(g.rs_gear);   // recreated cab SVG (or '')
+    st._hasArt = !!cabArt;
     const mics = [['sm57', 'Dynamic 57'], ['md421', 'MD421'], ['km84', 'KM84'],
                   ['r121', 'Ribbon R121'], ['tlm103', 'Condenser'], ['tube', 'Tube']];
     const micBtns = mics.map(([k, lbl]) =>
@@ -11229,9 +11239,12 @@ function rbCabRoomBuild(g, entry, safeId, opts) {
                 <span class="text-sm text-violet-300 font-medium">🎙 ${rbEsc(entry.name || 'Cab Room')}</span>
                 <span class="text-[11px] text-gray-500">arrastra el micrófono — se escucha al soltar · ${entry.drivers}x${entry.size_in} ${entry.back === 'closed' ? 'cerrado' : 'open-back'}</span>
             </div>
-            <canvas id="rb-cabroom-cv-${safeId}" width="${RB_CABROOM_W}" height="${RB_CABROOM_H}"
-                    class="rounded-lg border border-gray-800 cursor-crosshair w-full"
-                    style="touch-action:none;"></canvas>
+            <div style="position:relative;width:100%">
+                ${cabArt ? `<div class="rb-cabroom-art" style="position:absolute;inset:0;border-radius:.5rem;overflow:hidden;background:#0a0a0b;display:flex;align-items:center;justify-content:center">${cabArt}</div>` : ''}
+                <canvas id="rb-cabroom-cv-${safeId}" width="${RB_CABROOM_W}" height="${RB_CABROOM_H}"
+                        class="rounded-lg border border-gray-800 cursor-crosshair w-full"
+                        style="touch-action:none;position:relative;${cabArt ? 'background:transparent' : ''}"></canvas>
+            </div>
             <div class="flex items-center gap-1.5 flex-wrap">${micBtns}</div>
             ${(entry.speakers && entry.speakers.length > 1) ? `
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -11286,28 +11299,32 @@ function rbCabRoomDraw(safeId, entry) {
     const g = cv.getContext('2d');
     const W = RB_CABROOM_W, H = RB_CABROOM_H;
     g.clearRect(0, 0, W, H);
-    // caja tolex + marco + rejilla
-    g.fillStyle = '#171310'; g.fillRect(0, 0, W, H);
-    g.strokeStyle = '#3c3226'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, H - 10);
-    g.save(); g.beginPath(); g.rect(16, 16, W - 32, H - 32); g.clip();
-    g.fillStyle = '#221b12'; g.fillRect(16, 16, W - 32, H - 32);
-    g.strokeStyle = 'rgba(130,108,74,.15)'; g.lineWidth = 1.2;
-    for (let i = -H; i < W; i += 8) {
-        g.beginPath(); g.moveTo(i, 16); g.lineTo(i + H, H - 16); g.stroke();
-        g.beginPath(); g.moveTo(i + H, 16); g.lineTo(i, H - 16); g.stroke();
+    // With recreated art behind the canvas, draw ONLY the mic on a transparent
+    // canvas so the real cab shows through; else draw the generic tolex + cones.
+    if (!st._hasArt) {
+        // caja tolex + marco + rejilla
+        g.fillStyle = '#171310'; g.fillRect(0, 0, W, H);
+        g.strokeStyle = '#3c3226'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, H - 10);
+        g.save(); g.beginPath(); g.rect(16, 16, W - 32, H - 32); g.clip();
+        g.fillStyle = '#221b12'; g.fillRect(16, 16, W - 32, H - 32);
+        g.strokeStyle = 'rgba(130,108,74,.15)'; g.lineWidth = 1.2;
+        for (let i = -H; i < W; i += 8) {
+            g.beginPath(); g.moveTo(i, 16); g.lineTo(i + H, H - 16); g.stroke();
+            g.beginPath(); g.moveTo(i + H, 16); g.lineTo(i, H - 16); g.stroke();
+        }
+        // parlantes
+        for (const [cx, cy, r] of rbCabRoomLayout(entry)) {
+            g.beginPath(); g.arc(cx, cy, r, 0, 7);
+            g.fillStyle = 'rgba(6,5,3,.78)'; g.fill();
+            g.strokeStyle = 'rgba(205,185,150,.55)'; g.lineWidth = 3; g.stroke();
+            g.beginPath(); g.arc(cx, cy, r * 0.66, 0, 7);
+            g.strokeStyle = 'rgba(150,130,100,.3)'; g.lineWidth = 1.2; g.stroke();
+            g.beginPath(); g.arc(cx, cy, r * 0.28, 0, 7);
+            g.fillStyle = 'rgba(34,27,19,.95)'; g.fill();
+            g.strokeStyle = 'rgba(205,185,150,.45)'; g.lineWidth = 1.5; g.stroke();
+        }
+        g.restore();
     }
-    // parlantes
-    for (const [cx, cy, r] of rbCabRoomLayout(entry)) {
-        g.beginPath(); g.arc(cx, cy, r, 0, 7);
-        g.fillStyle = 'rgba(6,5,3,.78)'; g.fill();
-        g.strokeStyle = 'rgba(205,185,150,.55)'; g.lineWidth = 3; g.stroke();
-        g.beginPath(); g.arc(cx, cy, r * 0.66, 0, 7);
-        g.strokeStyle = 'rgba(150,130,100,.3)'; g.lineWidth = 1.2; g.stroke();
-        g.beginPath(); g.arc(cx, cy, r * 0.28, 0, 7);
-        g.fillStyle = 'rgba(34,27,19,.95)'; g.fill();
-        g.strokeStyle = 'rgba(205,185,150,.45)'; g.lineWidth = 1.5; g.stroke();
-    }
-    g.restore();
     // micrófono (punto + caña), escala con la distancia
     const [mx, my] = rbCabRoomMicPx(safeId, entry);
     const sc = 1.0 - 0.3 * (st.dist_in / 6.0);
