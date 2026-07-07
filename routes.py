@@ -9657,6 +9657,28 @@ def setup(app, context):
         def _mic_variants_for(rs_gear: str) -> list[dict]:
             spec = mic_map.get(rs_gear) or {}
             ovr = _load_cab_overrides().get(rs_gear) or {}
+            # Cabs we ship but the game has NO mic-map for (the 9 novelty cabs:
+            # gramophone/radio/jukebox/boombox/hi-fi/PA — single manifest, no
+            # _5c positions). Synthesize the standard mic×position grid from our
+            # override so the catalog card still gets ▶ buttons + a default.
+            if not spec and ovr:
+                ir_dir = str(ovr.get("ir_dir") or "cabs").strip("/")
+                prefix = str(ovr.get("prefix") or "")
+                grid = []
+                for mic_tok in ("dyn", "cond", "ribbon", "tube"):
+                    for pos in ("cone", "edge", "offaxis"):
+                        stem = f"{prefix}_{mic_tok}_{pos}" if prefix else f"{mic_tok}_{pos}"
+                        grid.append({
+                            "suffix": f"{mic_tok[0]}{pos[0]}",
+                            "ir_index": len(grid),
+                            "ir_file": f"{ir_dir}/{stem}.wav",
+                            "label": f"{_OVR_MIC_LABEL[mic_tok]} {_OVR_POS_LABEL[pos]}",
+                            "mic_type": mic_tok,
+                            "position": _OVR_POS_DESC[pos],
+                            "available": True,
+                            "our_synth": True,
+                        })
+                return grid
             out = []
             for suffix, entry in sorted(spec.items(),
                                           key=lambda kv: kv[1].get("ir_index", 99)):
@@ -9731,6 +9753,29 @@ def setup(app, context):
                 "vst_path": prim["vst_path"] if prim else None,
                 "vst_format": prim["vst_format"] if prim else None,
                 "vst_state": None,
+            }
+
+        # Surface EVERY cab WE model (real_cab_catalog.json — the 58 curated
+        # cabs) even if no downloaded song uses it, so the Cabs catalog shows
+        # our full roster instead of only the ~25 the user's library happens to
+        # reference. Each ships an override IR (always auditionable); the mic
+        # grid comes from the RS mic-map or is synthesized from the override
+        # (novelty cabs). This is scoped to OUR catalog — NOT the hundreds of
+        # raw RS cab codenames excluded above.
+        cab_catalog = (_load_cached_json("real_cab_catalog.json") or {}).get("cabs", {})
+        for gear, entry in cab_catalog.items():
+            if gear in best:
+                continue
+            ovr = _load_cab_overrides().get(gear) or {}
+            ir_dir = str(ovr.get("ir_dir") or "cabs").strip("/")
+            prefix = str(ovr.get("prefix") or "")
+            stem = f"{prefix}_dyn_cone" if prefix else "dyn_cone"
+            best[gear] = {
+                "kind": "ir",
+                "file": f"{ir_dir}/{stem}.wav",
+                "tone3000_id": None,
+                "has_assignment": True,
+                "vst_path": None, "vst_format": None, "vst_state": None,
             }
 
         display_names = _load_vst_display_names()
