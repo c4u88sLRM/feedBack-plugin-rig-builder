@@ -81,7 +81,7 @@
   "source": "Real Cab parametric model: deltalite2510 6x10 ported-back (datasheet-driven, cab_synth.py)"
  },
  "Bass_Cab_GB415BC": {
-  "ir_dir": "cabs/GB_Bass_4x15",
+  "ir_dir": "cabs/Lovolt_Bass_4x15",
   "prefix": "",
   "source": "Real Cab parametric model: cb158 4x15 ported-back (datasheet-driven, cab_synth.py)"
  },
