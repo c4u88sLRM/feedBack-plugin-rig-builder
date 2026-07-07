@@ -5002,13 +5002,19 @@ async function rbStudioOpenSwap(idx, kind) {
     let panel = document.getElementById('rb-swap-panel');
     if (!panel) { panel = document.createElement('div'); panel.id = 'rb-swap-panel'; room.appendChild(panel); }
     panel.className = 'rb-swap-panel';
+    // Preserve the search across a swap: swapping rebuilds the whole rail, so
+    // without this the query resets to empty and the list jumps to the top —
+    // annoying right after you searched for and picked a cab. Cleared on close.
+    const _savedSearch = rbState._swapSearch || '';
+    const _kindLabel = kind === 'pedal' ? 'pedals' : (kind === 'rack' ? 'racks' : (kind === 'cab' ? 'cabs' : 'amps'));
     panel.innerHTML = `
         <div class="rb-swap-head">
-            <input type="text" placeholder="Search ${kind === 'pedal' ? 'pedals' : (kind === 'rack' ? 'racks' : 'amps')}…" oninput="rbStudioRenderSwapList(this.value)">
+            <input type="text" placeholder="Search ${_kindLabel}…" value="${rbEsc(_savedSearch)}"
+                   oninput="rbState._swapSearch=this.value; rbStudioRenderSwapList(this.value)">
         </div>
         <div id="rb-swap-list" class="rb-swap-list" onscroll="rbStudioScheduleCarousel()"></div>`;
     room.classList.add('rb-swap-active');
-    rbStudioRenderSwapList('');
+    rbStudioRenderSwapList(_savedSearch);
     rbStudioPinSwapRail();   // pin to the viewport's right edge (covers the host's margin)
     if (!rbState._swapResizeHooked) {
         rbState._swapResizeHooked = true;
@@ -5033,6 +5039,7 @@ function rbStudioPinSwapRail() {
 function rbStudioCloseSwap() {
     const room = document.getElementById('rb-studio-room');
     const panel = document.getElementById('rb-swap-panel');
+    rbState._swapSearch = '';   // reset the persisted rail search when the rail closes
     if (room) room.classList.remove('rb-swap-active');
     if (panel) { panel.classList.remove('rb-swap-open'); setTimeout(() => { try { panel.remove(); } catch (_) {} }, 320); }
 }
