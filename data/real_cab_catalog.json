@@ -136,13 +136,13 @@
       "speaker": "v30",
       "drivers": 1,
       "size_in": 12,
-      "back": "open",
+      "back": "closed",
       "baffle_m": 0.5,
-      "speaker_confidence": "low",
-      "name": "CS 1x12",
+      "speaker_confidence": "high",
+      "name": "Citrus PPC112",
       "speakers": [
         "v30",
-        "blue",
+        "g12h",
         "g12m"
       ]
     },
@@ -152,11 +152,12 @@
       "size_in": 15,
       "back": "closed",
       "baffle_m": 0.6,
-      "speaker_confidence": "low",
-      "name": "CS 1x15",
+      "speaker_confidence": "medium",
+      "name": "Citrus 1x15",
       "speakers": [
         "g12h",
-        "c12n"
+        "evm15l",
+        "c15n"
       ]
     },
     "Cab_CS212C": {
@@ -201,16 +202,17 @@
       ]
     },
     "Cab_GB412CMKI": {
-      "speaker": "g12m",
+      "speaker": "g12h",
       "drivers": 4,
       "size_in": 12,
       "back": "closed",
       "baffle_m": 0.76,
       "speaker_confidence": "medium",
-      "name": "GB 4x12 MKI",
+      "name": "Lovolt 4x12",
       "speakers": [
+        "g12h",
         "g12m",
-        "g12h"
+        "g12t75"
       ]
     },
     "Cab_GB412CMKII": {
