@@ -4569,6 +4569,7 @@ def _ir_stage(ir_path, *, bypassed, gain=1.0,
     # covers every chain-build path and stays non-destructive. After this the
     # path is under nam_irs/cabs/ → NOT a game-shipped IR → exempt from the global
     # bypass below, and `_is_synth_cab_ir` still applies the +18 dB makeup.
+    _was_rs_ir = _is_rocksmith_ir_file(ir_path)
     ir_path = _apply_cab_override(ir_path)
     # Global "Bypass all the game cabs" (Settings): force-skip the RS cab on the
     # song chain (di_cab path) so the user can run their own cab/IR. This makes the
@@ -4577,6 +4578,15 @@ def _ir_stage(ir_path, *, bypassed, gain=1.0,
     # play, so cabs remain comparable.
     if di_cab and _is_rocksmith_ir_file(ir_path) and _load_settings().get("bypass_all_cabs"):
         bypassed = True
+    # Inverso del caso anterior: si el override REEMPLAZÓ el IR del juego por el
+    # NUESTRO, un bypassed=1 guardado en la DB casi siempre viene del bulk-flip
+    # viejo de "Bypass all the game cabs" — apuntaba al cab del juego, no al
+    # nuestro. Con bypass_all_cabs activo, límpialo para que el cab modelado
+    # SUENE (síntoma: "los cabs no suenan al cargar la canción hasta mover el
+    # mic" — mover el mic re-persistía la pieza sin el flag).
+    if (_was_rs_ir and not _is_rocksmith_ir_file(ir_path) and bypassed
+            and _load_settings().get("bypass_all_cabs")):
+        bypassed = False
     di_cab_blend = False
     if di_cab and _is_bass_cab_ir(ir_path) and _di_cab_enabled():
         blended = _di_cab_blend_file(Path(ir_path))
