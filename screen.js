@@ -3879,7 +3879,7 @@ const RB_MAX_RACKS = 4;    // rack-tower capacity
 // art fall back to the CSS default. Add one entry per approved cab.
 const RB_CAB_ART = {
     // Sampleg 1x15 — Ampeg Portaflex clone
-    'Bass_Cab_AT1150BC': u => `<svg viewBox="0 0 460 480" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+    'Bass_Cab_AT1150BC': u => `<svg viewBox="24 20 412 440" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
         <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2a2c"/><stop offset=".5" stop-color="#161617"/><stop offset="1" stop-color="#0c0c0d"/></linearGradient>
         <pattern id="dm${u}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H8M0 4H8" stroke="#000" stroke-opacity=".28" stroke-width="1"/></pattern>
         <linearGradient id="gb${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3b3e"/><stop offset="1" stop-color="#232427"/></linearGradient>
@@ -3896,7 +3896,7 @@ const RB_CAB_ART = {
           <path d="M24 44 V36 a16 16 0 0 1 16-16 h8 v6 h-8 a10 10 0 0 0-10 10 v8 z"/><path d="M436 44 V36 a16 16 0 0 0-16-16 h-8 v6 h8 a10 10 0 0 1 10 10 v8 z"/>
           <path d="M24 436 v8 a16 16 0 0 0 16 16 h8 v-6 h-8 a10 10 0 0 1-10-10 v-8 z"/><path d="M436 436 v8 a16 16 0 0 1-16 16 h-8 v-6 h8 a10 10 0 0 0 10-10 v-8 z"/></g></svg>`,
     // Sampleg SVT 8x10 — Ampeg SVT-810E clone
-    'Bass_Cab_AT810BC': u => `<svg viewBox="0 0 320 580" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+    'Bass_Cab_AT810BC': u => `<svg viewBox="14 14 292 552" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
         <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141415"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
         <pattern id="dm${u}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H8M0 4H8" stroke="#000" stroke-opacity=".3" stroke-width="1"/></pattern>
         <pattern id="wv${u}" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#0c0c0d"/><path d="M0 0H5M0 2.5H5" stroke="#1d1d20" stroke-width="1"/><path d="M0 0V5M2.5 0V5" stroke="#161618" stroke-width="1"/></pattern>
@@ -3914,7 +3914,496 @@ const RB_CAB_ART = {
         <g fill="url(#ch${u})" stroke="#5c5f63" stroke-width="1">
           <path d="M14 34 V26 a12 12 0 0 1 12-12 h7 v5 h-7 a7 7 0 0 0-7 7 v8 z"/><path d="M306 34 V26 a12 12 0 0 0-12-12 h-7 v5 h7 a7 7 0 0 1 7 7 v8 z"/>
           <path d="M14 546 v8 a12 12 0 0 0 12 12 h7 v-5 h-7 a7 7 0 0 1-7-7 v-8 z"/><path d="M306 546 v8 a12 12 0 0 1-12 12 h-7 v-5 h7 a7 7 0 0 0 7-7 v-8 z"/></g></svg>`,
+    // Marsten 1960A — Marshall 1960A angled 4x12: black tolex, black basketweave
+    // grille, white piping + maroon inner line, centred white "Marsten" script,
+    // gold "1960 LEAD" plate bottom-left, gold corner screws.
+    'Cab_MARSHALL1960A': u => `<svg viewBox="0 0 440 434" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".26" stroke-width="1"/></pattern>
+        <pattern id="wv${u}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2ca80"/><stop offset="1" stop-color="#9c7e42"/></linearGradient></defs>
+        <rect x="1" y="1" width="438" height="432" rx="15" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="438" height="432" rx="15" fill="url(#dm${u})"/>
+        <rect x="25" y="23" width="390" height="388" rx="7" fill="#070708"/>
+        <rect x="30" y="28" width="380" height="378" rx="5" fill="url(#wv${u})"/>
+        <rect x="35" y="33" width="370" height="368" rx="4" fill="none" stroke="#5f2a2a" stroke-width="2"/>
+        <rect x="29" y="27" width="382" height="380" rx="6" fill="none" stroke="#eae9e6" stroke-width="2.4"/>
+        <text x="220" y="200" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="70" fill="#f2f1eb" stroke="#0a0a0a" stroke-opacity=".4" stroke-width="1.4" paint-order="stroke">Marsten</text>
+        <g transform="translate(38 362)"><rect x="0" y="0" width="98" height="32" rx="3" fill="#0d0c0a" stroke="url(#gd${u})" stroke-width="1.4"/><text x="14" y="17" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="22" letter-spacing="1" fill="url(#gd${u})">1960</text><text x="72" y="20" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="10" letter-spacing="1.2" fill="url(#gd${u})">LEAD</text></g>
+        <g fill="url(#gd${u})"><circle cx="16" cy="16" r="3.2"/><circle cx="424" cy="16" r="3.2"/><circle cx="16" cy="418" r="3.2"/><circle cx="424" cy="418" r="3.2"/></g></svg>`,
+    // Marsten 1960AX — Marshall 1960AX vintage 4x12: black tolex, grey
+    // salt-and-pepper grille, thin gold piping, lower-centre white "Marsten".
+    'Cab_MARSHALL1960AX': u => `<svg viewBox="0 0 436 430" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#151517"/><stop offset="1" stop-color="#0c0c0d"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".26" stroke-width="1"/></pattern>
+        <pattern id="sp${u}" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#3d3e42"/><rect width="2" height="2" fill="#787a7e"/><rect x="2" y="2" width="2" height="2" fill="#787a7e"/><rect x="2" y="0" width="2" height="2" fill="#1f1f23"/><rect x="0" y="2" width="2" height="2" fill="#1f1f23"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8b95e"/><stop offset="1" stop-color="#9d8038"/></linearGradient></defs>
+        <rect x="1" y="1" width="434" height="428" rx="14" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="434" height="428" rx="14" fill="url(#dm${u})"/>
+        <rect x="22" y="21" width="392" height="388" rx="6" fill="#0a0a0b"/>
+        <rect x="27" y="26" width="382" height="378" rx="4" fill="url(#sp${u})"/>
+        <rect x="26" y="25" width="384" height="380" rx="5" fill="none" stroke="url(#gd${u})" stroke-width="2.2"/>
+        <text x="218" y="262" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="52" fill="#eeede7" stroke="#0a0a0a" stroke-opacity=".35" stroke-width="1" paint-order="stroke">Marsten</text>
+        <g fill="url(#gd${u})" opacity=".8"><circle cx="15" cy="15" r="2.8"/><circle cx="421" cy="15" r="2.8"/><circle cx="15" cy="415" r="2.8"/><circle cx="421" cy="415" r="2.8"/></g></svg>`,
+    // Marsten 1960TV — Marshall 1960TV angled 4x12: green-black levant tolex, tan
+    // horizontal-stripe vintage cloth, gold piping, lower-left gold "Marsten".
+    'Cab_MARSHALL1960TV': u => `<svg viewBox="0 0 372 440" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20291f"/><stop offset=".5" stop-color="#121a13"/><stop offset="1" stop-color="#0b110c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".28" stroke-width="1"/></pattern>
+        <pattern id="tn${u}" width="8" height="5" patternUnits="userSpaceOnUse"><rect width="8" height="5" fill="#6c5836"/><rect width="8" height="2" fill="#493b21"/><path d="M0 3.6H8" stroke="#b89a5c" stroke-opacity=".5" stroke-width="0.7"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0c67c"/><stop offset=".55" stop-color="#b3924f"/><stop offset="1" stop-color="#8f7238"/></linearGradient></defs>
+        <rect x="1" y="1" width="370" height="438" rx="13" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="370" height="438" rx="13" fill="url(#dm${u})"/>
+        <rect x="20" y="20" width="332" height="400" rx="6" fill="#0d0b06"/>
+        <rect x="25" y="25" width="322" height="390" rx="4" fill="url(#tn${u})"/>
+        <rect x="24" y="24" width="324" height="392" rx="5" fill="none" stroke="url(#gd${u})" stroke-width="2.4"/>
+        <text x="150" y="250" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="46" fill="#f1e2ac" stroke="#3a2c0e" stroke-opacity=".7" stroke-width="1.6" paint-order="stroke">Marsten</text></svg>`,
+    // Marsten 1936 — Marshall 1936 2x12 (landscape): black tolex, black grille,
+    // white piping + maroon line, upper white "Marsten", gold "1936 LEAD" plate.
+    'Cab_MARSHALL1936': u => `<svg viewBox="0 0 520 360" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".26" stroke-width="1"/></pattern>
+        <pattern id="wv${u}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2ca80"/><stop offset="1" stop-color="#9c7e42"/></linearGradient></defs>
+        <rect x="1" y="1" width="518" height="358" rx="14" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="518" height="358" rx="14" fill="url(#dm${u})"/>
+        <rect x="23" y="22" width="474" height="316" rx="7" fill="#070708"/>
+        <rect x="28" y="27" width="464" height="306" rx="5" fill="url(#wv${u})"/>
+        <rect x="33" y="32" width="454" height="296" rx="4" fill="none" stroke="#5f2a2a" stroke-width="2"/>
+        <rect x="27" y="26" width="466" height="308" rx="6" fill="none" stroke="#eae9e6" stroke-width="2.4"/>
+        <text x="260" y="112" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="60" fill="#f2f1eb" stroke="#0a0a0a" stroke-opacity=".4" stroke-width="1.3" paint-order="stroke">Marsten</text>
+        <g transform="translate(36 296)"><rect x="0" y="0" width="94" height="30" rx="3" fill="#0d0c0a" stroke="url(#gd${u})" stroke-width="1.4"/><text x="13" y="16" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="21" letter-spacing="1" fill="url(#gd${u})">1936</text><text x="66" y="18" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="9" letter-spacing="1.2" fill="url(#gd${u})">LEAD</text></g>
+        <g fill="url(#gd${u})"><circle cx="15" cy="15" r="3"/><circle cx="505" cy="15" r="3"/><circle cx="15" cy="345" r="3"/><circle cx="505" cy="345" r="3"/></g></svg>`,
+    // Orange/"Citrus" cabs — shared rbCitrusCab builder (orange or black tolex,
+    // tan or black weave grille, colour crest + Citrus bubble-logo plaque in the
+    // amps' PKGraffiti). guitar 4x12/2x12/1x12 = tan grille; 1x15 + bass = black.
+    'Cab_ORANGEPPC412':      u => rbCitrusCab(u, { w: 448, h: 430, grille: 'tan', piping: true, badgeY: 0.24, badgeS: 1.15 }),
+    'Cab_ORANGEPPC212OB':    u => rbCitrusCab(u, { w: 500, h: 384, grille: 'tan', piping: true, badgeY: 0.16, badgeS: 1.05 }),
+    'Cab_ORANGEJIMMYBEAN':   u => rbCitrusCab(u, { w: 448, h: 430, black: true, grille: 'tan', piping: true, badgeY: 0.24, badgeS: 1.15 }),
+    'Cab_CS1120C':           u => rbCitrusCab(u, { w: 470, h: 376, grille: 'tan', piping: true, badgeY: 0.16, badgeS: 1.05 }),
+    'Cab_CS1515C':           u => rbCitrusCab(u, { w: 440, h: 424, grille: 'black', badgeY: 0.30, badgeS: 1.1 }),
+    'Bass_Cab_ORANGEOBC810': u => rbCitrusCab(u, { w: 300, h: 580, grille: 'black', badgeY: 0.40, badgeS: 0.92 }),
+    'Bass_Cab_ORANGEOBC115': u => rbCitrusCab(u, { w: 460, h: 400, grille: 'black', port: true, badgeY: 0.30, badgeS: 1.0 }),
+    // Vox/"Box" cabs (rbBoxCab): colour diamond grille cloth + chrome/gold "BOX"
+    // wordmark (PKBebas). BT410C = navy 4x10; BT1120C = black BC112; BT1121C =
+    // cream 1x12 (AC15); EN212C = cream AC30 2x12.
+    'Cab_BT410C':  u => rbBoxCab(u, { w: 448, h: 440, tolex: 'navy', grille: 'diamond', piping: '#efe7d2', logo: 'gold', logoL: true, port: true, corners: true }),
+    'Cab_BT1120C': u => rbBoxCab(u, { w: 470, h: 420, tolex: 'black', grille: 'blackdiamond', piping: '#f0f0ee', logo: 'chrome', logoL: true, corners: true }),
+    'Cab_BT1121C': u => rbBoxCab(u, { w: 500, h: 384, tolex: 'cream', grille: 'diamond', logo: 'chrome', logoL: false }),
+    'Cab_EN212C':  u => rbBoxCab(u, { w: 500, h: 424, tolex: 'black', grille: 'diamond', logoPanel: true, piping: '#f0efe9', logo: 'gold', corners: true, logoS: 1.05 }),
+    // Fender/"Bender" cabs (rbBenderCab): black tolex, silverface grille (grid or
+    // horizontal stripe), chrome diagonal "Bender" script (PKInk, the amps' font).
+    'Cab_TW410C':      u => rbBenderCab(u, { w: 360, h: 500, grille: 'grid', logoL: true, corners: 'black' }),   // Bassman 4x10
+    'Bass_Cab_TW215BC': u => rbBenderCab(u, { w: 380, h: 520, grille: 'grid', logoL: true, corners: 'white' }),  // Bass 2x15
+    'Cab_TW110C':      u => rbBenderCab(u, { w: 500, h: 370, grille: 'stripe', logoL: false, corners: 'black' }), // Deluxe 1x12
+    'Cab_TW112C':      u => rbBenderCab(u, { w: 460, h: 418, grille: 'stripe', logoL: true, corners: 'black' }),  // Supernova 1x12
+    // Marsten 1x12 Combo — black tolex, cream salt-and-pepper grille, gold piping,
+    // chrome "MARSTEN" plate top-right.
+    'Cab_AT0112C': u => `<svg viewBox="0 0 440 420" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".24" stroke-width="1"/></pattern>
+        <pattern id="sp${u}" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#c9bd97"/><rect width="2" height="2" fill="#e3d9ba"/><rect x="2" y="2" width="2" height="2" fill="#e3d9ba"/><rect x="2" y="0" width="2" height="2" fill="#9a8d63"/><rect x="0" y="2" width="2" height="2" fill="#9a8d63"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2ca80"/><stop offset="1" stop-color="#9c7e42"/></linearGradient>
+        <linearGradient id="cr${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#b6babe"/><stop offset="1" stop-color="#d2d5d8"/></linearGradient></defs>
+        <rect x="1" y="1" width="438" height="418" rx="14" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="438" height="418" rx="14" fill="url(#dm${u})"/>
+        <rect x="24" y="22" width="392" height="376" rx="6" fill="#0a0a0b"/>
+        <rect x="29" y="27" width="382" height="366" rx="4" fill="url(#sp${u})"/>
+        <rect x="27" y="25" width="386" height="370" rx="5" fill="none" stroke="url(#gd${u})" stroke-width="2"/>
+        <g transform="translate(290 54)"><rect x="0" y="0" width="104" height="30" rx="3" fill="#101012" stroke="url(#cr${u})" stroke-width="2.4"/><text x="52" y="16" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="18" letter-spacing="3" fill="url(#cr${u})">MARSTEN</text></g>
+        <g fill="url(#gd${u})"><circle cx="15" cy="15" r="3"/><circle cx="425" cy="15" r="3"/><circle cx="15" cy="405" r="3"/><circle cx="425" cy="405" r="3"/></g></svg>`,
+    // Marsten 1x12 Vintage (Marshall 1912) — black grille, white piping + maroon,
+    // white "Marsten" script, gold "1912 LEAD" plate.
+    'Cab_AT1121C': u => `<svg viewBox="0 0 482 416" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".24" stroke-width="1"/></pattern>
+        <pattern id="wv${u}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/></pattern>
+        <linearGradient id="gd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2ca80"/><stop offset="1" stop-color="#9c7e42"/></linearGradient></defs>
+        <rect x="1" y="1" width="480" height="414" rx="14" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="480" height="414" rx="14" fill="url(#dm${u})"/>
+        <rect x="23" y="22" width="436" height="372" rx="6" fill="#070708"/>
+        <rect x="28" y="27" width="426" height="362" rx="4" fill="url(#wv${u})"/>
+        <rect x="33" y="32" width="416" height="352" rx="3" fill="none" stroke="#5f2a2a" stroke-width="2"/>
+        <rect x="27" y="26" width="428" height="364" rx="5" fill="none" stroke="#eae9e6" stroke-width="2.4"/>
+        <text x="202" y="125" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="56" fill="#f2f1eb" stroke="#0a0a0a" stroke-opacity=".4" stroke-width="1.3" paint-order="stroke">Marsten</text>
+        <g transform="translate(36 358)"><rect x="0" y="0" width="90" height="28" rx="3" fill="#0d0c0a" stroke="url(#gd${u})" stroke-width="1.4"/><text x="12" y="15" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="19" letter-spacing="1" fill="url(#gd${u})">1912</text><text x="60" y="17" dominant-baseline="central" font-family="PKBebas,Georgia,serif" font-size="8" letter-spacing="1" fill="url(#gd${u})">LEAD</text></g>
+        <g fill="url(#gd${u})"><circle cx="15" cy="15" r="3"/><circle cx="467" cy="15" r="3"/><circle cx="15" cy="401" r="3"/><circle cx="467" cy="401" r="3"/></g></svg>`,
+    // Mesa/"Silla" cabs (rbSillaCab): black tolex, black cloth (guitar) or
+    // perforated-metal (15") grille, chrome oval "SILLA / ENGINEERING" badge.
+    'Cab_CA412C':        u => rbSillaCab(u, { w: 460, h: 430, grille: 'cloth', bx: 0.50, by: 0.44, bs: 1.05 }), // Dual Recto 4x12
+    'Cab_CA112C':        u => rbSillaCab(u, { w: 500, h: 334, grille: 'cloth', bx: 0.16, by: 0.16, bs: 0.9 }),  // 1x12
+    'Cab_CA215C':        u => rbSillaCab(u, { w: 340, h: 548, grille: 'perf', bx: 0.50, by: 0.36, bs: 0.92 }),  // 2x15
+    'Bass_Cab_CA1510BC': u => rbSillaCab(u, { w: 480, h: 370, grille: 'perf', bx: 0.56, by: 0.50, bs: 1.0 }),   // Bass 1x15
+    // Ronald JC-120 (Roland Jazz Chorus) — grey tolex, black silver-grid grille,
+    // green control strip + "JAZZ 120", silver rail, studded metal border.
+    'Cab_CS212C': u => {
+        const W = 470, H = 338, gx = 26, gy = 74, gw = W - 52, gh = H - 98;
+        let studs = '';
+        for (let x = 30; x < W - 20; x += 32) studs += `<circle cx="${x}" cy="8" r="2.2" fill="#7d6f38"/><circle cx="${x}" cy="${H - 8}" r="2.2" fill="#7d6f38"/>`;
+        for (let y = 30; y < H - 20; y += 32) studs += `<circle cx="8" cy="${y}" r="2.2" fill="#7d6f38"/><circle cx="${W - 8}" cy="${y}" r="2.2" fill="#7d6f38"/>`;
+        const body = `<rect x="20" y="14" width="${W - 40}" height="46" rx="4" fill="#20302e"/>
+            <rect x="${W - 120}" y="20" width="98" height="34" rx="3" fill="#12201d"/><text x="${W - 106}" y="42" font-family="PKCrete,serif" font-size="18" fill="#e6e8ea">JAZZ 120</text>
+            <rect x="20" y="64" width="${W - 40}" height="6" fill="#c6cace"/>
+            ${rbCabGrille(u, gx, gy, gw, gh, '#0e0e10')}${studs}`;
+        return rbCabWrap(u, W, H, body, ['#3a3d40', '#2a2c2e', '#1c1e20'], 'jc');
+    },
+    // Engel Fireball 4x12 (Engl) — red tolex, white racing stripes, black grille,
+    // chrome "ENGL" wordmark.
+    'Cab_EN4120C': u => {
+        const W = 444, H = 430, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#242426')}
+            <rect x="70" y="6" width="118" height="12" fill="#eceae2"/><rect x="256" y="6" width="118" height="12" fill="#eceae2"/>
+            <rect x="70" y="${H - 18}" width="118" height="12" fill="#eceae2"/><rect x="256" y="${H - 18}" width="118" height="12" fill="#eceae2"/>
+            <text x="222" y="225" text-anchor="middle" dominant-baseline="middle" font-family="PKBebas,serif" font-size="54" letter-spacing="4" fill="#d7dade" stroke="#3a3d42" stroke-width="1.3" paint-order="stroke">ENGL</text>
+            ${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#c8352a', '#a3271f', '#7f1c16'], 'perf');
+    },
+    // Lovolt 4x12 (Hiwatt) — black tolex, silver grille, white piping, black
+    // "LOVOLT" plate.
+    'Cab_GB412CMKI': u => {
+        const W = 442, H = 430, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#5c5f63')}
+            <rect x="${gx + 1}" y="${gy + 1}" width="${gw - 2}" height="${gh - 2}" rx="4" fill="none" stroke="#eeece4" stroke-width="2.6"/>
+            ${rbCabPlate(221, 225, 142, 34, 'LOVOLT', 'PKAnton,sans-serif', 22, '#111214', '#eef0f2', '#c8ccd0', true)}
+            ${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'silver');
+    },
+    // Raney AOR 4x12 (Laney) — grey tolex, perforated-metal grille, chrome "RANEY"
+    // plate.
+    'Cab_GB412CMKIII': u => {
+        const W = 444, H = 440, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#242426')}${rbCabPlate(222, 232, 134, 34, 'RANEY', 'PKAnton,sans-serif', 22, '#e6e8ea', '#1a1c1e', '#8a8e92')}${rbCabCorners(W, H, '#3a3c3e')}`;
+        return rbCabWrap(u, W, H, body, ['#34363a', '#232528', '#151618'], 'perf');
+    },
+    // PeeBee 2120 (Peavey 212) — black tolex, black grille, chrome oval "PeeBee".
+    'Cab_HG2120C': u => {
+        const W = 500, H = 330, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}${rbCabOval(250, 150, 68, 26, 'PeeBee', 'PKCrete,serif', 26, '#dfe2e6', '#1a1c1f', '#9a9ea3')}${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'weave');
+    },
+    // PeeBee 2x12 (Peavey Classic tweed) — tweed tolex, oxblood grille, gold
+    // "PeeBee" script.
+    'Cab_HG212C': u => {
+        const W = 500, H = 330, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#2c1a16')}<text x="250" y="176" text-anchor="middle" dominant-baseline="middle" font-family="PKCrete,serif" font-size="36" fill="#c9a24a" stroke="#5a4418" stroke-width="0.8" paint-order="stroke">PeeBee</text>${rbCabCorners(W, H, '#b6a877')}`;
+        return rbCabWrap(u, W, H, body, ['#cabb8c', '#b6a877', '#9a8d5f'], 'oxblood');
+    },
+    // PeeBee 2x15 (Peavey vintage) — black tolex, silver side rails, perf grille,
+    // chrome "PeeBee" script.
+    'Cab_HG215C': u => {
+        const W = 360, H = 556, gx = 52, gy = 24, gw = W - 104, gh = H - 48;
+        const body = `<rect x="20" y="20" width="26" height="${H - 40}" rx="3" fill="#c4c8cc"/><rect x="${W - 46}" y="20" width="26" height="${H - 40}" rx="3" fill="#c4c8cc"/>
+            ${rbCabGrille(u, gx, gy, gw, gh, '#1a1a1c')}<text x="${W / 2}" y="70" text-anchor="middle" dominant-baseline="middle" font-family="PKCrete,serif" font-size="30" fill="#dfe2e6" stroke="#3a3d42" stroke-width="0.8" paint-order="stroke">PeeBee</text>${rbCabCorners(W, H, '#8a8e92')}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf');
+    },
+    // Mr. Y Maz 4x12 (Dr. Z) — black tolex, grey striated grille, the big jagged
+    // "Y" logo (parody of Dr. Z's "Z", same as the Mr. Y amps) + Legacy badge.
+    'Cab_GB412CMKII': u => {
+        const W = 444, H = 430, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#54565a')}
+            <rect x="${gx + gw - 60}" y="${gy + 14}" width="46" height="26" rx="3" fill="#f6f5f1" stroke="#28282c" stroke-width="1.2"/><text x="${gx + gw - 37}" y="${gy + 27}" text-anchor="middle" dominant-baseline="central" font-family="PKCrete,serif" font-size="12" fill="#1e1e22">Legacy</text>
+            <text x="222" y="228" text-anchor="middle" dominant-baseline="middle" font-family="PKAnton,sans-serif" font-size="112" fill="#eef0f2" stroke="#33234a" stroke-width="4" paint-order="stroke">Y</text>
+            ${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'zephyr');
+    },
+    // Edena (Eden) D-series bass cabs — see rbEdenCab.
+    'Bass_Cab_EDEND115XLT': u => rbEdenCab(u, 440, 424),
+    'Bass_Cab_EDEND212XLT': u => rbEdenCab(u, 452, 430),
+    'Bass_Cab_EDEND410XST': u => rbEdenCab(u, 448, 430),
+    'Bass_Cab_EDEND610XST': u => rbEdenCab(u, 470, 520),
+    // Lovolt (Hiwatt) bass 4x15 — silver grille, white piping, black "LOVOLT" plate.
+    'Bass_Cab_GB415BC': u => {
+        const W = 384, H = 540, gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#5c5f63')}
+            <rect x="${gx + 1}" y="${gy + 1}" width="${gw - 2}" height="${gh - 2}" rx="4" fill="none" stroke="#eeece4" stroke-width="2.6"/>
+            ${rbCabPlate(W / 2, H * 0.42, 140, 32, 'LOVOLT', 'PKAnton,sans-serif', 21, '#111214', '#eef0f2', '#c8ccd0', true)}${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'silver');
+    },
+    // Freddy (Gallien-Krueger) bass cabs. 4x10 = older black-grille w/ the
+    // "FREDDY-KRUEGER" wordmark; 1x15/2x12 = Neo (chrome FK + NEO badges), silver
+    // grille on the 1x15, black on the 2x12.
+    'Bass_Cab_BT410BC': u => {
+        const W = 448, H = 430, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}
+            <rect x="${gx + 10}" y="${gy + 10}" width="34" height="26" rx="3" fill="#dfe2e6"/><text x="${gx + 27}" y="${gy + 24}" text-anchor="middle" dominant-baseline="central" font-family="PKAnton,serif" font-size="16" fill="#1a1c1f">FK</text>
+            <text x="${gx + 52}" y="${gy + 24}" dominant-baseline="central" font-family="PKBebas,serif" font-size="20" letter-spacing="1" fill="#eceef0">FREDDY-KRUEGER</text>${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'gkblack');
+    },
+    'Bass_Cab_BT115BC': u => {
+        const W = 440, H = 460, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}${rbGkBadge(W / 2, gy + 30)}${rbNeoBadge(gx + gw - 40, gy + gh - 24)}${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'gksilver');
+    },
+    'Bass_Cab_BT212BC': u => {
+        const W = 380, H = 520, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}${rbGkBadge(gx + 40, gy + 30)}${rbNeoBadge(gx + gw - 38, gy + gh - 24)}${rbCabCorners(W, H)}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'gkblack');
+    },
+    // SBR (SWR Workingman's) 2x10 — charcoal tolex, black grid grille, white "SBR".
+    'Bass_Cab_CH210BC': u => {
+        const W = 480, H = 360, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}
+            <text x="${gx + 14}" y="${gy + 22}" dominant-baseline="central" font-family="PKAnton,serif" font-size="24" letter-spacing="1" fill="#eceef0">SBR</text>
+            <text x="${gx + 14}" y="${gy + 40}" dominant-baseline="central" font-family="PKBebas,serif" font-size="9" letter-spacing="1.5" fill="#b8bcc0">WORKINGMAN</text>${rbCabCorners(W, H, '#8a8e92')}`;
+        return rbCabWrap(u, W, H, body, ['#2e2e30', '#1e1e20', '#141416'], 'gkblack');
+    },
+    // Sharke (Hartke) bass cabs — aluminium cones (see rbHartkeCab).
+    'Bass_Cab_CS410BC': u => rbHartkeCab(u, { w: 448, h: 430, cones: [[0.28, 0.34, 0.22], [0.72, 0.34, 0.22], [0.28, 0.74, 0.22], [0.72, 0.74, 0.22]], lc: '#d83a2a', lx: 0.5, ly: 24, ls: 26 }),
+    'Bass_Cab_CS15BC':  u => rbHartkeCab(u, { w: 440, h: 430, cones: [[0.5, 0.56, 0.34]], lc: '#eceef0', lx: 0.5, ly: 30, ls: 30 }),
+    'Bass_Cab_CS112BC': u => rbHartkeCab(u, { w: 480, h: 360, cones: [[0.5, 0.56, 0.34]], lc: '#d83a2a', lx: 0.42, ly: 28, ls: 26 }),
+    // SBR (SWR Goliath) 4x10 — silver grid grille, "SBR" + "GOLIATH" badges, a
+    // silver diamond tweeter.
+    'Bass_Cab_CH410BC': u => {
+        const W = 380, H = 520, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+        const body = `${rbCabGrille(u, gx, gy, gw, gh, '#0a0a0b')}
+            <rect x="${gx + 8}" y="${gy + 8}" width="52" height="30" rx="3" fill="#0c0c0d" stroke="#c8ccd0" stroke-width="1.4"/><text x="${gx + 34}" y="${gy + 24}" text-anchor="middle" dominant-baseline="central" font-family="PKAnton,serif" font-size="18" fill="#dfe2e6">SBR</text>
+            <rect x="${gx + gw - 72}" y="${gy + 8}" width="64" height="26" rx="3" fill="#0c0c0d" stroke="#b8bcc0" stroke-width="1"/><text x="${gx + gw - 40}" y="${gy + 21}" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,serif" font-size="12" letter-spacing="1" fill="#dfe2e6">GOLIATH</text>
+            <g transform="translate(${gx + gw * 0.5} ${gy + gh * 0.5}) rotate(45)"><rect x="-22" y="-22" width="44" height="44" rx="4" fill="#cfd3d7" stroke="#8a8e92"/></g>${rbCabCorners(W, H, '#9a9ea2')}`;
+        return rbCabWrap(u, W, H, body, ['#2e2e30', '#1e1e20', '#141416'], 'gksilver');
+    },
+    // Seismik (Seismic Audio) 3x10 — black hex grille, white "SEISMIK", side handle.
+    'Bass_Cab_CH310BC': u => {
+        const W = 460, H = 420, gx = 64, gy = 22, gw = W - 88, gh = H - 44;
+        const body = `<rect x="24" y="${H * 0.30}" width="30" height="${H * 0.34}" rx="4" fill="#080809" stroke="#000"/>
+            ${rbCabGrille(u, gx, gy, gw, gh, '#141416')}
+            <text x="${gx + gw * 0.62}" y="${gy + gh * 0.44}" text-anchor="middle" dominant-baseline="middle" font-family="PKAnton,serif" font-size="26" letter-spacing="1" fill="#eceef0">SEISMIK</text>${rbCabCorners(W, H, '#9a9ea2')}`;
+        return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf');
+    },
 };
+// Shared Citrus/Orange badge: the colour crest (quartered shield + crown) with
+// the "Citrus" bubble-logo plaque below (PKGraffiti — the amps' Orange font).
+// Ids suffixed per instance (u) so two Orange cabs in one document don't collide.
+function rbCitrusBadge(u, cx, ty, s) {
+    const sw = 26 * s, sh = 19 * s, top = ty + 11 * s, sx = cx;
+    const shield = `M${sx - sw / 2} ${top} L${sx + sw / 2} ${top} L${sx + sw / 2} ${top + sh * 0.5} Q${sx + sw / 2} ${top + sh * 0.95} ${sx} ${top + sh} Q${sx - sw / 2} ${top + sh * 0.95} ${sx - sw / 2} ${top + sh * 0.5} Z`;
+    const crown = `M${sx - sw * 0.44} ${top} L${sx - sw * 0.44} ${top - 8 * s} L${sx - sw * 0.20} ${top - 2 * s} L${sx} ${top - 10 * s} L${sx + sw * 0.20} ${top - 2 * s} L${sx + sw * 0.44} ${top - 8 * s} L${sx + sw * 0.44} ${top} Z`;
+    const lx = cx - 40 * s, ly = ty + 42 * s, lw = 80 * s, lh = 24 * s;
+    return `<clipPath id="sh${u}"><path d="${shield}"/></clipPath>
+        <path d="${crown}" fill="#ecab26" stroke="#1a1614" stroke-width="0.8"/>
+        <g clip-path="url(#sh${u})"><rect x="${sx - sw / 2}" y="${top}" width="${sw / 2}" height="${sh * 0.55}" fill="#dc3a2e"/><rect x="${sx}" y="${top}" width="${sw / 2}" height="${sh * 0.55}" fill="#409e58"/><rect x="${sx - sw / 2}" y="${top + sh * 0.5}" width="${sw / 2}" height="${sh * 0.6}" fill="#3a74ce"/><rect x="${sx}" y="${top + sh * 0.5}" width="${sw / 2}" height="${sh * 0.6}" fill="#ecab26"/></g>
+        <path d="${shield}" fill="none" stroke="#f7f5f0" stroke-width="2.2"/><path d="${shield}" fill="none" stroke="#1a1614" stroke-width="1"/>
+        <rect x="${lx}" y="${ly}" width="${lw}" height="${lh}" rx="3" fill="#f7f6f1" stroke="#1a1614" stroke-width="1.4"/>
+        <text x="${cx}" y="${ly + lh * 0.60}" text-anchor="middle" dominant-baseline="middle" font-family="PKGraffiti,cursive" font-size="${18 * s}" fill="#1a1614">Citrus</text>`;
+}
+// Full Orange cab from opts: {w,h, black?, grille:'tan'|'black', piping?, port?,
+// badgeY (fraction of grille height), badgeS}.
+function rbCitrusCab(u, o) {
+    const W = o.w, H = o.h;
+    const tol = o.black
+        ? '<stop offset="0" stop-color="#2a2a2c"/><stop offset=".5" stop-color="#161618"/><stop offset="1" stop-color="#0c0c0d"/>'
+        : '<stop offset="0" stop-color="#f5872c"/><stop offset=".5" stop-color="#e2710f"/><stop offset="1" stop-color="#bd5d0c"/>';
+    const gr = o.grille === 'black'
+        ? '<rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/>'
+        : '<rect width="6" height="6" fill="#c3b184"/><path d="M0 0H6M0 3H6" stroke="#a89768" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#dcca9c" stroke-opacity=".6" stroke-width="1"/>';
+    const gx = o.port ? 74 : 26, gy = 24, gw = W - gx - 26, gh = H - 48;
+    const port = o.port ? `<rect x="30" y="30" width="34" height="${H - 60}" rx="5" fill="#080809" stroke="#000" stroke-width="1"/>` : '';
+    const piping = o.piping ? `<rect x="${gx + 3}" y="${gy + 3}" width="${gw - 6}" height="${gh - 6}" rx="4" fill="none" stroke="#efeee8" stroke-width="2.4"/>` : '';
+    const k = 40;
+    const corners = `<g fill="#0a0a0b" stroke="#000" stroke-width="0.5"><path d="M1 34 V15 A14 14 0 0 1 15 1 H${k} Q18 3 15 14 Q3 18 1 ${k} Z"/><path d="M${W - 1} 34 V15 A14 14 0 0 0 ${W - 15} 1 H${W - k} Q${W - 18} 3 ${W - 15} 14 Q${W - 3} 18 ${W - 1} ${k} Z"/><path d="M1 ${H - 34} V${H - 15} A14 14 0 0 0 15 ${H - 1} H${k} Q18 ${H - 3} 15 ${H - 14} Q3 ${H - 18} 1 ${H - k} Z"/><path d="M${W - 1} ${H - 34} V${H - 15} A14 14 0 0 1 ${W - 15} ${H - 1} H${W - k} Q${W - 18} ${H - 3} ${W - 15} ${H - 14} Q${W - 3} ${H - 18} ${W - 1} ${H - k} Z"/></g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1">${tol}</linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".12" stroke-width="1"/><path d="M2 0H11" stroke="#fff" stroke-opacity=".06" stroke-width="1"/></pattern>
+        <pattern id="gr${u}" width="6" height="6" patternUnits="userSpaceOnUse">${gr}</pattern></defs>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="14" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="14" fill="url(#dm${u})"/>
+        ${port}
+        <rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="6" fill="#0c0b09"/>
+        <rect x="${gx + 5}" y="${gy + 5}" width="${gw - 10}" height="${gh - 10}" rx="4" fill="url(#gr${u})"/>
+        ${piping}
+        ${rbCitrusBadge(u, gx + gw / 2, gy + gh * o.badgeY, o.badgeS)}
+        ${corners}</svg>`;
+}
+// Vox/"Box" cabs: cream/black/navy tolex, the signature colour diamond grille
+// cloth (or a subtle black-on-black diamond), cream/white piping, a chrome/gold
+// "BOX" wordmark (PKBebas — the amps' Box font). opts: {w,h, tolex, grille,
+// piping?, logo:'chrome'|'gold', logoL (logo on the left), logoS?, port?, corners?}.
+function rbBoxCab(u, o) {
+    const W = o.w, H = o.h;
+    const TOL = { cream: ['#efe6cf', '#ded2b2', '#c9bd98'], black: ['#26262a', '#161618', '#0c0c0d'], navy: ['#232a36', '#151a22', '#0c0f14'] };
+    const t = TOL[o.tolex] || TOL.black;
+    let pat, gbg;
+    if (o.grille === 'blackdiamond') {
+        pat = `<pattern id="di${u}" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="#0d0d0e"/><path d="M-2 32 L32 -2 M-2 -2 L32 32" stroke="#242427" stroke-width="1.5"/></pattern>`;
+        gbg = '#0c0c0d';
+    } else {
+        pat = `<pattern id="di${u}" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#33261a"/><path d="M-2 30 L30 -2 M-2 -2 L30 30" stroke="#c2a668" stroke-width="1.5"/><path d="M-2 30 L30 -2" transform="translate(3.5,0)" stroke="#b5482e" stroke-width="0.7"/><path d="M-2 -2 L30 30" transform="translate(-3.5,0)" stroke="#5f7d3c" stroke-width="0.7"/></pattern>`;
+        gbg = '#2a1f14';
+    }
+    const gx = 26, gy = 24, gw = W - 52, gh = H - 48;
+    // logoPanel (AC30): a black band across the top carries the logo, split from
+    // the grille by a gold stripe; the grille fills the area below it.
+    const panelH = o.logoPanel ? Math.round(gh * 0.24) : 0;
+    const grY = gy + panelH, grH = gh - panelH;
+    const panel = o.logoPanel
+        ? `<rect x="${gx}" y="${gy}" width="${gw}" height="${panelH + 4}" rx="5" fill="#141416"/><rect x="${gx}" y="${grY - 2}" width="${gw}" height="4" fill="#bfa25a"/>`
+        : '';
+    const piping = o.piping ? `<rect x="${gx + 2}" y="${gy + 2}" width="${gw - 4}" height="${gh - 4}" rx="4" fill="none" stroke="${o.piping}" stroke-width="3"/>` : '';
+    const lx = o.logoPanel ? gx + gw * 0.135 : (o.logoL ? gx + gw * 0.16 : gx + gw * 0.84);
+    const ly = o.logoPanel ? gy + panelH * 0.54 : grY + grH * 0.13;
+    const lfill = o.logo === 'gold' ? '#c9ab5e' : '#d9dde2';
+    const lstroke = o.logo === 'gold' ? '#6a5320' : '#3a3d42';
+    const logo = `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-family="PKBebas,Georgia,serif" font-size="${34 * (o.logoS || 1)}" letter-spacing="2" fill="${lfill}" stroke="${lstroke}" stroke-width="1.1" paint-order="stroke">BOX</text>`;
+    const port = o.port ? `<rect x="${W - 58}" y="${H * 0.34}" width="22" height="${H * 0.28}" rx="4" fill="#0a0a0b" stroke="#000"/>` : '';
+    const k = 38;
+    const corners = o.corners ? `<g fill="#0a0a0b"><path d="M1 32 V15 A14 14 0 0 1 15 1 H${k} Q17 3 15 13 Q3 17 1 ${k} Z"/><path d="M${W - 1} 32 V15 A14 14 0 0 0 ${W - 15} 1 H${W - k} Q${W - 17} 3 ${W - 15} 13 Q${W - 3} 17 ${W - 1} ${k} Z"/><path d="M1 ${H - 32} V${H - 15} A14 14 0 0 0 15 ${H - 1} H${k} Q17 ${H - 3} 15 ${H - 13} Q3 ${H - 17} 1 ${H - k} Z"/><path d="M${W - 1} ${H - 32} V${H - 15} A14 14 0 0 1 ${W - 15} ${H - 1} H${W - k} Q${W - 17} ${H - 3} ${W - 15} ${H - 13} Q${W - 3} ${H - 17} ${W - 1} ${H - k} Z"/></g>` : '';
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t[0]}"/><stop offset=".5" stop-color="${t[1]}"/><stop offset="1" stop-color="${t[2]}"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".10" stroke-width="1"/></pattern>
+        ${pat}</defs>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#dm${u})"/>
+        ${port}
+        <rect x="${gx}" y="${grY}" width="${gw}" height="${grH}" rx="5" fill="${gbg}"/>
+        <rect x="${gx + 4}" y="${grY + 4}" width="${gw - 8}" height="${grH - 8}" rx="3" fill="url(#di${u})"/>
+        ${panel}
+        ${piping}
+        ${logo}
+        ${corners}</svg>`;
+}
+// Fender/"Bender" cabs: black tolex, silverface grille (grid or horizontal
+// stripe), a chrome diagonal "Bender" script (PKInk — the amps' Bender font).
+// opts: {w,h, grille:'grid'|'stripe', logoL (logo on the left), logoS?,
+// corners:'black'|'white'}.
+function rbBenderCab(u, o) {
+    const W = o.w, H = o.h;
+    const pat = o.grille === 'stripe'
+        ? `<pattern id="sg${u}" width="4" height="5" patternUnits="userSpaceOnUse"><rect width="4" height="5" fill="#a9adb1"/><rect width="4" height="1.6" fill="#e7e9ea"/><rect y="2.6" width="4" height="1.6" fill="#45484b"/></pattern>`
+        : `<pattern id="sg${u}" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#adb1b5"/><path d="M0 0H5M0 2.5H5" stroke="#797d81" stroke-width="0.7"/><path d="M0 0V5M2.5 0V5" stroke="#c8ccd0" stroke-opacity=".7" stroke-width="0.7"/></pattern>`;
+    const gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+    // Centre the "Bender" script a fixed distance from the grille edge (≈ its
+    // half-width + a margin for the tilt/skew) so it never spills off the side on
+    // a narrow cab (the old fraction-of-width inset clipped the 4x10 / 2x15).
+    const fs = 40 * (o.logoS || 1);
+    const pad = fs * 1.6 + 16;
+    const lx = o.logoL ? gx + pad : gx + gw - pad, ly = gy + gh * 0.10;
+    const logo = `<g transform="translate(${lx} ${ly}) rotate(-8) skewX(-10)"><text x="0" y="0" text-anchor="middle" dominant-baseline="middle" font-family="PKInk,cursive" font-size="${fs}" fill="#e9ebee" stroke="#26282b" stroke-width="2.2" paint-order="stroke">Bender</text></g>`;
+    const cc = o.corners === 'white' ? '#e8e6df' : '#0a0a0b';
+    const k = 36;
+    const corners = `<g fill="${cc}"><path d="M1 32 V15 A14 14 0 0 1 15 1 H${k} Q17 3 15 13 Q3 17 1 ${k} Z"/><path d="M${W - 1} 32 V15 A14 14 0 0 0 ${W - 15} 1 H${W - k} Q${W - 17} 3 ${W - 15} 13 Q${W - 3} 17 ${W - 1} ${k} Z"/><path d="M1 ${H - 32} V${H - 15} A14 14 0 0 0 15 ${H - 1} H${k} Q17 ${H - 3} 15 ${H - 13} Q3 ${H - 17} 1 ${H - k} Z"/><path d="M${W - 1} ${H - 32} V${H - 15} A14 14 0 0 1 ${W - 15} ${H - 1} H${W - k} Q${W - 17} ${H - 3} ${W - 15} ${H - 13} Q${W - 3} ${H - 17} ${W - 1} ${H - k} Z"/></g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".22" stroke-width="1"/></pattern>
+        ${pat}</defs>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#dm${u})"/>
+        <rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="5" fill="#5c5f63"/>
+        <rect x="${gx + 4}" y="${gy + 4}" width="${gw - 8}" height="${gh - 8}" rx="3" fill="url(#sg${u})"/>
+        <rect x="${gx + 2}" y="${gy + 2}" width="${gw - 4}" height="${gh - 4}" rx="4" fill="none" stroke="#0c0c0d" stroke-width="2"/>
+        ${logo}
+        ${corners}</svg>`;
+}
+// Mesa/"Silla" chrome oval badge: "SILLA" (PKAnton, the amps' Silla font) over an
+// "ENGINEERING" strip — the Mesa Engineering oval, cloned.
+function rbSillaBadge(u, cx, cy, s) {
+    const rx = 56 * s, ry = 22 * s;
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0e0e11" stroke="#cfd3d8" stroke-width="2.6"/>
+        <ellipse cx="${cx}" cy="${cy}" rx="${rx - 4}" ry="${ry - 4}" fill="none" stroke="#6a6e73" stroke-width="0.8"/>
+        <text x="${cx}" y="${cy - 3 * s}" text-anchor="middle" dominant-baseline="middle" font-family="PKAnton,sans-serif" font-size="${22 * s}" letter-spacing="0.5" fill="#eef0f2">SILLA</text>
+        <rect x="${cx - 30 * s}" y="${cy + 6 * s}" width="${60 * s}" height="${9 * s}" rx="1.5" fill="#c8ccd0"/>
+        <text x="${cx}" y="${cy + 10.8 * s}" text-anchor="middle" dominant-baseline="middle" font-family="PKBebas,sans-serif" font-size="${7 * s}" letter-spacing="1.4" fill="#141416">ENGINEERING</text>`;
+}
+// Mesa/"Silla" cab: black tolex, black cloth or perforated-metal grille, the
+// chrome oval badge, chrome grille screws + black corners. opts: {w,h,
+// grille:'cloth'|'perf', bx,by (badge centre as a fraction of the grille), bs}.
+function rbSillaCab(u, o) {
+    const W = o.w, H = o.h;
+    const pat = o.grille === 'perf'
+        ? `<pattern id="gr${u}" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#2b2b2d"/><circle cx="3.5" cy="3.5" r="2.5" fill="#0b0b0c"/></pattern>`
+        : `<pattern id="gr${u}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/></pattern>`;
+    const gbg = o.grille === 'perf' ? '#242426' : '#0a0a0b';
+    const gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+    const screws = `<g fill="#c6cace"><circle cx="${gx + 12}" cy="${gy + 12}" r="3.2"/><circle cx="${gx + gw - 12}" cy="${gy + 12}" r="3.2"/><circle cx="${gx + 12}" cy="${gy + gh - 12}" r="3.2"/><circle cx="${gx + gw - 12}" cy="${gy + gh - 12}" r="3.2"/></g>`;
+    const bx = gx + gw * o.bx, by = gy + gh * o.by;
+    const k = 36;
+    const corners = `<g fill="#0a0a0b"><path d="M1 32 V15 A14 14 0 0 1 15 1 H${k} Q17 3 15 13 Q3 17 1 ${k} Z"/><path d="M${W - 1} 32 V15 A14 14 0 0 0 ${W - 15} 1 H${W - k} Q${W - 17} 3 ${W - 15} 13 Q${W - 3} 17 ${W - 1} ${k} Z"/><path d="M1 ${H - 32} V${H - 15} A14 14 0 0 0 15 ${H - 1} H${k} Q17 ${H - 3} 15 ${H - 13} Q3 ${H - 17} 1 ${H - k} Z"/><path d="M${W - 1} ${H - 32} V${H - 15} A14 14 0 0 1 ${W - 15} ${H - 1} H${W - k} Q${W - 17} ${H - 3} ${W - 15} ${H - 13} Q${W - 3} ${H - 17} ${W - 1} ${H - k} Z"/></g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242426"/><stop offset=".5" stop-color="#141416"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".24" stroke-width="1"/></pattern>
+        ${pat}</defs>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#dm${u})"/>
+        <rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="5" fill="${gbg}"/>
+        <rect x="${gx + 3}" y="${gy + 3}" width="${gw - 6}" height="${gh - 6}" rx="3" fill="url(#gr${u})"/>
+        <rect x="${gx + 1}" y="${gy + 1}" width="${gw - 2}" height="${gh - 2}" rx="4" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="1.5"/>
+        ${screws}
+        ${rbSillaBadge(u, bx, by, o.bs || 1)}
+        ${corners}</svg>`;
+}
+// ── Shared cab primitives (used by the assorted single-brand cabs below) ──
+// [tileW, tileH, tileMarkup] per grille cloth/metal.
+const RB_CAB_PAT = {
+    weave:   ['6', '6', '<rect width="6" height="6" fill="#0c0c0d"/><path d="M0 0H6M0 3H6" stroke="#1c1c20" stroke-width="1"/><path d="M0 0V6M3 0V6" stroke="#171719" stroke-width="1"/>'],
+    silver:  ['5', '5', '<rect width="5" height="5" fill="#adb1b5"/><path d="M0 0H5M0 2.5H5" stroke="#797d81" stroke-width="0.7"/><path d="M0 0V5M2.5 0V5" stroke="#c8ccd0" stroke-opacity=".7" stroke-width="0.7"/>'],
+    perf:    ['7', '7', '<rect width="7" height="7" fill="#2b2b2d"/><circle cx="3.5" cy="3.5" r="2.5" fill="#0b0b0c"/>'],
+    oxblood: ['6', '5', '<rect width="6" height="5" fill="#3a221e"/><path d="M0 0H6M0 2.5H6" stroke="#4d2f28" stroke-width="1"/><path d="M0 0V5M3 0V5" stroke="#301b18" stroke-width="1"/>'],
+    jc:      ['7', '7', '<rect width="7" height="7" fill="#0e0e10"/><path d="M0 0H7M0 3.5H7M0 0V7M3.5 0V7" stroke="#5f6268" stroke-width="0.6"/>'],
+    zephyr:  ['4', '5', '<rect width="4" height="5" fill="#6a6d71"/><rect width="4" height="1.6" fill="#87898d"/><rect y="2.6" width="4" height="1.6" fill="#4c4e52"/>'],
+    gkblack: ['8', '8', '<rect width="8" height="8" fill="#2c2c2f"/><rect x="1" y="1" width="6" height="6" fill="#080809"/>'],
+    gksilver:['8', '8', '<rect width="8" height="8" fill="#b6babe"/><rect x="1" y="1" width="6" height="6" fill="#0c0c0d"/>'],
+};
+function rbCabCorners(W, H, col) {
+    col = col || '#0a0a0b'; const k = 36;
+    return `<g fill="${col}"><path d="M1 32 V15 A14 14 0 0 1 15 1 H${k} Q17 3 15 13 Q3 17 1 ${k} Z"/><path d="M${W - 1} 32 V15 A14 14 0 0 0 ${W - 15} 1 H${W - k} Q${W - 17} 3 ${W - 15} 13 Q${W - 3} 17 ${W - 1} ${k} Z"/><path d="M1 ${H - 32} V${H - 15} A14 14 0 0 0 15 ${H - 1} H${k} Q17 ${H - 3} 15 ${H - 13} Q3 ${H - 17} 1 ${H - k} Z"/><path d="M${W - 1} ${H - 32} V${H - 15} A14 14 0 0 1 ${W - 15} ${H - 1} H${W - k} Q${W - 17} ${H - 3} ${W - 15} ${H - 13} Q${W - 3} ${H - 17} ${W - 1} ${H - k} Z"/></g>`;
+}
+function rbCabOval(cx, cy, rx, ry, txt, font, fs, fill, tc, rim) {
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${rim}" stroke-width="2.4"/><ellipse cx="${cx}" cy="${cy}" rx="${rx - 4}" ry="${ry - 4}" fill="none" stroke="${rim}" stroke-opacity=".5" stroke-width="0.8"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-family="${font}" font-size="${fs}" fill="${tc}">${txt}</text>`;
+}
+function rbCabPlate(cx, cy, w, h, txt, font, fs, fill, tc, rim, dots) {
+    let s = `<rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="3" fill="${fill}" stroke="${rim}" stroke-width="2.2"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" dominant-baseline="middle" font-family="${font}" font-size="${fs}" letter-spacing="1" fill="${tc}">${txt}</text>`;
+    if (dots) s += `<circle cx="${cx - w / 2 + 9}" cy="${cy}" r="2" fill="${tc}"/><circle cx="${cx + w / 2 - 9}" cy="${cy}" r="2" fill="${tc}"/>`;
+    return s;
+}
+function rbCabGrille(u, gx, gy, gw, gh, gbg, rx) {
+    rx = rx || 5;
+    return `<rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="${rx}" fill="${gbg}"/><rect x="${gx + 3}" y="${gy + 3}" width="${gw - 6}" height="${gh - 6}" rx="${Math.max(rx - 2, 2)}" fill="url(#gp${u})"/>`;
+}
+// Wrap a body in the tolex box + defs (tolex gradient tx, diagonal hatch dm, and
+// the chosen grille pattern gp). tol = [top, mid, bottom] stop colours.
+function rbCabWrap(u, W, H, body, tol, patKey, extraDefs) {
+    const p = RB_CAB_PAT[patKey];
+    const ed = `<pattern id="gp${u}" width="${p[0]}" height="${p[1]}" patternUnits="userSpaceOnUse">${p[2]}</pattern>`;
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="tx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tol[0]}"/><stop offset=".5" stop-color="${tol[1]}"/><stop offset="1" stop-color="${tol[2]}"/></linearGradient>
+        <pattern id="dm${u}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H9M0 4.5H9" stroke="#000" stroke-opacity=".2" stroke-width="1"/></pattern>${ed}${extraDefs || ''}</defs>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#tx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="url(#dm${u})"/>${body}</svg>`;
+}
+// David Eden red square badge (gold "E" monogram + EDENA), top-left of the grille.
+function rbEdenBadge(x, y) {
+    return `<rect x="${x}" y="${y}" width="46" height="52" rx="3" fill="#a01c1c" stroke="#e8cf7a" stroke-width="1.6"/><text x="${x + 23}" y="${y + 11}" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,serif" font-size="8" letter-spacing="1" fill="#e8cf7a">DAVID</text><rect x="${x + 11}" y="${y + 16}" width="24" height="22" rx="2" fill="#c9a24a"/><text x="${x + 23}" y="${y + 28}" text-anchor="middle" dominant-baseline="central" font-family="PKAnton,serif" font-size="18" fill="#3a1a0a">E</text><text x="${x + 23}" y="${y + 45}" text-anchor="middle" dominant-baseline="central" font-family="PKBebas,serif" font-size="10" letter-spacing="1.5" fill="#e8cf7a">EDENA</text>`;
+}
+// GK "FK" chrome pill + "NEO" pill (the Freddy/Gallien-Krueger Neo badges).
+function rbGkBadge(cx, cy) {
+    return `<rect x="${cx - 26}" y="${cy - 15}" width="52" height="30" rx="6" fill="#dfe2e6" stroke="#8a8e92" stroke-width="1.4"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" dominant-baseline="middle" font-family="PKAnton,serif" font-size="20" fill="#1a1c1f">FK</text>`;
+}
+function rbNeoBadge(cx, cy) {
+    return `<rect x="${cx - 24}" y="${cy - 11}" width="48" height="22" rx="4" fill="#0c0c0d" stroke="#c8ccd0" stroke-width="1.2"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" dominant-baseline="middle" font-family="PKBebas,serif" font-size="13" letter-spacing="2" fill="#dfe2e6">NEO</text>`;
+}
+// Edena (Eden) bass cab: black tolex, hex/perf grille, red Eden badge + a gold
+// tweeter block (top corners), black corners. Shared by the whole D-series.
+function rbEdenCab(u, W, H) {
+    const gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+    const body = `${rbCabGrille(u, gx, gy, gw, gh, '#1a1a1c')}
+        <rect x="${gx + gw - 52}" y="${gy + 8}" width="40" height="40" rx="3" fill="#6a4a1a"/><rect x="${gx + gw - 48}" y="${gy + 12}" width="32" height="32" rx="2" fill="#8a6a2a"/>
+        ${rbEdenBadge(gx + 8, gy + 8)}${rbCabCorners(W, H)}`;
+    return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf');
+}
+// Sharke (Hartke) aluminium-cone speaker: the brand's signature silver cone
+// (radial gradient url(#cone<u>)) + concentric rings + black dust cap.
+function rbHartkeCone(u, cx, cy, r) {
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#0a0a0b"/><circle cx="${cx}" cy="${cy}" r="${r * 0.86}" fill="url(#cone${u})"/><circle cx="${cx}" cy="${cy}" r="${r * 0.86}" fill="none" stroke="#585c60" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="${r * 0.6}" fill="none" stroke="#7c8084" stroke-opacity=".5" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="${r * 0.34}" fill="#0d0d0e" stroke="#3a3d40" stroke-width="1"/>`;
+}
+// Sharke (Hartke) bass cab: black hex grille with the aluminium cone(s), silver
+// metal corners, "Sharke" wordmark. opts: {w,h, cones:[[ox,oy,rFrac],...],
+// lc (logo colour), lx (logo x frac), ly (logo y px), ls (logo size)}.
+function rbHartkeCab(u, o) {
+    const W = o.w, H = o.h, gx = 24, gy = 22, gw = W - 48, gh = H - 44;
+    let cones = '';
+    for (const c of o.cones) cones += rbHartkeCone(u, gx + gw * c[0], gy + gh * c[1], gh * c[2]);
+    const logo = `<text x="${gx + gw * o.lx}" y="${gy + o.ly}" text-anchor="middle" dominant-baseline="middle" font-family="PKBebas,serif" font-size="${o.ls}" fill="${o.lc}">Sharke</text>`;
+    const body = `${rbCabGrille(u, gx, gy, gw, gh, '#141416')}${cones}${logo}${rbCabCorners(W, H, '#9a9ea2')}`;
+    return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf', `<radialGradient id="cone${u}" cx=".4" cy=".38" r=".7"><stop offset="0" stop-color="#d6d9dd"/><stop offset="1" stop-color="#8f9397"/></radialGradient>`);
+}
 function rbCabArtFor(gear, uid) {
     if (!gear) return '';
     let key = gear;
@@ -3924,7 +4413,35 @@ function rbCabArtFor(gear, uid) {
 }
 // Art aspect (width/height of the SVG viewBox) per cab — used to letterbox the
 // art inside the Cab Room canvas AND to clamp the mic to the cab (not the gaps).
-const RB_CAB_ART_ASPECT = { 'Bass_Cab_AT1150BC': 460 / 480, 'Bass_Cab_AT810BC': 320 / 580 };
+// Aspect of the DRAWN cab body (matches each SVG's tight viewBox), so the room
+// face + cab-room fit have no invisible transparent border around the art.
+const RB_CAB_ART_ASPECT = {
+    'Bass_Cab_AT1150BC': 412 / 440, 'Bass_Cab_AT810BC': 292 / 552,
+    'Cab_MARSHALL1960A': 440 / 434, 'Cab_MARSHALL1960AX': 436 / 430,
+    'Cab_MARSHALL1960TV': 372 / 440, 'Cab_MARSHALL1936': 520 / 360,
+    'Cab_ORANGEPPC412': 448 / 430, 'Cab_ORANGEPPC212OB': 500 / 384,
+    'Cab_ORANGEJIMMYBEAN': 448 / 430, 'Cab_CS1120C': 470 / 376,
+    'Cab_CS1515C': 440 / 424, 'Bass_Cab_ORANGEOBC810': 300 / 580,
+    'Bass_Cab_ORANGEOBC115': 460 / 400,
+    'Cab_BT410C': 448 / 440, 'Cab_BT1120C': 470 / 420,
+    'Cab_BT1121C': 500 / 384, 'Cab_EN212C': 500 / 424,
+    'Cab_AT0112C': 440 / 420, 'Cab_AT1121C': 482 / 416,
+    'Cab_TW410C': 360 / 500, 'Bass_Cab_TW215BC': 380 / 520,
+    'Cab_TW110C': 500 / 370, 'Cab_TW112C': 460 / 418,
+    'Cab_CA412C': 460 / 430, 'Cab_CA112C': 500 / 334,
+    'Cab_CA215C': 340 / 548, 'Bass_Cab_CA1510BC': 480 / 370,
+    'Cab_CS212C': 470 / 338, 'Cab_EN4120C': 444 / 430,
+    'Cab_GB412CMKI': 442 / 430, 'Cab_GB412CMKIII': 444 / 440,
+    'Cab_HG2120C': 500 / 330, 'Cab_HG212C': 500 / 330, 'Cab_HG215C': 360 / 556,
+    'Cab_GB412CMKII': 444 / 430,
+    'Bass_Cab_EDEND115XLT': 440 / 424, 'Bass_Cab_EDEND212XLT': 452 / 430,
+    'Bass_Cab_EDEND410XST': 448 / 430, 'Bass_Cab_EDEND610XST': 470 / 520,
+    'Bass_Cab_GB415BC': 384 / 540,
+    'Bass_Cab_BT410BC': 448 / 430, 'Bass_Cab_BT115BC': 440 / 460, 'Bass_Cab_BT212BC': 380 / 520,
+    'Bass_Cab_CH210BC': 480 / 360,
+    'Bass_Cab_CS410BC': 448 / 430, 'Bass_Cab_CS15BC': 440 / 430, 'Bass_Cab_CS112BC': 480 / 360,
+    'Bass_Cab_CH410BC': 380 / 520, 'Bass_Cab_CH310BC': 460 / 420,
+};
 function rbCabArtAspect(gear) {
     if (!gear) return 0;
     let k = gear;
@@ -3940,18 +4457,24 @@ function rbCabArtRect(aspect) {
     if (aspect < W / H) { bh = H; bw = H * aspect; } else { bw = W; bh = W / aspect; }
     return [(W - bw) / 2, (H - bh) / 2, bw, bh];
 }
-// The badge font as base64 so cab art can be an <img> (SVG-in-img can't use the
-// document's @font-face). Fetched once; art data-URLs rebuild when it lands.
-let RB_BEBAS_B64 = '';
+// Badge fonts as base64 so cab art can be an <img> (SVG-in-img can't use the
+// document's @font-face). Bebas = model plates; Ink = the Marsten cursive brand
+// script; Graffiti = the Citrus/Orange bubble logo — all matching the amps'
+// brand fonts. Fetched once; art data-URLs rebuild when they land.
+const RB_CAB_FONTS = { PKBebas: 'bebas', PKInk: 'ink', PKGraffiti: 'graffiti', PKAnton: 'anton', PKCrete: 'crete' };
+const _rbCabFontB64 = {};   // family -> base64
 const _rbCabArtUrl = {};
 async function rbLoadCabFont() {
-    if (RB_BEBAS_B64) return;
-    try {
-        const bytes = new Uint8Array(await (await fetch(`${window.RB_API}/asset/font/bebas`)).arrayBuffer());
-        let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        RB_BEBAS_B64 = btoa(bin);
-        for (const k in _rbCabArtUrl) delete _rbCabArtUrl[k];
-    } catch (_) {}
+    const missing = Object.entries(RB_CAB_FONTS).filter(([fam]) => !_rbCabFontB64[fam]);
+    if (!missing.length) return;
+    await Promise.all(missing.map(async ([fam, name]) => {
+        try {
+            const bytes = new Uint8Array(await (await fetch(`${window.RB_API}/asset/font/${name}`)).arrayBuffer());
+            let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+            _rbCabFontB64[fam] = btoa(bin);
+        } catch (_) {}
+    }));
+    for (const k in _rbCabArtUrl) delete _rbCabArtUrl[k];
 }
 // Cab recreation as an <img> src (data URL) — the cab's "photo" everywhere it
 // used to show the RS gear photo: room face, Gear cards, catalog thumbs, nodes.
@@ -3963,12 +4486,17 @@ function rbCabArtDataUrl(gear) {
     if (_rbCabArtUrl[key]) return _rbCabArtUrl[key];
     let svg = RB_CAB_ART[key]('u');
     if (!/xmlns=/.test(svg)) svg = svg.replace(/^<svg /, '<svg xmlns="http://www.w3.org/2000/svg" ');
-    if (RB_BEBAS_B64) {
-        const fs = `<style>@font-face{font-family:'PKBebas';src:url('data:font/ttf;base64,${RB_BEBAS_B64}')}</style>`;
+    let faces = '';
+    for (const fam in _rbCabFontB64) faces += `@font-face{font-family:'${fam}';src:url('data:font/ttf;base64,${_rbCabFontB64[fam]}')}`;
+    if (faces) {
+        const fs = `<style>${faces}</style>`;
         svg = svg.includes('<defs>') ? svg.replace('<defs>', '<defs>' + fs) : svg.replace(/(<svg[^>]*>)/, '$1' + fs);
     }
     const url = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svg);
-    if (RB_BEBAS_B64) _rbCabArtUrl[key] = url;   // cache only once the font is in
+    // Cache only once ALL badge fonts are embedded, so a script/bubble-logo cab
+    // isn't frozen with a missing font before the .ttf lands.
+    const allLoaded = Object.keys(RB_CAB_FONTS).every(f => _rbCabFontB64[f]);
+    if (allLoaded) _rbCabArtUrl[key] = url;
     return url;
 }
 
@@ -5246,6 +5774,10 @@ async function rbStudioReloadLiveChainAfterSwap() {
     // The old version only rebuilt the mega-chain, so an amp swap while sitting
     // on the default/test tone didn't sound until the user re-selected the tone.
     try { await rbState._studioPersistPromise; } catch (_) {}
+    // Keep the node-editor graph in step with the (now-mutated) chain — a swap or
+    // add done in the Studio must reach an already-seeded graph (amps, pedals,
+    // racks, cabs all funnel through here).
+    try { rbAdvSyncFromChain(); } catch (_) {}
     try {
         const v = rbState.studioView || { source: 'default' };
         if (v.source === 'default') {
@@ -5287,8 +5819,12 @@ function rbStudioSwapToGear(rsGear) {
         if (v.source === 'song' && _rbCabRoom['studio'] && _rbCabRoom['studio']._studio) {
             rbStudioCabSwap(rsGear);
         } else {
+            // Default / saved tone: we own the chain array directly, so persist
+            // the chosen cab into it (create the cabinet piece if missing) — the
+            // old path only re-auditioned, so the pick never showed in the room,
+            // seeded the node editor, or survived a restart.
             rbState._lastExploreCab = rsGear;
-            try { rbCabRoomExplore('studio', rsGear); } catch (_) {}
+            rbStudioCabApplyLocal(rsGear);
         }
         // The swap rebuilds the room + rail ASYNCHRONOUSLY (monitor reload), which
         // can wipe the search after we restore it — re-assert it a few times so
@@ -5367,8 +5903,14 @@ function rbStudioSwapToGear(rsGear) {
     rbStudioReloadLiveChainAfterSwap();   // rebuild the live song chain so the swap sounds without re-selecting the tone
     if (kind === 'amp') {
         // Show the new amp face immediately, then reload focus (loads its VST +
-        // knobs and re-renders the rail with the new amp centred).
-        const face = document.querySelector('#rb-studio-room .rb-amp-face');
+        // knobs and re-renders the rail with the new amp centred). Target THIS
+        // amp's stack by its chain index — a bare `.rb-amp-face` grabbed the FIRST
+        // amp, so swapping amp 2 stamped its photo onto amp 1 in a parallel rig
+        // (and both showed the new face until the room was re-rendered).
+        const stack = document.querySelector('#rb-studio-room .rb-amp-stack.rb-amp-focused')
+                   || document.querySelector(`#rb-studio-room .rb-amp-stack[data-amp-idx="${idx}"]`);
+        const face = (stack && stack.querySelector('.rb-amp-face'))
+                  || document.querySelector('#rb-studio-room .rb-amp-face');
         if (face) { const img = rbStudioPedalImg(piece); face.innerHTML = img ? `<img src="${img}" alt="${rbEsc(piece.real_name)}">` : ''; }
         rbStudioFocusAmp(idx);
     } else {
@@ -11526,7 +12068,16 @@ function rbCabRoomPointer(e, safeId, gear, isDown) {
 
 function rbCabRoomDrop(safeId, gear) {
     const st = _rbCabRoom[safeId];
-    if (st && st._dirty) { st._dirty = false; rbCabRoomListen(safeId, gear, true); }
+    if (!st || !st._dirty) return;
+    st._dirty = false;
+    if (st._studio && st._studio.local) {
+        // Default/saved tone: bake the new mic position into the cabinet piece +
+        // persist. The monitor reload re-auditions it in context, so no separate
+        // listen call; keep the room in place (no reopen) so the drag feels live.
+        rbStudioCabApplyLocal(null, { reopen: false });
+        return;
+    }
+    rbCabRoomListen(safeId, gear, true);
 }
 
 async function rbCabRoomSynth(safeId, gear, assign) {
@@ -11676,11 +12227,14 @@ window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
     if (!room) return;
     // Toggle: clicking the cab again (or its close) exits the cab focus.
     if (document.getElementById('rb-studio-cabroom')) { rbStudioCloseCabFocus(); return; }
-    const v = rbState.studioView || {};
+    const v = rbState.studioView || { source: 'default' };
     const isSong = v.source === 'song';
-    const found = isSong ? rbStudioCabPiece() : null;
-    // Sin canción (o sin pieza de cab): modo EXPLORADOR — elige cualquier cab
-    // del catálogo, arrastra el mic y audiciona; nada se persiste.
+    // Edit the cab piece of WHATEVER tone the Studio shows (song / default /
+    // saved) — not only songs. For default/saved the picks persist into the
+    // chain array (rbStudioCabApplyLocal); for songs via /gear/replace_with.
+    const found = rbStudioCabPiece();
+    // Sin pieza de cab todavía: se elige un cab del catálogo; al seleccionarlo
+    // se crea+persiste la pieza (default/saved) o se hace swap (canción).
     let gearName, entry;
     if (found) {
         gearName = found.piece.type || found.piece.rs_gear;
@@ -11715,10 +12269,15 @@ window.rbStudioOpenCabRoom = function rbStudioOpenCabRoom() {
     delete _rbCabRoom['studio'];   // estado fresco por apertura
     rbCabRoomBuild({ rs_gear: gearName }, entry, 'studio', {
         selector: false,   // the catalog rail replaces the old cab dropdown
-        studio: found ? { toneIdx: v.toneIdx, pIdx: found.pIdx } : null,
+        // Song: {toneIdx,pIdx} drives the preloaded-variant swap via preset id.
+        // Default/saved: {local:true} tells the cab room to bake mic changes into
+        // the chain piece + persist (rbStudioCabApplyLocal) instead.
+        studio: isSong
+            ? (found ? { toneIdx: v.toneIdx, pIdx: found.pIdx } : null)
+            : { local: true, pIdx: found ? found.pIdx : -1 },
         init: found ? rbCabRoomStateFromPiece(found.piece) : {},
     });
-    if (found) rbCabRoomPreloadVariants('studio', gearName).catch(() => {});
+    if (isSong && found) rbCabRoomPreloadVariants('studio', gearName).catch(() => {});
     // Catalog on the right — reuse the amp/pedal swap rail with kind='cab'.
     rbStudioOpenSwap(rbState._studioFocusIdx, 'cab');
 };
@@ -11926,6 +12485,67 @@ window.rbStudioCabSwap = async function (newBase) {
         const ov = document.getElementById('rb-studio-cabroom');
         if (ov) ov.remove();
         rbStudioOpenCabRoom();
+    } catch (e) {
+        if (status) status.textContent = '✗ ' + (e.message || e);
+    }
+};
+
+// Cab apply for the DEFAULT tone or a SAVED tone (no song). Songs go through
+// rbStudioCabSwap (/gear/replace_with by preset id); here we own the chain array
+// directly. Find or create the cabinet piece, point it at `rsGear` (or keep the
+// current cab when null — a mic-position drag), synthesize an IR at the cab
+// room's mic position so it actually colours the sound (native_preset_full only
+// emits a cab stage when kind='ir' with a file), then persist via
+// rbStudioPersist (default_tone/save or saved_tone/save) so the pick shows in the
+// room, seeds the node editor, and survives a restart. `opts.reopen` (default
+// true) re-renders the room + reopens the cab room on the new cab — used when
+// switching cabs from the rail; a mic drag passes reopen:false to stay in place.
+window.rbStudioCabApplyLocal = async function (rsGear, opts) {
+    opts = opts || {};
+    const reopen = opts.reopen !== false;
+    const chain = rbStudioCurrentChain();
+    const status = document.getElementById('rb-cabroom-status-studio');
+    if (status) status.textContent = '⏳ aplicando cab…';
+    let found = rbStudioCabPiece();
+    let piece = found ? found.piece : null;
+    // Base cab id — strip any RS mic/pos suffix (we bind OUR synthesized IR, so
+    // the piece carries the bare base name the art + catalog are keyed by).
+    const base = String(rsGear || (piece && piece.type) || rbState._lastExploreCab || '')
+        .replace(/_[a-z0-9]{2}$/i, '');
+    if (!base) { if (status) status.textContent = ''; return; }
+    try {
+        // Rail swap (rsGear set): drop the current speaker so the synth uses the
+        // target cab's default — the backend 400s a speaker not offered for that
+        // cab, which would leave it silent (no IR). A mic drag (rsGear null) keeps
+        // the same cab, so its speaker stays.
+        const st = _rbCabRoom['studio'];
+        if (rsGear && st) st.speaker = null;
+        // IR at the cab room's current mic position (defaults on a fresh open).
+        let irName = null;
+        try { const d = await rbCabRoomSynth('studio', base, false); irName = d && d.name; } catch (_) {}
+        if (!piece) { piece = { _bypassed: false }; chain.push(piece); }
+        piece.type = base;
+        piece.slot = 'cabinet';
+        piece.category = 'cab'; piece.rs_category = 'cab';
+        const catEntry = (rbState.realCabCatalog && rbState.realCabCatalog.cabs
+                          && rbState.realCabCatalog.cabs[base]) || {};
+        piece.real_name = catEntry.name || piece.real_name || base;
+        // Cabs have no VST — clear any stale VST assignment left on the piece.
+        piece._vst_kind = null; piece._vst_path = null; piece._vst_state = null;
+        if (irName) {
+            piece._uploaded_file = irName;
+            piece._uploaded_kind = 'ir';
+            piece.assigned = { kind: 'ir', file: irName, assigned_mode: 'manual' };
+        }
+        try { rbStudioPersist(); } catch (_) {}
+        await rbStudioReloadLiveChainAfterSwap();   // persist reaches DB → reload the live monitor (also syncs the node editor)
+        if (status) status.textContent = '';
+        if (reopen) {
+            try { rbRenderStudioRoom(); } catch (_) {}   // room now shows the cab art
+            const ov = document.getElementById('rb-studio-cabroom');
+            if (ov) ov.remove();
+            rbStudioOpenCabRoom();   // re-enter focus on the new cab (rail + mic)
+        }
     } catch (e) {
         if (status) status.textContent = '✗ ' + (e.message || e);
     }
@@ -14633,7 +15253,7 @@ function rbAdvRestore() {
                 id: n.id, kind: 'gear', pieceIdx: n.pieceIdx, kindLabel: n.kindLabel,
                 rsGear: n.rsGear || p.type || null,
                 label: p.real_name || p.type || 'Gear',
-                img: rbStudioPedalImg(p) || null, bypassed: !!p._bypassed,
+                img: rbAdvPieceImg(p), bypassed: !!p._bypassed,
                 x: n.x, y: n.y, pan,
                 stereoOut: rbAdvPieceCanStereoOut(p, n.rsGear) || !!n.stereoOut,
             });
@@ -14824,7 +15444,7 @@ function rbAdvResetToChain() {
     const mk = (e, kindLabel) => ({
         id: nid++, kind: 'gear', pieceIdx: e.idx,
         label: e.p.real_name || e.p.type || 'Gear', kindLabel,
-        img: rbStudioPedalImg(e.p) || null,
+        img: rbAdvPieceImg(e.p),
         bypassed: !!e.p.bypassed, x: 0, y: 0,
         pan: (typeof e.p._pan === 'number' ? e.p._pan : 0),   // stereo pan (St-1)
         stereoOut: rbAdvPieceCanStereoOut(e.p, e.p.type),
@@ -14899,6 +15519,16 @@ function rbAdvGearImg(g) {
 function rbAdvGearInitials(g) {
     return rbEsc(((g && (g.real_name || g.name || g.rs_gear)) || 'G').slice(0, 2).toUpperCase());
 }
+// Node thumbnail for a CHAIN piece: the recreated cab photo for cabs (they have
+// no VST face), else the VST canvas face. Cabs seeded/restored from the chain
+// used rbStudioPedalImg alone, which returns null for a cab → the node showed no
+// picture; prefer the cab art so the graph mirrors the room.
+function rbAdvPieceImg(p) {
+    if (!p) return null;
+    const cabUrl = rbCabArtDataUrl(p.type || p.rs_gear);
+    if (cabUrl) return cabUrl;
+    return rbStudioPedalImg(p) || null;
+}
 
 // ── Palette (left) ──────────────────────────────────────────────────────
 function rbAdvPaletteFilter(cat) {
@@ -14912,28 +15542,28 @@ function rbAdvPaletteRender() {
     const host = document.getElementById('rb-adv-palette-list');
     if (!host) return;
     const cat = rbAdvState().palette;
-    // Cab palette is locked once a cab is on the graph — only one cab allowed.
-    const cabLocked = rbAdvGearIsCab(cat, '') && rbAdvHasCab();
+    // Only one cab is allowed, but picking another one now REPLACES it in place
+    // (rbAdvAddGearNode → rbAdvReplaceCabNode), so the palette stays live — just
+    // hint that a pick will swap the current cab rather than add a second.
+    const cabSwap = rbAdvGearIsCab(cat, '') && rbAdvHasCab();
     const q = rbNorm(((document.getElementById('rb-adv-pal-search') || {}).value || '').trim());
     const items = ((rbState.gearCatalog && rbState.gearCatalog[cat]) || [])
         .filter(g => !q || rbNorm(`${g.name || ''} ${g.rs_gear || ''} ${g.real_name || ''}`).includes(q));
     if (!items.length) { host.innerHTML = `<div class="rb-adv-pal-empty">No ${cat}s${q ? ' match' : ' yet'}.</div>`; return; }
-    host.innerHTML = (cabLocked
-        ? `<div class="rb-adv-pal-empty" style="padding:6px 8px;line-height:1.35">A cab is already on the graph. Every amp shares the same cab, so only one is allowed — delete it to add a different one.</div>`
+    host.innerHTML = (cabSwap
+        ? `<div class="rb-adv-pal-empty" style="padding:6px 8px;line-height:1.35">Every amp shares one cab — picking another cab replaces the one on the graph.</div>`
         : '') + items.map(g => {
         const name = rbEsc(g.name || g.real_name || g.rs_gear || 'Gear');
         const img = rbAdvGearImg(g);   // VST face only — never the RS gear photo
         const thumb = img
             ? `<img src="${img}" alt="" draggable="false" onerror="this.style.display='none'">`
             : `<span class="rb-adv-pal-ph">${rbAdvGearInitials(g)}</span>`;
-        const lock = cabLocked ? ' style="opacity:.4;cursor:not-allowed;pointer-events:none" title="Only one cab is allowed"' : '';
-        return `<div class="rb-adv-pal-item" draggable="false"${lock}
+        return `<div class="rb-adv-pal-item" draggable="false"
                      data-adv-gear="${rbEsc(g.rs_gear)}" data-adv-cat="${cat}" data-adv-name="${name}">
                     <div class="rb-adv-pal-thumb">${thumb}</div>
                     <div class="rb-adv-pal-name">${name}</div>
                 </div>`;
     }).join('');
-    if (cabLocked) return;   // locked items are inert; no drag handlers to wire
     host.querySelectorAll('.rb-adv-pal-item').forEach(el => {
         // MOUSE-based drag, NOT HTML5 drag-and-drop — Electron's webview drops
         // custom dataTransfer payloads mid-drag, so amps/VSTs often couldn't be
@@ -15613,13 +16243,97 @@ function rbAdvHasCab() {
     return rbAdvState().nodes.some(rbAdvNodeIsCab);
 }
 
+// Synthesize a cab IR at a neutral default mic position WITHOUT needing an open
+// Cab Room — so a cab added or replaced from the node-editor palette actually
+// colours the sound (native_preset_full only emits a cab stage for kind='ir').
+async function rbSynthCabIrDefault(gear) {
+    if (!gear) return null;
+    try {
+        const r = await fetch(`${window.RB_API}/cab/synthesize`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gear_type: gear, mic: 'sm57', x: 0.15, dist_in: 1.0, angle_deg: 0 }),
+        });
+        const d = await r.json();
+        return (r.ok && d && d.name) ? d.name : null;
+    } catch (_) { return null; }
+}
+
+// Replace the existing cab (node + its chain piece) with a newly picked one —
+// point the piece at the new cab, synth its IR, persist, and refresh the node's
+// face/label so the single shared cab swaps in place (no add, no delete).
+async function rbAdvReplaceCabNode(node, data) {
+    const base = String(data.rs_gear || '').replace(/_[a-z0-9]{2}$/i, '');
+    if (!node || !base) return;
+    const lookup = ((rbState.gearCatalog && rbState.gearCatalog[data.cat]) || [])
+        .find(g => g.rs_gear === data.rs_gear) || null;
+    const catEntry = (rbState.realCabCatalog && rbState.realCabCatalog.cabs
+                      && rbState.realCabCatalog.cabs[base]) || {};
+    // Locate the piece this node points at (fall back to the chain's cab piece).
+    const chain = rbStudioCurrentChain();
+    let piece = (typeof node.pieceIdx === 'number' && node.pieceIdx >= 0) ? chain[node.pieceIdx] : null;
+    if (!piece) { const f = rbStudioCabPiece(); if (f) { piece = f.piece; node.pieceIdx = f.pIdx; } }
+    if (!piece) { piece = { _bypassed: false }; chain.push(piece); node.pieceIdx = chain.length - 1; }
+    piece.type = base; piece.slot = 'cabinet';
+    piece.category = 'cab'; piece.rs_category = 'cab';
+    piece.real_name = catEntry.name || (lookup && lookup.real_name) || base;
+    piece._vst_kind = null; piece._vst_path = null; piece._vst_state = null;
+    const irName = await rbSynthCabIrDefault(base);
+    if (irName) {
+        piece._uploaded_file = irName; piece._uploaded_kind = 'ir';
+        piece.assigned = { kind: 'ir', file: irName, assigned_mode: 'manual' };
+    }
+    // Refresh the node's face + label in place.
+    node.rsGear = base;
+    node.kindLabel = data.cat;
+    node.label = piece.real_name;
+    node.img = rbAdvPieceImg(piece);
+    node.stereoOut = false;
+    rbAdvRenderCanvas();
+    rbAdvPersist();
+    try { rbStudioPersist(); } catch (_) {}
+    try { if (rbState._studioPersistPromise) await rbState._studioPersistPromise; } catch (_) {}
+    try { rbRenderStudioRoom(); } catch (_) {}
+    try { await rbStudioReloadLiveChainAfterSwap(); } catch (_) {}
+}
+
+// Sync the node-editor graph to whatever gear the chain now has — called after
+// any Studio swap/add so the two views agree. The graph is cached in rbState._adv
+// and rbLoadAdvanced won't re-read the chain while it stays seeded, so a
+// Studio-side change (swap an amp/pedal/rack/cab) would otherwise never reach an
+// already-seeded graph. A same-shape swap refreshes each node's identity in
+// place (rsGear/label/photo); a structural change (piece added/removed) forces a
+// clean reseed the next time Advanced opens.
+function rbAdvSyncFromChain() {
+    const adv = rbState._adv;
+    if (!adv || !Array.isArray(adv.nodes)) return;
+    const chain = rbStudioCurrentChain();
+    const gearNodes = adv.nodes.filter(n => n.kind === 'gear');
+    if (gearNodes.length !== chain.length) { adv.seeded = false; return; }
+    let changed = false;
+    for (const n of gearNodes) {
+        const p = (typeof n.pieceIdx === 'number' && n.pieceIdx >= 0) ? chain[n.pieceIdx] : null;
+        if (!p) { adv.seeded = false; return; }   // pieceIdx map stale → reseed on open
+        const rs = p.type || n.rsGear;
+        if (n.rsGear !== rs) changed = true;       // a swap changed this slot's gear
+        n.rsGear = rs;
+        n.label = p.real_name || p.type || 'Gear';
+        n.img = rbAdvPieceImg(p);
+        n.stereoOut = rbAdvPieceCanStereoOut(p, rs);
+    }
+    if (changed) {
+        try { rbAdvPersist(); } catch (_) {}
+        try { rbAdvRenderCanvas(); } catch (_) {}
+    }
+}
+
 function rbAdvAddGearNode(data, x, y) {
     if (!data || !data.rs_gear) return null;
     const adv = rbAdvState();
-    // Only ONE cab allowed — all amps share it (see rbAdvGearIsCab).
-    if (rbAdvGearIsCab(data.cat, data.rs_gear) && rbAdvHasCab()) {
-        alert('Only one cab is allowed — every amp shares the same cab.');
-        return null;
+    // Only ONE cab allowed (all amps share it) — so picking a cab when one is
+    // already on the graph REPLACES it in place instead of being rejected.
+    if (rbAdvGearIsCab(data.cat, data.rs_gear)) {
+        const existing = adv.nodes.find(rbAdvNodeIsCab);
+        if (existing) { rbAdvReplaceCabNode(existing, data).catch(() => {}); return existing; }
     }
     const id = Math.max(0, ...adv.nodes.map(n => n.id)) + 1;
     // Resolve the gear's VST face from the catalog (copyright-free) — never the
@@ -15675,6 +16389,16 @@ async function rbAdvMaterializeGear(node) {
         piece._vst_format = catItem.vst_format || 'VST3';
         piece._vst_state = catItem.vst_state || null;
         piece._vst_kind = 'vst';
+    }
+    // Cabs have no VST — synth a default-position IR so the added cab actually
+    // colours the sound (else native_preset_full skips a fileless cab piece).
+    if (isCab) {
+        const irName = await rbSynthCabIrDefault(piece.type);
+        if (irName) {
+            piece._uploaded_file = irName; piece._uploaded_kind = 'ir';
+            piece.assigned = { kind: 'ir', file: irName, assigned_mode: 'manual' };
+        }
+        node.img = rbAdvPieceImg(piece);   // recreated cab photo on the node
     }
     const chain = rbStudioCurrentChain();
     chain.push(piece);
