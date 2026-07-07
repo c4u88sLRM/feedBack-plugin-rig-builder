@@ -9741,7 +9741,10 @@ def setup(app, context):
             category = info.get("category") or _category_from_codename(gear)
             # Gear with an assigned VST shows its copyright-free display name
             # when available, even if the historical row is still kind="nam".
-            real_name = info.get("name") or gear
+            # Route through _gear_display_name so cabs (absent from rs_to_real)
+            # get their clone name too — same resolver the chain editor uses,
+            # so the Gear catalog and Advanced show identical names.
+            real_name = _gear_display_name(gear, info.get("name") or gear)
             if b.get("vst_path"):
                 dn = display_names.get(_vst_display_stem(b["vst_path"]))
                 if dn:
