@@ -11199,20 +11199,25 @@ async function rbLoadAndEditVst(toneIdx, pIdx) {
 // JSON by index — assumes loadPreset preserves order, which is what the
 // audio_engine plugin code path also relies on (see bundle screen.js).
 async function rbReapplyVstParamsToChain(api, chainSpec) {
+    // Verbose per-stage/per-param VST re-apply trace — OFF by default; enable with
+    // window.RB_DEBUG / localStorage 'rbDebug' (same flag as rbDebugLog).
+    const _dbg = (() => { try { return !!(window.RB_DEBUG || localStorage.getItem('rbDebug')); } catch (_) { return false; } })();
+    const _log = _dbg ? console.log.bind(console) : () => {};
+    const _warn = _dbg ? console.warn.bind(console) : () => {};
     if (typeof api.getChainState !== 'function' || typeof api.setParameter !== 'function') {
-        console.warn('[rig_builder reapply] api.getChainState or setParameter missing — walker skipped');
+        _warn('[rig_builder reapply] api.getChainState or setParameter missing — walker skipped');
         return;
     }
     let loaded;
     try { loaded = await api.getChainState(); } catch (e) {
-        console.warn('[rig_builder reapply] getChainState failed:', e);
+        _warn('[rig_builder reapply] getChainState failed:', e);
         return;
     }
     if (!Array.isArray(loaded)) {
-        console.warn('[rig_builder reapply] getChainState returned non-array:', loaded);
+        _warn('[rig_builder reapply] getChainState returned non-array:', loaded);
         return;
     }
-    console.log(`[rig_builder reapply] chain has ${loaded.length} loaded stage(s); spec has ${chainSpec.length}`);
+    _log(`[rig_builder reapply] chain has ${loaded.length} loaded stage(s); spec has ${chainSpec.length}`);
     // Walk the SPEC and the LOADED state together. We rely on
     // index alignment — both lists are in signal-flow order.
     for (let i = 0; i < chainSpec.length && i < loaded.length; i++) {
@@ -11237,7 +11242,7 @@ async function rbReapplyVstParamsToChain(api, chainSpec) {
         }
         if (!params || Object.keys(params).length === 0) continue;
         const slotId = slot.id ?? slot.slotId ?? i;
-        console.log(`[rig_builder reapply] stage ${i} (slot ${slotId}): ${Object.keys(params).length} params to apply — keys: ${Object.keys(params).slice(0, 5).join(', ')}${Object.keys(params).length > 5 ? '…' : ''}`);
+        _log(`[rig_builder reapply] stage ${i} (slot ${slotId}): ${Object.keys(params).length} params to apply — keys: ${Object.keys(params).slice(0, 5).join(', ')}${Object.keys(params).length > 5 ? '…' : ''}`);
 
         // Resolve param NAMES (string keys) to IDs via getParameters(),
         // same pattern as the manual ⇶ Apply RS settings flow. Keys that
@@ -11261,12 +11266,12 @@ async function rbReapplyVstParamsToChain(api, chainSpec) {
                         const pname = (p.name ?? p.label ?? '').toLowerCase();
                         if (pname) nameToId[pname] = pid;
                     });
-                    console.log(`[rig_builder reapply] slot ${slotId}: getParameters returned ${paramList.length} params; first 5 names: ${paramList.slice(0, 5).map(p => p.name || p.label).join(' | ')}`);
+                    _log(`[rig_builder reapply] slot ${slotId}: getParameters returned ${paramList.length} params; first 5 names: ${paramList.slice(0, 5).map(p => p.name || p.label).join(' | ')}`);
                 } else {
-                    console.warn(`[rig_builder reapply] slot ${slotId}: getParameters returned non-array:`, paramList);
+                    _warn(`[rig_builder reapply] slot ${slotId}: getParameters returned non-array:`, paramList);
                 }
             } catch (e) {
-                console.warn(`[rig_builder reapply] slot ${slotId}: getParameters threw:`, e);
+                _warn(`[rig_builder reapply] slot ${slotId}: getParameters threw:`, e);
             }
         }
 
@@ -11296,14 +11301,14 @@ async function rbReapplyVstParamsToChain(api, chainSpec) {
                 await api.setParameter(slotId, targetId, clamped);
                 appliedCount++;
             } catch (e) {
-                console.warn(`[rig_builder reapply] setParameter slot=${slotId} param=${pid}(${targetId}):`, e);
+                _warn(`[rig_builder reapply] setParameter slot=${slotId} param=${pid}(${targetId}):`, e);
                 failed.push(`${pid}(setParam threw)`);
             }
         }
         if (failed.length) {
-            console.warn(`[rig_builder reapply] slot ${slotId}: applied ${appliedCount} params, failed: ${failed.join(', ')}`);
+            _warn(`[rig_builder reapply] slot ${slotId}: applied ${appliedCount} params, failed: ${failed.join(', ')}`);
         } else {
-            console.log(`[rig_builder reapply] slot ${slotId}: applied ${appliedCount} params ✓`);
+            _log(`[rig_builder reapply] slot ${slotId}: applied ${appliedCount} params ✓`);
         }
     }
 }
