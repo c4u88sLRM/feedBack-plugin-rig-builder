@@ -6789,17 +6789,17 @@
    },
    "Bass": {
     "param": "B Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> channel-B Fender TMB Bass 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "B Middle",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> channel-B Fender TMB Middle 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "B Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> channel-B Fender TMB Treble 0..1 (0.5 flat)."
    }
   }
@@ -6813,17 +6813,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~50 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "EQ2 Level",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> semi-parametric mid band level 0..1 (0.5 flat, ~632 Hz)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -6837,17 +6837,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~50 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "EQ2 Level",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> semi-parametric mid band level 0..1 (0.5 flat, ~632 Hz)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -6861,17 +6861,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~50 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Mid Level",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> semi-parametric Mid band level 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -6885,17 +6885,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> British tone-stack ~80 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Middle",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> British tone-stack ~500 Hz mid 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> British tone-stack ~3 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -6909,17 +6909,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> tone-stack ~90 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Middle",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> tone-stack ~500 Hz mid 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> tone-stack ~3 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -6960,17 +6960,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> Trace tone-stack Bass 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Middle",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> Trace tone-stack Middle 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> Trace tone-stack Treble 0..1 (0.5 flat)."
    }
   }
@@ -6984,17 +6984,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~80 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Mid Level",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> semi-parametric Mid Level 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -7008,17 +7008,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~60 Hz low shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Middle",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> ~660 Hz mid 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high shelf 0..1 (0.5 flat)."
    }
   }
@@ -7056,17 +7056,17 @@
    },
    "Bass": {
     "param": "Bass",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Bass 0-10 (5=flat) -> ~70 Hz low-shelf 0..1 (0.5 flat)."
    },
    "Mid": {
     "param": "Midrange",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Mid 0-10 (5=flat) -> LC midrange resonance 0..1 (0.5 flat)."
    },
    "Treble": {
     "param": "Treble",
-    "scale": 0.1,
+    "scale": 0.01,
     "_hint": "RS Treble 0-10 (5=flat) -> ~5 kHz high-shelf 0..1 (0.5 flat)."
    }
   }
