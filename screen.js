@@ -12507,7 +12507,8 @@ function rbCabRoomDrop(safeId, gear) {
         rbStudioCabApplyLocal(null, { reopen: false });
         return;
     }
-    rbCabRoomListen(safeId, gear, true);
+    rbCabRoomListen(safeId, gear, true);   // song: instant preview via preloaded variant
+    rbCabRoomPersistSong(safeId);           // + persist the new mic/pos to the preset (background)
 }
 
 async function rbCabRoomSynth(safeId, gear, assign) {
@@ -12604,9 +12605,47 @@ function rbCabRoomSaveMicPx(st) {
 // BACKGROUND, no monitor reload) so changes made with the CONTROLS survive leave/
 // return — before, only a mic DRAG persisted; the buttons/slider merely previewed
 // (rbCabRoomListen), so their changes reverted to default on reopen.
+// Persist a mic/pos change on a SONG tone to its cab preset piece — reuses the
+// tested /gear/replace_with path (preset-scoped) to swap the RS mic/pos suffix, in
+// the BACKGROUND (debounced, no reload — the preloaded-variant switch already made
+// it sound right). Without this, song mic changes only PREVIEWED and reverted to
+// the piece's default on cab-room reopen (default/saved tones persisted via
+// rbCabRoomAutoPersistLocal; songs had no persist path at all).
+function rbCabRoomPersistSong(safeId) {
+    const st = _rbCabRoom[safeId];
+    if (!st || !st._studio || st._studio.local) return;          // songs only
+    if ((rbState.studioView || {}).source !== 'song') return;
+    const info = st._studio;                                     // {toneIdx, pIdx}
+    const tone = rbState.songTones && rbState.songTones.tones && rbState.songTones.tones[info.toneIdx];
+    const piece = tone && tone.chain && tone.chain[info.pIdx];
+    if (!tone || !piece || tone.preset_id == null) return;       // need a preset to scope to (never bulk-swap)
+    rbCabRoomSaveMicPx(st);                                       // visual spot + mic/angle (localStorage)
+    // Encode mic+pos → RS suffix. mic_suffixes maps char→mic; fold the 6 UI mics
+    // down to the 4 acoustic archetypes (_RB_CR_MIC_TOK) that actually have IRs.
+    const micS = (rbState.realCabCatalog || {}).mic_suffixes || {};
+    const tokChar = {};
+    for (const ch in micS) { const tok = _RB_CR_MIC_TOK[micS[ch]]; if (tok && !(tok in tokChar)) tokChar[tok] = ch; }
+    const micChar = tokChar[_RB_CR_MIC_TOK[st.mic] || 'dyn'] || Object.keys(micS)[0] || '5';
+    const posChar = ({ cone: 'c', edge: 'e', offaxis: 'o' })[rbCabRoomSnapPos(st)] || 'c';
+    const cur = String(piece.type || '');
+    const to = `${cur.replace(/_[a-z0-9]{2}$/i, '')}_${micChar}${posChar}`;
+    if (to === cur) return;                                       // already on this mic/pos
+    clearTimeout(st._songPersistT);
+    st._songPersistT = setTimeout(async () => {
+        try {
+            const r = await fetch(`${window.RB_API}/gear/replace_with`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from_rs_gear: cur, to_rs_gear: to, preset_id: tone.preset_id }),
+            });
+            if (r.ok) piece.type = to;   // reflect locally so a reopen reads the new mic/pos
+        } catch (_) {}
+    }, 450);
+}
+
 function rbCabRoomAutoPersistLocal(safeId) {
     const st = _rbCabRoom[safeId];
-    if (!st || !(st._studio && st._studio.local)) return;   // Studio default/saved only
+    if (!st || !st._studio) return;
+    if (!st._studio.local) { rbCabRoomPersistSong(safeId); return; }   // songs: persist to the preset
     rbCabRoomSaveMicPx(st);
     clearTimeout(st._localPersistT);
     st._localPersistT = setTimeout(() => {
