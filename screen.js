@@ -4765,11 +4765,13 @@ function rbStudioRoomMicStandHtml(s, cabAspect) {
     const mx = +(s.fx * 100).toFixed(1), my = +(s.fy * 100).toFixed(1);
     const side = s.fx < 0.55 ? 1 : -1;                       // pole on the side away from the mic
     const bx = Math.min(88, Math.max(12, mx + side * 26));   // pole/base x
-    // Mic is drawn capsule-DOWN (aiming at the cab), body pointing UP; the boom
-    // grips its BODY (not the tip). Mic height in cab-height % = width(13%)·(320/120)·aspect.
+    // Mic sits capsule-UP (natural). The boom grips its BODY ~40% of the mic length
+    // BELOW the capsule; that clip point is BOTH the boom end AND the mic's rotation
+    // origin (CSS .rb-room-mic), so the 45 deg tilt pivots on the clip and the mic
+    // never leaves the boom. (fx,fy)=capsule → clip sits lower, so the stand is low.
     const micH = 0.13 * (320 / 120) * 100 * asp;
-    const clipY = Math.max(7, +(my - micH * 0.42).toFixed(1));   // boom → mic body
-    const pivotY = Math.min(96, Math.max(6, +(clipY - 8).toFixed(1)));
+    const clipY = Math.min(108, +(my + micH * 0.40).toFixed(1));   // boom grabs the body, below the capsule
+    const pivotY = Math.max(6, +(clipY - 3).toFixed(1));           // boom ~ horizontal into the clip
     const uid = 'rs' + (++_rbRoomStandN);
     // Dark stand (black tube + thin edge highlight): a mic stand is black, and the
     // bright chrome read as "white". Outline + dark body + faint highlight.
@@ -4781,9 +4783,9 @@ function rbStudioRoomMicStandHtml(s, cabAspect) {
         + `<path d="M${bx - 12} 116 L${bx} 109 L${bx + 12} 116" fill="none" stroke="#050506" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`
         + `<path d="M${bx - 12} 116 L${bx} 109 L${bx + 12} 116" fill="none" stroke="#2c3036" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
         + seg(bx, 110, bx, pivotY, 3)                         // vertical pole
-        + seg(bx, pivotY, mx, clipY, 2.6)                     // boom arm → mic BODY
-        + `<circle cx="${mx}" cy="${clipY}" r="2.4" fill="#26282c" stroke="#050506" stroke-width=".9"/></svg>`;   // mic clip
-    const mic = `<div class="rb-room-mic${s.angle ? ' rb-cabmic-ang' : ''}" style="left:${mx}%;top:${my}%">${rbMicOnCabHtml(s.mic, uid)}</div>`;
+        + seg(bx, pivotY, mx, clipY, 2.6)                     // boom arm → mic BODY clip
+        + `<circle cx="${mx}" cy="${clipY}" r="2.6" fill="#26282c" stroke="#050506" stroke-width="1"/></svg>`;   // mic clip (= rotation origin)
+    const mic = `<div class="rb-room-mic${s.angle ? ' rb-cabmic-ang' : ''}" style="left:${mx}%;top:${clipY}%">${rbMicOnCabHtml(s.mic, uid)}</div>`;
     return stand + mic;
 }
 
