@@ -6653,6 +6653,29 @@ def _auto_download_for_song(filename: str, path: Path) -> dict:
                     counts["processed"] += 1
                     continue
 
+                # OUR bundled cab IR (rb_cab_overrides) — every modeled cab ships
+                # one, so a cab should NEVER need a tone3000 IR download. Critical
+                # after a FACTORY RESET: the game IRs (rs_cab_to_ir) were wiped from
+                # nam_irs so the fast-path above finds nothing, but
+                # _install_bundled_cab_irs re-seeded ours on startup. Without this a
+                # cab fell through to tone3000 and "mapped to a NAM/download" instead
+                # of the rig-builder default cab.
+                if category == "cab":
+                    _ovr_rel = _override_ir_for_cab(rs_type, irs_root)
+                    if _ovr_rel:
+                        pieces.append({
+                            "slot": piece["slot"],
+                            "rs_gear_type": rs_type,
+                            "kind": "rs_ir",
+                            "file": _ovr_rel,
+                            "params": piece["knobs"],
+                            "tone3000_id": None,
+                            "assigned_mode": "auto",
+                        })
+                        counts["rs_ir_used"] += 1
+                        counts["processed"] += 1
+                        continue
+
                 # tone3000 search + download. Dedupe per gear (+ variant
                 # when applicable) so the same amp appearing in 3 tones
                 # only hits the API once PER variant.
