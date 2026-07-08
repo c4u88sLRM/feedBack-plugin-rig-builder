@@ -3812,7 +3812,9 @@ def _download_candidate(
     try:
         models_payload = client.list_models(tone3000_id)
     except Exception as e:
-        log.warning("list_models failed for tone_id=%s", tone3000_id, exc_info=True)
+        # One concise line, not a full traceback per failure — a dead/forbidden
+        # tone3000 connection would otherwise spam the console for every gear.
+        log.warning("list_models failed for tone_id=%s: %s", tone3000_id, e)
         _set_dl_error(_classify_dl_error(e))
         return None
     if not models_payload:
