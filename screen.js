@@ -4169,6 +4169,116 @@ const RB_CAB_ART = {
             <text x="${gx + gw * 0.62}" y="${gy + gh * 0.44}" text-anchor="middle" dominant-baseline="middle" font-family="PKAnton,serif" font-size="26" letter-spacing="1" fill="#eceef0">SEISMIK</text>${rbCabCorners(W, H, '#9a9ea2')}`;
         return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf');
     },
+    // ── NOVELTY voicings (no real brand — generic iconic objects) ─────────────
+    // Gramophone — wooden box + big fluted brass morning-glory horn + crank.
+    'Cab_GRAMOPHONE': u => `<svg viewBox="0 0 440 470" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="wd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3f22"/><stop offset=".5" stop-color="#4a2a15"/><stop offset="1" stop-color="#2f1a0d"/></linearGradient>
+        <radialGradient id="br${u}" cx="40%" cy="36%" r="75%"><stop offset="0" stop-color="#ffeaa6"/><stop offset=".42" stop-color="#e6b85c"/><stop offset=".76" stop-color="#a9772c"/><stop offset="1" stop-color="#6a4818"/></radialGradient></defs>
+        <rect x="96" y="300" width="252" height="150" rx="12" fill="url(#wd${u})" stroke="#000" stroke-width="2"/>
+        <rect x="112" y="316" width="220" height="118" rx="6" fill="none" stroke="#000" stroke-opacity=".35"/>
+        ${Array.from({ length: 6 }, (_, i) => `<line x1="112" y1="${330 + i * 18}" x2="332" y2="${330 + i * 18}" stroke="#000" stroke-opacity=".12"/>`).join('')}
+        <circle cx="348" cy="360" r="9" fill="#c9a24a" stroke="#6a4818"/><rect x="352" y="356" width="52" height="8" rx="4" fill="#b9933f" stroke="#6a4818"/>
+        <path d="M222 250 Q150 300 132 322" fill="none" stroke="#a9772c" stroke-width="13" stroke-linecap="round"/>
+        <ellipse cx="222" cy="150" rx="150" ry="98" fill="url(#br${u})" stroke="#6a4818" stroke-width="2.5"/>
+        <ellipse cx="222" cy="150" rx="150" ry="98" fill="none" stroke="#fff3cf" stroke-opacity=".35" stroke-width="1.4"/>
+        <ellipse cx="222" cy="152" rx="104" ry="64" fill="#4a3212"/>
+        <ellipse cx="222" cy="152" rx="104" ry="64" fill="none" stroke="#8a5f22" stroke-width="1.4"/>
+        ${Array.from({ length: 16 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return `<line x1="${(222 + Math.cos(a) * 104).toFixed(1)}" y1="${(152 + Math.sin(a) * 64).toFixed(1)}" x2="${(222 + Math.cos(a) * 148).toFixed(1)}" y2="${(150 + Math.sin(a) * 96).toFixed(1)}" stroke="#6a4818" stroke-opacity=".45"/>`; }).join('')}
+        <ellipse cx="222" cy="152" rx="30" ry="18" fill="#2a1c0a"/></svg>`,
+    // Console radio — arched walnut cabinet, glowing round dial, slatted grille.
+    'Cab_CABINETRADIO': u => `<svg viewBox="0 0 360 460" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="wd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a26"/><stop offset=".5" stop-color="#5a3419"/><stop offset="1" stop-color="#3a2010"/></linearGradient>
+        <radialGradient id="dl${u}" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#ffe6a2"/><stop offset=".6" stop-color="#e0a63c"/><stop offset="1" stop-color="#7a531c"/></radialGradient>
+        <linearGradient id="cl${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9b184"/><stop offset="1" stop-color="#9a8058"/></linearGradient></defs>
+        <path d="M28 452 L28 200 Q28 44 180 44 Q332 44 332 200 L332 452 Z" fill="url(#wd${u})" stroke="#000" stroke-width="2"/>
+        <path d="M44 210 Q44 64 180 64 Q316 64 316 210" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="1.4"/>
+        <circle cx="180" cy="150" r="56" fill="url(#dl${u})" stroke="#3a2010" stroke-width="3"/>
+        <circle cx="180" cy="150" r="56" fill="none" stroke="#ffe6a2" stroke-opacity=".5" stroke-width="1"/>
+        ${Array.from({ length: 24 }, (_, i) => { const a = (i / 24) * Math.PI * 2; return `<line x1="${(180 + Math.cos(a) * 47).toFixed(1)}" y1="${(150 + Math.sin(a) * 47).toFixed(1)}" x2="${(180 + Math.cos(a) * 53).toFixed(1)}" y2="${(150 + Math.sin(a) * 53).toFixed(1)}" stroke="#4a2f12" stroke-width="1"/>`; }).join('')}
+        <line x1="180" y1="150" x2="212" y2="126" stroke="#b5322a" stroke-width="2.4" stroke-linecap="round"/><circle cx="180" cy="150" r="5" fill="#3a2010"/>
+        <rect x="70" y="238" width="220" height="150" rx="10" fill="#2a1808"/>
+        <rect x="78" y="246" width="204" height="134" rx="7" fill="url(#cl${u})"/>
+        ${Array.from({ length: 9 }, (_, i) => `<rect x="${86 + i * 22}" y="246" width="8" height="134" rx="4" fill="#4a2f16"/>`).join('')}
+        <circle cx="96" cy="418" r="15" fill="#2a1808" stroke="#c9a24a" stroke-width="1.4"/><circle cx="264" cy="418" r="15" fill="#2a1808" stroke="#c9a24a" stroke-width="1.4"/></svg>`,
+    // Jukebox — Wurlitzer-style arch, amber panels, chrome pilasters, bubble tubes.
+    'Cab_JUKEBOX': u => `<svg viewBox="0 0 380 500" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="wd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a26"/><stop offset="1" stop-color="#3a2010"/></linearGradient>
+        <linearGradient id="am${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd66a"/><stop offset=".5" stop-color="#e8a02c"/><stop offset="1" stop-color="#c26a1a"/></linearGradient>
+        <linearGradient id="cr${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a8e92"/><stop offset=".5" stop-color="#eef1f4"/><stop offset="1" stop-color="#8a8e92"/></linearGradient>
+        <linearGradient id="tb${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a4a"/><stop offset=".5" stop-color="#ffd05a"/><stop offset="1" stop-color="#4aa0ff"/></linearGradient></defs>
+        <path d="M40 492 L40 200 Q40 48 190 48 Q340 48 340 200 L340 492 Z" fill="url(#wd${u})" stroke="#000" stroke-width="2"/>
+        <path d="M64 250 L64 210 Q64 74 190 74 Q316 74 316 210 L316 250 Z" fill="url(#am${u})" stroke="#7a3c12" stroke-width="2"/>
+        ${Array.from({ length: 7 }, (_, i) => { const a = (i / 6) * Math.PI; const cx = 190 - Math.cos(a) * 126, cy = 210 - Math.sin(a) * 120; return `<line x1="190" y1="210" x2="${cx.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#c26a1a" stroke-opacity=".55" stroke-width="2"/>`; }).join('')}
+        <path d="M64 250 L64 210 Q64 74 190 74 Q316 74 316 210 L316 250" fill="none" stroke="url(#cr${u})" stroke-width="6"/>
+        <rect x="52" y="250" width="26" height="200" rx="8" fill="url(#tb${u})" stroke="#6a6d71"/><rect x="302" y="250" width="26" height="200" rx="8" fill="url(#tb${u})" stroke="#6a6d71"/>
+        ${Array.from({ length: 5 }, (_, i) => `<circle cx="65" cy="${430 - i * 40}" r="4" fill="#fff" opacity=".7"/><circle cx="315" cy="${412 - i * 40}" r="4" fill="#fff" opacity=".7"/>`).join('')}
+        <rect x="94" y="262" width="192" height="120" rx="10" fill="#1a0f06"/>
+        ${Array.from({ length: 7 }, (_, i) => `<rect x="104" y="${272 + i * 15}" width="172" height="6" rx="3" fill="url(#cr${u})" opacity=".85"/>`).join('')}
+        <rect x="94" y="398" width="192" height="70" rx="10" fill="#b5322a" stroke="#7a1f18" stroke-width="2"/>
+        <rect x="150" y="414" width="80" height="16" rx="8" fill="#ffd05a"/><circle cx="190" cy="450" r="9" fill="#1a0f06" stroke="#ffd05a"/></svg>`,
+    // Boom box — wide silver/black, twin round speakers, cassette + controls, handle.
+    'Cab_BOOMBOX': u => `<svg viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="bx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4d52"/><stop offset=".5" stop-color="#2b2d31"/><stop offset="1" stop-color="#17181b"/></linearGradient>
+        <radialGradient id="sp${u}" cx="42%" cy="38%" r="72%"><stop offset="0" stop-color="#3a3d42"/><stop offset="1" stop-color="#0c0d0f"/></radialGradient></defs>
+        <path d="M150 60 Q150 24 200 24 L360 24 Q410 24 410 60" fill="none" stroke="#1b1c1f" stroke-width="12" stroke-linecap="round"/>
+        <rect x="20" y="58" width="520" height="220" rx="18" fill="url(#bx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="20" y="58" width="520" height="26" rx="12" fill="#fff" opacity=".06"/>
+        ${[110, 450].map(cx => `<circle cx="${cx}" cy="172" r="80" fill="#0a0b0c"/><circle cx="${cx}" cy="172" r="72" fill="url(#sp${u})" stroke="#55595e" stroke-width="2"/><circle cx="${cx}" cy="172" r="50" fill="none" stroke="#6a6e73" stroke-opacity=".5"/><circle cx="${cx}" cy="172" r="24" fill="#141517" stroke="#4a4e52"/>`).join('')}
+        <rect x="212" y="96" width="136" height="80" rx="6" fill="#0c0d0f" stroke="#4a4e52"/><circle cx="246" cy="136" r="15" fill="#2a2c30" stroke="#5a5e63"/><circle cx="314" cy="136" r="15" fill="#2a2c30" stroke="#5a5e63"/>
+        ${Array.from({ length: 6 }, (_, i) => `<rect x="${218 + i * 22}" y="192" width="16" height="10" rx="2" fill="#3a3d42" stroke="#55595e"/>`).join('')}
+        ${Array.from({ length: 5 }, (_, i) => `<rect x="${216 + i * 26}" y="216" width="6" height="40" rx="3" fill="#23252a"/><circle cx="${219 + i * 26}" cy="${230 + (i % 2) * 12}" r="4.5" fill="#cfd3d7"/>`).join('')}</svg>`,
+    // Audiophile hi-fi — sleek matte-black tower, tweeter + mid + woofer.
+    'Cab_AUDIOPHILE': u => `<svg viewBox="0 0 300 480" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="bd${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c0d0f"/><stop offset=".5" stop-color="#26282c"/><stop offset="1" stop-color="#0a0b0d"/></linearGradient>
+        <radialGradient id="cn${u}" cx="42%" cy="38%" r="72%"><stop offset="0" stop-color="#33363b"/><stop offset="1" stop-color="#08090a"/></radialGradient>
+        <radialGradient id="tw${u}" cx="42%" cy="36%" r="70%"><stop offset="0" stop-color="#e9edf1"/><stop offset=".6" stop-color="#9a9ea3"/><stop offset="1" stop-color="#4a4e52"/></radialGradient></defs>
+        <rect x="66" y="18" width="168" height="446" rx="16" fill="url(#bd${u})" stroke="#000" stroke-width="2"/>
+        <rect x="74" y="26" width="10" height="430" rx="5" fill="#fff" opacity=".08"/>
+        <circle cx="150" cy="92" r="26" fill="#0a0b0c"/><circle cx="150" cy="92" r="19" fill="url(#tw${u})"/>
+        <circle cx="150" cy="188" r="42" fill="#0a0b0c"/><circle cx="150" cy="188" r="35" fill="url(#cn${u})" stroke="#44474c"/><circle cx="150" cy="188" r="13" fill="#141517"/>
+        <circle cx="150" cy="330" r="66" fill="#0a0b0c"/><circle cx="150" cy="330" r="58" fill="url(#cn${u})" stroke="#44474c" stroke-width="2"/><circle cx="150" cy="330" r="40" fill="none" stroke="#4a4e52" stroke-opacity=".5"/><circle cx="150" cy="330" r="20" fill="#141517" stroke="#3a3d40"/>
+        <rect x="132" y="426" width="36" height="12" rx="3" fill="#3a3d42" stroke="#55595e"/></svg>`,
+    // Vintage hi-fi — walnut cabinet, tan grille cloth, drivers behind the cloth.
+    'Cab_VINTAGEHIFI': u => `<svg viewBox="0 0 360 440" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="wd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e4526"/><stop offset="1" stop-color="#3f2512"/></linearGradient>
+        <linearGradient id="cl${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cbb488"/><stop offset="1" stop-color="#9c8258"/></linearGradient>
+        <pattern id="cw${u}" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 0H5M0 2.5H5" stroke="#7a6440" stroke-opacity=".35"/><path d="M0 0V5M2.5 0V5" stroke="#e0cfa6" stroke-opacity=".3"/></pattern></defs>
+        <rect x="26" y="18" width="308" height="404" rx="10" fill="url(#wd${u})" stroke="#000" stroke-width="2"/>
+        <rect x="46" y="38" width="268" height="364" rx="6" fill="url(#cl${u})"/>
+        <rect x="46" y="38" width="268" height="364" rx="6" fill="url(#cw${u})"/>
+        <rect x="46" y="38" width="268" height="364" rx="6" fill="none" stroke="#2f1c0e" stroke-width="2"/>
+        <circle cx="180" cy="300" r="82" fill="#000" opacity=".16"/><circle cx="180" cy="300" r="82" fill="none" stroke="#2f1c0e" stroke-opacity=".3" stroke-width="1.4"/>
+        <circle cx="180" cy="118" r="36" fill="#000" opacity=".14"/><circle cx="180" cy="118" r="36" fill="none" stroke="#2f1c0e" stroke-opacity=".28"/>
+        <rect x="150" y="392" width="60" height="16" rx="3" fill="#2f1c0e"/></svg>`,
+    // PA full-range (compact) — black moulded box, metal grille, integrated horn.
+    'Cab_PA600C': u => `<svg viewBox="0 0 360 460" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="bx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c2f"/><stop offset=".5" stop-color="#161719"/><stop offset="1" stop-color="#0b0c0d"/></linearGradient>
+        <pattern id="pf${u}" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#1c1d20"/><circle cx="4" cy="4" r="2.4" fill="#050506"/></pattern></defs>
+        <path d="M74 26 L286 26 L322 452 L38 452 Z" fill="url(#bx${u})" stroke="#000" stroke-width="2"/>
+        <path d="M88 44 L272 44 L302 436 L58 436 Z" fill="url(#pf${u})" stroke="#000" stroke-opacity=".5"/>
+        <ellipse cx="180" cy="330" rx="96" ry="90" fill="#000" opacity=".22"/><ellipse cx="180" cy="330" rx="96" ry="90" fill="none" stroke="#3a3d40" stroke-opacity=".4"/>
+        <rect x="112" y="86" width="136" height="70" rx="10" fill="#000" opacity=".28"/><path d="M120 92 L240 92 L232 150 L128 150 Z" fill="none" stroke="#3a3d40" stroke-opacity=".45"/>
+        <rect x="150" y="16" width="60" height="14" rx="7" fill="#0a0b0c" stroke="#3a3d40"/></svg>`,
+    // PA full-range — taller black moulded box, single driver + bullet horn.
+    'Cab_PA999C': u => `<svg viewBox="0 0 340 470" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="bx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c2f"/><stop offset=".5" stop-color="#161719"/><stop offset="1" stop-color="#0b0c0d"/></linearGradient>
+        <pattern id="pf${u}" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#202124"/><circle cx="4" cy="4" r="2.3" fill="#060607"/></pattern>
+        <radialGradient id="hn${u}" cx="46%" cy="40%" r="70%"><stop offset="0" stop-color="#4a4e52"/><stop offset="1" stop-color="#111214"/></radialGradient></defs>
+        <rect x="40" y="20" width="260" height="430" rx="14" fill="url(#bx${u})" stroke="#000" stroke-width="2"/>
+        <rect x="56" y="36" width="228" height="398" rx="8" fill="url(#pf${u})" stroke="#000" stroke-opacity=".5"/>
+        <circle cx="170" cy="320" r="98" fill="#000" opacity=".22"/><circle cx="170" cy="320" r="98" fill="none" stroke="#3a3d40" stroke-opacity=".4"/>
+        <ellipse cx="170" cy="130" rx="78" ry="50" fill="url(#hn${u})" stroke="#3a3d40"/><ellipse cx="170" cy="130" rx="26" ry="17" fill="#0a0b0c" stroke="#4a4e52"/>
+        <rect x="150" y="454" width="40" height="12" rx="6" fill="#0a0b0c" stroke="#3a3d40"/></svg>`,
+    // PA 15" two-way — black box, wide horn on top, big 15" woofer grille below.
+    'Cab_PA1152C': u => `<svg viewBox="0 0 380 470" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="bx${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c2f"/><stop offset=".5" stop-color="#161719"/><stop offset="1" stop-color="#0b0c0d"/></linearGradient>
+        <pattern id="pf${u}" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#202124"/><circle cx="4" cy="4" r="2.3" fill="#060607"/></pattern>
+        <linearGradient id="hn${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3d42"/><stop offset="1" stop-color="#141517"/></linearGradient></defs>
+        <rect x="30" y="20" width="320" height="430" rx="12" fill="url(#bx${u})" stroke="#000" stroke-width="2"/>
+        <path d="M64 52 L316 52 L288 168 L92 168 Z" fill="url(#hn${u})" stroke="#000" stroke-opacity=".5"/>
+        <path d="M150 60 L230 60 L206 160 L174 160 Z" fill="#0a0b0c" stroke="#4a4e52"/><ellipse cx="190" cy="110" rx="14" ry="10" fill="#26282b"/>
+        <circle cx="190" cy="320" r="118" fill="#0a0b0c"/><circle cx="190" cy="320" r="110" fill="url(#pf${u})" stroke="#3a3d40" stroke-width="2"/>
+        <circle cx="190" cy="320" r="110" fill="#000" opacity=".14"/><circle cx="190" cy="320" r="74" fill="none" stroke="#3a3d40" stroke-opacity=".4"/><circle cx="190" cy="320" r="30" fill="#141517" stroke="#3a3d40"/></svg>`,
 };
 // Shared Citrus/Orange badge: the colour crest (quartered shield + crown) with
 // the "Citrus" bubble-logo plaque below (PKGraffiti — the amps' Orange font).
@@ -4404,12 +4514,24 @@ function rbHartkeCab(u, o) {
     const body = `${rbCabGrille(u, gx, gy, gw, gh, '#141416')}${cones}${logo}${rbCabCorners(W, H, '#9a9ea2')}`;
     return rbCabWrap(u, W, H, body, ['#242426', '#141416', '#0b0b0c'], 'perf', `<radialGradient id="cone${u}" cx=".4" cy=".38" r=".7"><stop offset="0" stop-color="#d6d9dd"/><stop offset="1" stop-color="#8f9397"/></radialGradient>`);
 }
+// Resolve a runtime gear id to its canonical RB_CAB_ART key. Handles: exact match,
+// a trailing mic/pos suffix (_5c), and — crucially — CASE differences, because the
+// RS gear ids (rs_to_real.json) title-case the novelty cabs (Cab_Gramophone) while
+// the art/catalog keys are upper-case (Cab_GRAMOPHONE). Without the case-insensitive
+// step those 6 cabs rendered blank everywhere the piece.type id was used (the room),
+// even though the swap rail — which passes the catalog key — looked fine.
+let _rbCabArtLc = null;
+function rbCabArtCanonKey(gear) {
+    if (!gear) return null;
+    if (RB_CAB_ART[gear]) return gear;
+    const stripped = String(gear).replace(/_[a-z0-9]{2}$/i, '');
+    if (RB_CAB_ART[stripped]) return stripped;
+    if (!_rbCabArtLc) { _rbCabArtLc = {}; for (const k in RB_CAB_ART) _rbCabArtLc[k.toLowerCase()] = k; }
+    return _rbCabArtLc[String(gear).toLowerCase()] || _rbCabArtLc[stripped.toLowerCase()] || null;
+}
 function rbCabArtFor(gear, uid) {
-    if (!gear) return '';
-    let key = gear;
-    if (!RB_CAB_ART[key] && String(gear).includes('_')) key = String(gear).replace(/_[a-z0-9]{2}$/i, '');
-    const fn = RB_CAB_ART[key];
-    return fn ? fn('c' + (uid == null ? 0 : uid)) : '';
+    const key = rbCabArtCanonKey(gear);
+    return key ? RB_CAB_ART[key]('c' + (uid == null ? 0 : uid)) : '';
 }
 // Art aspect (width/height of the SVG viewBox) per cab — used to letterbox the
 // art inside the Cab Room canvas AND to clamp the mic to the cab (not the gaps).
@@ -4441,12 +4563,14 @@ const RB_CAB_ART_ASPECT = {
     'Bass_Cab_CH210BC': 480 / 360,
     'Bass_Cab_CS410BC': 448 / 430, 'Bass_Cab_CS15BC': 440 / 430, 'Bass_Cab_CS112BC': 480 / 360,
     'Bass_Cab_CH410BC': 380 / 520, 'Bass_Cab_CH310BC': 460 / 420,
+    // Novelty voicings
+    'Cab_GRAMOPHONE': 440 / 470, 'Cab_CABINETRADIO': 360 / 460, 'Cab_JUKEBOX': 380 / 500,
+    'Cab_BOOMBOX': 560 / 300, 'Cab_AUDIOPHILE': 300 / 480, 'Cab_VINTAGEHIFI': 360 / 440,
+    'Cab_PA600C': 360 / 460, 'Cab_PA999C': 340 / 470, 'Cab_PA1152C': 380 / 470,
 };
 function rbCabArtAspect(gear) {
-    if (!gear) return 0;
-    let k = gear;
-    if (!(k in RB_CAB_ART_ASPECT) && String(gear).includes('_')) k = String(gear).replace(/_[a-z0-9]{2}$/i, '');
-    return RB_CAB_ART_ASPECT[k] || 0;
+    const key = rbCabArtCanonKey(gear);   // same case-insensitive resolution as the art
+    return key ? (RB_CAB_ART_ASPECT[key] || 0) : 0;
 }
 // The [x,y,w,h] rect the art occupies inside the WxH canvas (preserveAspectRatio
 // meet). aspect 0 → full canvas.
@@ -4479,10 +4603,8 @@ async function rbLoadCabFont() {
 // Cab recreation as an <img> src (data URL) — the cab's "photo" everywhere it
 // used to show the RS gear photo: room face, Gear cards, catalog thumbs, nodes.
 function rbCabArtDataUrl(gear) {
-    if (!gear) return '';
-    let key = gear;
-    if (!RB_CAB_ART[key] && String(gear).includes('_')) key = String(gear).replace(/_[a-z0-9]{2}$/i, '');
-    if (!RB_CAB_ART[key]) return '';
+    const key = rbCabArtCanonKey(gear);   // case-insensitive (Cab_Gramophone → Cab_GRAMOPHONE)
+    if (!key) return '';
     if (_rbCabArtUrl[key]) return _rbCabArtUrl[key];
     let svg = RB_CAB_ART[key]('u');
     if (!/xmlns=/.test(svg)) svg = svg.replace(/^<svg /, '<svg xmlns="http://www.w3.org/2000/svg" ');
