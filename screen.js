@@ -11826,6 +11826,105 @@ const RB_SPEAKER_LABELS = {
     pa999c: 'PA full-range', pa1152c: 'PA 15"+horn',
 };
 
+// ── Recreated microphone artwork (copyright-free clones) ─────────────────────
+// Inline SVG per mic model — shown BOTH sitting on the speaker (the mic over the
+// cone) AND as the thumbnail in the Studio Cab Room's left mic rail, mirroring how
+// amps/pedals/racks/cabs recreate the real-unit LOOK with no brand marks or logos.
+// Drawn PORTRAIT (grille/capsule at the TOP so it lands at the mic point, body
+// hanging down over the grille). Each gradient id is suffixed (u) so multiple
+// instances on the page never collide. viewBox is a shared 120×320 so the mic
+// rail can rotate them uniformly into a diagonal product-shot pose.
+const RB_MIC_ART = {
+    // Dynamic 57 — instrument dynamic seen from the SIDE (as it sits on the cone):
+    // the silver front mesh faces AWAY, so it isn't drawn. Short rounded grille cage
+    // with VERTICAL cage bars, a THIN neck band, then the long dark barrel.
+    sm57: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="b${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#141517"/><stop offset=".22" stop-color="#3d4044"/><stop offset=".5" stop-color="#4c5055"/><stop offset=".8" stop-color="#26282b"/><stop offset="1" stop-color="#0f1012"/></linearGradient>
+        <linearGradient id="cg${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0a0b0c"/><stop offset=".28" stop-color="#2f3236"/><stop offset=".5" stop-color="#3d4145"/><stop offset=".72" stop-color="#2a2c2f"/><stop offset="1" stop-color="#08090a"/></linearGradient>
+        <clipPath id="c${u}"><path d="M40 106 V70 a20 20 0 0 1 40 0 V106 Z"/></clipPath></defs>
+        <rect x="41" y="122" width="38" height="180" rx="17" fill="url(#b${u})" stroke="#000" stroke-opacity=".45"/>
+        <rect x="47" y="132" width="7" height="158" rx="3.5" fill="#fff" opacity=".10"/>
+        <rect x="39" y="188" width="42" height="5" fill="#000" opacity=".24"/>
+        <rect x="41" y="108" width="38" height="15" rx="4" fill="#111214" stroke="#000" stroke-opacity=".5"/>
+        <rect x="41" y="110" width="38" height="2" fill="#5c6065" opacity=".4"/>
+        <path d="M40 108 V70 a20 20 0 0 1 40 0 V108 Z" fill="url(#cg${u})" stroke="#000" stroke-opacity=".5"/>
+        <g clip-path="url(#c${u})">${Array.from({ length: 8 }, (_, i) => `<rect x="${(42 + i * 4.6).toFixed(1)}" y="48" width="2.4" height="60" fill="#08090a"/><rect x="${(44.3 + i * 4.6).toFixed(1)}" y="48" width="1.3" height="60" fill="#80858a" opacity=".42"/>`).join('')}</g>
+        <path d="M44 62 a18 18 0 0 1 32 0" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2"/></svg>`,
+    // MD421 — large dynamic: broad rounded MESH-MEMBRANE grille head (perforated,
+    // wider than the body), tapering "fish" body, recessed rolloff switch window.
+    md421: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0d0e10"/><stop offset=".5" stop-color="#3a3d42"/><stop offset=".68" stop-color="#2b2e32"/><stop offset="1" stop-color="#0a0b0d"/></linearGradient>
+        <radialGradient id="h${u}" cx="40%" cy="32%" r="80%"><stop offset="0" stop-color="#484c52"/><stop offset=".7" stop-color="#222427"/><stop offset="1" stop-color="#121315"/></radialGradient>
+        <pattern id="m${u}" width="4.8" height="4.8" patternUnits="userSpaceOnUse"><circle cx="1.2" cy="1.2" r="1.15" fill="#7a7f86" opacity=".5"/><circle cx="3.6" cy="3.6" r="1.15" fill="#7a7f86" opacity=".5"/></pattern>
+        <clipPath id="hc${u}"><rect x="30" y="22" width="60" height="108" rx="20"/></clipPath></defs>
+        <path d="M30 120 L90 120 L74 290 Q60 303 46 290 Z" fill="url(#a${u})" stroke="#000" stroke-opacity=".45"/>
+        <path d="M43 130 Q40 212 48 284" fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="6" stroke-linecap="round"/>
+        <rect x="48" y="206" width="25" height="48" rx="5" fill="#090a0b" stroke="#2a2d31"/>
+        <rect x="53" y="213" width="15" height="8" rx="2" fill="#8a8f95" opacity=".5"/>
+        <rect x="56" y="226" width="10" height="21" rx="3" fill="#3a3d42"/>
+        <rect x="49" y="286" width="22" height="13" rx="3" fill="#141517" stroke="#000" stroke-opacity=".4"/>
+        <rect x="30" y="22" width="60" height="108" rx="20" fill="url(#h${u})" stroke="#000" stroke-opacity=".5"/>
+        <g clip-path="url(#hc${u})"><rect x="30" y="22" width="60" height="108" fill="url(#m${u})"/></g>
+        <rect x="30" y="22" width="60" height="108" rx="20" fill="none" stroke="#000" stroke-opacity=".4"/>
+        <path d="M39 44 a16 16 0 0 1 20 -9" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="3" stroke-linecap="round"/></svg>`,
+    // KM84 — small-diaphragm condenser pencil: bright metal tube, knurl rings, badge.
+    km84: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#83888e"/><stop offset=".3" stop-color="#eef1f4"/><stop offset=".54" stop-color="#c3c8cd"/><stop offset="1" stop-color="#74797f"/></linearGradient></defs>
+        <rect x="44" y="40" width="32" height="262" rx="16" fill="url(#a${u})" stroke="#585c61"/>
+        <rect x="49" y="48" width="6" height="246" rx="3" fill="#fff" opacity=".48"/>
+        <ellipse cx="60" cy="46" rx="16" ry="8" fill="#e6e9ec"/>
+        <rect x="44" y="64" width="32" height="3.5" fill="#585c61" opacity=".55"/>
+        <rect x="44" y="72" width="32" height="3.5" fill="#585c61" opacity=".55"/>
+        <rect x="44" y="80" width="32" height="3.5" fill="#585c61" opacity=".55"/>
+        <g transform="translate(60,178) rotate(45)"><rect x="-11" y="-11" width="22" height="22" rx="3" fill="#2a2d30" stroke="#dadde1" stroke-width="1.4"/></g></svg>`,
+    // Ribbon R121 — satin body, horizontal ribbon-window slats, green oval badge.
+    r121: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#828589"/><stop offset=".32" stop-color="#e7e9ea"/><stop offset=".6" stop-color="#bfc2c4"/><stop offset="1" stop-color="#747679"/></linearGradient></defs>
+        <rect x="40" y="30" width="40" height="272" rx="18" fill="url(#a${u})" stroke="#5a5d60"/>
+        <rect x="46" y="40" width="7" height="254" rx="3.5" fill="#fff" opacity=".42"/>
+        <rect x="44" y="46" width="32" height="88" rx="6" fill="#1a1b1d"/>
+        ${Array.from({ length: 7 }, (_, i) => `<rect x="47" y="${52 + i * 11}" width="26" height="6" rx="3" fill="#c9cccf" opacity=".85"/>`).join('')}
+        <ellipse cx="60" cy="180" rx="17" ry="9" fill="#1d5b3a" stroke="#e0e3e6" stroke-width="1.5"/>
+        <ellipse cx="60" cy="180" rx="10" ry="4.5" fill="#2f7d52" opacity=".7"/>
+        <circle cx="60" cy="288" r="3" fill="#6b6e71"/></svg>`,
+    // Large-diaphragm condenser — mesh head basket over a matte nickel body.
+    tlm103: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b3e43"/><stop offset=".4" stop-color="#7d828a"/><stop offset=".6" stop-color="#6a6f76"/><stop offset="1" stop-color="#2e3136"/></linearGradient>
+        <radialGradient id="g${u}" cx="44%" cy="38%" r="72%"><stop offset="0" stop-color="#5b616a"/><stop offset="1" stop-color="#1a1c1f"/></radialGradient>
+        <pattern id="m${u}" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0 0H7M0 3.5H7" stroke="#0a0b0c" stroke-opacity=".5"/><path d="M0 0V7M3.5 0V7" stroke="#0a0b0c" stroke-opacity=".32"/></pattern></defs>
+        <rect x="30" y="120" width="60" height="182" rx="20" fill="url(#a${u})" stroke="#1a1c1f"/>
+        <rect x="38" y="132" width="8" height="160" rx="4" fill="#fff" opacity=".18"/>
+        <rect x="28" y="26" width="64" height="104" rx="20" fill="url(#g${u})"/>
+        <rect x="28" y="26" width="64" height="104" rx="20" fill="url(#m${u})"/>
+        <rect x="28" y="26" width="64" height="104" rx="20" fill="none" stroke="#0f1012" stroke-opacity=".6"/>
+        <rect x="26" y="118" width="68" height="11" rx="5" fill="#26282b" stroke="#000" stroke-opacity=".4"/></svg>`,
+    // Tube condenser — vintage bottle silhouette, gold-tinted dual-mesh basket.
+    tube: u => `<svg viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"><defs>
+        <linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#544b3d"/><stop offset=".35" stop-color="#cbba8f"/><stop offset=".55" stop-color="#b1a071" /><stop offset="1" stop-color="#4a4133"/></linearGradient>
+        <radialGradient id="g${u}" cx="44%" cy="36%" r="74%"><stop offset="0" stop-color="#8d7f5b"/><stop offset="1" stop-color="#2a261c"/></radialGradient>
+        <pattern id="m${u}" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 0H8M0 4H8" stroke="#1c180f" stroke-opacity=".45"/><path d="M0 0V8M4 0V8" stroke="#1c180f" stroke-opacity=".3"/></pattern></defs>
+        <path d="M32 132 q-5 88 6 148 q22 15 44 0 q11 -60 6 -148 z" fill="url(#a${u})" stroke="#2a261c"/>
+        <rect x="40" y="150" width="8" height="120" rx="4" fill="#fff" opacity=".2"/>
+        <rect x="30" y="162" width="60" height="7" rx="3" fill="#3f3829" opacity=".7"/>
+        <rect x="30" y="184" width="60" height="7" rx="3" fill="#3f3829" opacity=".7"/>
+        <rect x="24" y="24" width="72" height="114" rx="26" fill="url(#g${u})"/>
+        <rect x="24" y="24" width="72" height="114" rx="26" fill="url(#m${u})"/>
+        <rect x="24" y="24" width="72" height="114" rx="26" fill="none" stroke="#1c180f" stroke-opacity=".6"/>
+        <rect x="22" y="130" width="76" height="12" rx="5" fill="#5f5540" stroke="#000" stroke-opacity=".4"/></svg>`,
+};
+function rbMicArtSvg(mic, u) { const fn = RB_MIC_ART[mic] || RB_MIC_ART.sm57; return fn(String(u == null ? '' : u).replace(/[^a-z0-9]/gi, '')); }
+// The mic sitting on the cone (Studio) — suffixed by safeId+mic so the on-cab
+// instance never shares gradient ids with the rail thumbnails.
+function rbMicOnCabHtml(mic, safeId) { return rbMicArtSvg(mic, (safeId || 'x') + mic); }
+// Rail catalog thumbnail — same art, laid diagonally by CSS (.rb-mic-thumb).
+function rbMicThumbHtml(mic) { return `<span class="rb-mic-thumb">${rbMicArtSvg(mic, 't' + mic)}</span>`; }
+// Repaint the on-cab mic art in place (Studio DOM mic) after a mic change.
+function rbCabRoomUpdateMicArt(safeId) {
+    const st = _rbCabRoom[safeId]; if (!st) return;
+    const el = document.getElementById(`rb-cabmic-${safeId}`);
+    if (el) el.innerHTML = rbMicOnCabHtml(st.mic, safeId);
+}
+
 const RB_CABROOM_W = 560, RB_CABROOM_H = 340;
 
 function rbCabRoomLayout(entry) {
@@ -11870,23 +11969,31 @@ function rbCabSpeakerPositionsPhys(entry, aspect) {
     return pos;
 }
 
-// Subtle SVG overlay: the speaker cones faintly visible THROUGH the grille cloth
-// (like a real cab), so the player can aim the mic. pointer-events:none so it
-// never blocks the mic drag. viewBox aspect == fit aspect → circles stay round.
+// Speaker-cone silhouettes faintly visible THROUGH the grille cloth (so the player
+// can aim the mic). A single SCREEN-blended LIGHT overlay self-adapts to the grille
+// colour WITHOUT any per-cab data: screen(bg,src)=1-(1-bg)(1-src), so the same light
+// cone lands hard on a black grille (high contrast ⇒ notorious on dark cabs) yet
+// barely shifts a cream/white one (low contrast ⇒ subtle on light cabs like
+// Orange/Fender). pointer-events:none so it never blocks the mic drag. viewBox
+// aspect == fit aspect → circles stay round. Parent .rb-cab-fit isolates the blend
+// so it only mixes with the cab art behind it, not the page.
 function rbCabSpeakerSilhouettesSvg(entry, aspect) {
     const a = aspect && aspect > 0 ? aspect : 1;
     const W = a * 100, H = 100;
-    const body = rbCabSpeakerPositionsPhys(entry, a).map(([cx, cy, r]) =>
-        `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r.toFixed(2)}" fill="url(#rbSpkCone)"/>`
-        + `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r.toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".13" stroke-width=".8"/>`
-        + `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r.toFixed(2)}" fill="none" stroke="#d5def0" stroke-opacity=".035" stroke-width=".4"/>`
-        + `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${(r * 0.4).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".08" stroke-width=".7"/>`
-    ).join('');
-    return `<svg class="rb-cab-spk" viewBox="0 0 ${W.toFixed(1)} ${H}" preserveAspectRatio="none" aria-hidden="true">`
-        + `<defs><radialGradient id="rbSpkCone" cx="50%" cy="46%" r="52%">`
-        + `<stop offset="0%" stop-color="#cdd6ea" stop-opacity=".025"/>`
-        + `<stop offset="62%" stop-color="#000" stop-opacity="0"/>`
-        + `<stop offset="100%" stop-color="#000" stop-opacity=".08"/></radialGradient></defs>${body}</svg>`;
+    const pos = rbCabSpeakerPositionsPhys(entry, a);
+    const id = 'spk' + (rbState._spkUid = (rbState._spkUid || 0) + 1);
+    const body = pos.map(([cx, cy, r]) => {
+        const c = cx.toFixed(2), y = cy.toFixed(2);
+        return `<circle cx="${c}" cy="${y}" r="${r.toFixed(2)}" fill="url(#${id})"/>`
+            + `<circle cx="${c}" cy="${y}" r="${(r * 0.94).toFixed(2)}" fill="none" stroke="#eef4ff" stroke-opacity=".20" stroke-width=".7"/>`
+            + `<circle cx="${c}" cy="${y}" r="${(r * 0.66).toFixed(2)}" fill="none" stroke="#dbe6ff" stroke-opacity=".11" stroke-width=".5"/>`
+            + `<circle cx="${c}" cy="${y}" r="${(r * 0.38).toFixed(2)}" fill="none" stroke="#eef4ff" stroke-opacity=".15" stroke-width=".6"/>`;
+    }).join('');
+    return `<svg class="rb-cab-spk rb-spk-lite" viewBox="0 0 ${W.toFixed(1)} ${H}" preserveAspectRatio="none" aria-hidden="true">`
+        + `<defs><radialGradient id="${id}" cx="50%" cy="43%" r="55%">`
+        + `<stop offset="0%" stop-color="#eef3ff" stop-opacity=".26"/>`
+        + `<stop offset="44%" stop-color="#cdd8f2" stop-opacity=".07"/>`
+        + `<stop offset="74%" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${body}</svg>`;
 }
 
 function rbCabRoomBuild(g, entry, safeId, opts) {
@@ -11958,7 +12065,7 @@ function rbCabRoomBuild(g, entry, safeId, opts) {
             <div class="rb-cab-fit" id="rb-cabfit-${safeId}" style="aspect-ratio:${_a};height:${_fitH}%">
                 ${cabArt}
                 ${rbCabSpeakerSilhouettesSvg(entry, _a)}
-                <div class="rb-cabmic ${st.angle_deg ? 'rb-cabmic-ang' : ''}" id="rb-cabmic-${safeId}" style="left:${_fx * 100}%;top:${_fy * 100}%"></div>
+                <div class="rb-cabmic ${st.angle_deg ? 'rb-cabmic-ang' : ''}" id="rb-cabmic-${safeId}" style="left:${_fx * 100}%;top:${_fy * 100}%">${rbMicOnCabHtml(st.mic, safeId)}</div>
             </div></div>`;
     } else {
         box.innerHTML = `
@@ -12052,7 +12159,7 @@ function rbCabRoomBuildMicRail(safeId, g, entry, micBtns, speakerBtns, distSlide
     const items = MICS.map(([k, lbl]) =>
         `<div class="rb-swap-item rb-cabroom-mic ${st.mic === k ? 'rb-swap-current' : ''}" data-mic="${k}"
               onclick="rbCabRoomSetMic('${safeId}','${g.rs_gear}','${k}')" title="${lbl}">
-            <span class="rb-swap-thumb"><span style="font-size:24px">🎙</span></span>
+            <span class="rb-swap-thumb rb-mic-swap-thumb">${rbMicThumbHtml(k)}</span>
             <span class="rb-swap-name">${lbl}</span></div>`).join('');
     rail.innerHTML = `
         <div class="rb-swap-head" style="justify-content:center"><span class="rb-mic-h">Microphone</span></div>
@@ -12329,6 +12436,7 @@ window.rbCabRoomSetMic = function (safeId, gear, mic) {
                 : 'bg-dark-800 text-gray-300 border-gray-700 hover:bg-violet-900/40'}`;
         }
     });
+    rbCabRoomUpdateMicArt(safeId);   // repaint the mic sitting on the cone (Studio)
     rbCabRoomDraw(safeId, rbCabRoomEntry(gear));
     rbCabRoomListen(safeId, gear, true);
     rbCabRoomAutoPersistLocal(safeId);
@@ -12807,7 +12915,7 @@ async function rbStudioFastCabSwapInPlace(base) {
             fit.style.aspectRatio = a;
             fit.style.height = (a < 0.85 ? 100 : 76) + '%';
             fit.innerHTML = `${rbCabArtFor(base)}${rbCabSpeakerSilhouettesSvg(entry, a)}`
-                + `<div class="rb-cabmic ${st.angle_deg ? 'rb-cabmic-ang' : ''}" id="rb-cabmic-studio" style="left:${_fx * 100}%;top:${_fy * 100}%"></div>`;
+                + `<div class="rb-cabmic ${st.angle_deg ? 'rb-cabmic-ang' : ''}" id="rb-cabmic-studio" style="left:${_fx * 100}%;top:${_fy * 100}%">${rbMicOnCabHtml(st.mic, 'studio')}</div>`;
         }
         // Reflect the pick in the catalog rail (highlight) without rebuilding it.
         document.querySelectorAll('#rb-swap-rail .rb-swap-item').forEach(el => {
