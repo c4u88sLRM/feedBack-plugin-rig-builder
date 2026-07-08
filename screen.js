@@ -4535,7 +4535,16 @@ function rbCabArtCanonKey(gear) {
     if (/^cabinets?$/i.test(String(gear))) return RB_DEFAULT_CAB_GEAR;
     return null;
 }
-const RB_DEFAULT_CAB_GEAR = 'Cab_EN212C';   // neutral fallback for generic/unmapped cabs
+const RB_DEFAULT_CAB_GEAR = 'Cab_EN212C';        // guitar 2x12 fallback for generic cabs
+const RB_DEFAULT_BASS_CAB_GEAR = 'Bass_Cab_AT810BC';   // SVT 8x10 — bass default
+// Resolve the generic RS "Cabinets" placeholder to a bass or guitar default cab
+// based on the tone's amp (bass amp / DI preamp → bass), so the shown cab art
+// matches the slot-sensitive default IR the backend picks. Non-generic gears pass
+// through unchanged.
+function rbResolveGenericCab(cabGear, ampGear) {
+    if (!/^cabinets?$/i.test(String(cabGear || ''))) return cabGear;
+    return /^(Bass_|DI_Amp)/i.test(String(ampGear || '')) ? RB_DEFAULT_BASS_CAB_GEAR : RB_DEFAULT_CAB_GEAR;
+}
 function rbCabArtFor(gear, uid) {
     const key = rbCabArtCanonKey(gear);
     return key ? RB_CAB_ART[key]('c' + (uid == null ? 0 : uid)) : '';
@@ -4823,7 +4832,12 @@ function rbRenderStudioRoom() {
     const g = rbStudioGroupDefault();
     const amp = g.amp[0];
     const cabName = g.cab[0] ? (g.cab[0].p.real_name || 'Cab') : 'Cab';
-    const cabGear = g.cab[0] ? (g.cab[0].p.type || g.cab[0].p.rs_gear) : null;
+    // Resolve a generic "Cabinets" placeholder to the slot-sensitive default cab
+    // (bass vs guitar, from the amp) so the room cab face shows the same cab the
+    // backend actually plays.
+    const cabGear = g.cab[0] ? rbResolveGenericCab(
+        g.cab[0].p.type || g.cab[0].p.rs_gear,
+        amp && amp.p && (amp.p.type || amp.p.rs_gear)) : null;
     const knobs = RB_STUDIO_KNOB_ANGLES
         .map(deg => `<span class="rb-knob" style="--rb-knob-rot:${deg}deg"></span>`).join('');
 

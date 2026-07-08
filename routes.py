@@ -2387,12 +2387,25 @@ def _apply_cab_override(ir_path):
 
 
 # Neutral default cab for generic/unmapped cab gears (the RS "Cabinets" placeholder,
-# or any cab not in rb_cab_overrides). Matches the frontend RB_DEFAULT_CAB_GEAR so
-# the audio IR and the shown cab art agree.
-_DEFAULT_CAB_GEAR = "Cab_EN212C"
+# or any cab not in rb_cab_overrides). Slot-sensitive: a bass tone gets a bass cab,
+# a guitar tone the 2x12. Matches the frontend RB_DEFAULT_CAB_GEAR / _BASS so the
+# audio IR and the shown cab art agree.
+_DEFAULT_CAB_GEAR = "Cab_EN212C"              # guitar 2x12
+_DEFAULT_BASS_CAB_GEAR = "Bass_Cab_AT810BC"   # SVT 8x10 — neutral bass default
 
 
-def _override_ir_for_cab(rs_gear: str | None, irs_root) -> str | None:
+def _default_cab_gear_for_rows(rows) -> str:
+    """Bass vs guitar default cab for a tone whose cab is the generic 'Cabinets'
+    placeholder — decided by whether the tone carries a bass amp/gear (Bass_* or a
+    DI preamp). `rows` are the preset_pieces tuples (rs_gear_type at index 3)."""
+    for r in rows:
+        g = str((r[3] if len(r) > 3 else "") or "")
+        if g.startswith("Bass_") or g.startswith("DI_Amp"):
+            return _DEFAULT_BASS_CAB_GEAR
+    return _DEFAULT_CAB_GEAR
+
+
+def _override_ir_for_cab(rs_gear: str | None, irs_root, default_gear: str | None = None) -> str | None:
     """Resolve OUR shipped override IR (rb_cab_overrides) for a cab GEAR that has
     no assigned IR file — so a song whose cabinet seeded to kind='none' (the RS
     game IR doesn't ship and nothing was downloaded) still gets a real cab at
@@ -2414,9 +2427,10 @@ def _override_ir_for_cab(rs_gear: str | None, irs_root) -> str | None:
     if not isinstance(ovr, dict):
         # Generic/unmapped cab (e.g. the RS "Cabinets" placeholder that never got
         # promoted to a specific modeled cab) — fall back to a neutral DEFAULT cab
-        # so it still gets a real, loudness-matched bundled IR (and cab art in the
-        # UI) instead of a thin/cab-less sound or a stale other/*.wav download.
-        ovr = overrides.get(_DEFAULT_CAB_GEAR)
+        # (bass or guitar, chosen by the caller) so it still gets a real, loudness-
+        # matched bundled IR (and cab art in the UI) instead of a thin/cab-less
+        # sound or a stale other/*.wav download.
+        ovr = overrides.get(default_gear or _DEFAULT_CAB_GEAR)
     if not isinstance(ovr, dict):
         return None
     ir_dir = ovr.get("ir_dir")
@@ -8732,7 +8746,7 @@ def setup(app, context):
             cab_row = next((r for r in rows if r[0] == "cabinet" and r[3]), None) \
                 or next((r for r in rows if _gear_category(r[3]) == "cab" and r[3]), None)
             if cab_row:
-                ir_rel = _override_ir_for_cab(cab_row[3], irs_dir)
+                ir_rel = _override_ir_for_cab(cab_row[3], irs_dir, default_gear=_default_cab_gear_for_rows(rows))
                 if ir_rel:
                     ir_path = _safe_child(irs_dir, ir_rel)
                     if ir_path and ir_path.exists():
@@ -8960,7 +8974,7 @@ def setup(app, context):
                 cab_row = next((r for r in rows if r[0] == "cabinet" and r[3]), None) \
                     or next((r for r in rows if _gear_category(r[3]) == "cab" and r[3]), None)
                 if cab_row:
-                    ir_rel = _override_ir_for_cab(cab_row[3], irs_dir)
+                    ir_rel = _override_ir_for_cab(cab_row[3], irs_dir, default_gear=_default_cab_gear_for_rows(rows))
                     if ir_rel:
                         ir_path = _safe_child(irs_dir, ir_rel)
                         if ir_path and ir_path.exists():
