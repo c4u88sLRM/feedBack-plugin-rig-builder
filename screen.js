@@ -12110,11 +12110,21 @@ window.rbCabRoomListen = async function (safeId, gear, restart) {
     const stx = _rbCabRoom[safeId];
     if (stx && stx._studio) {
         // Cambio EN CONTEXTO e instantáneo vía las variantes pre-cargadas
-        // (setBypass). Si no están (preload falló), cae a la audición rápida
-        // del cab solo. "✓ Aplicar al tono" persiste la posición EXACTA.
+        // (setBypass) → mantiene amp + pedales sonando.
         if (await rbCabRoomSwitchVariant(safeId)) return;
+        // No precargadas aún: cargar el tono COMPLETO con las 12 variantes
+        // (amp+pedales incluidos), NO caer a la audición de "cab solo" — esa
+        // reemplaza la cadena y dejaba de sonar el amp (se oía la guitarra
+        // casi limpia). Un reintento de switch tras la carga suena la posición.
+        if (await rbCabRoomPreloadVariants(safeId, gear)) {
+            await rbCabRoomSwitchVariant(safeId);
+            return;
+        }
+        // Preload imposible (p.ej. sin song piece) → NO tocar cab-solo;
+        // pedir Aplicar para no matar el amp.
         const status = document.getElementById(`rb-cabroom-status-${safeId}`);
-        if (status) status.textContent = '🎧 escuchando cab solo — "Aplicar" para oírlo en el tono';
+        if (status) status.textContent = 'usa "✓ Aplicar al tono" para escuchar el cambio en contexto';
+        return;
     }
     try {
         const d = await rbCabRoomSynth(safeId, gear, false);

@@ -2295,6 +2295,49 @@ def _override_variant(ovr: dict, entry: dict) -> dict | None:
     }
 
 
+def _cab_clone_slug(name: str) -> str:
+    """Filesystem-safe per-cab folder name from a catalog clone name — MUST
+    match tools/generate_real_cab_irs.py `clone_slug` (the brother's subfolder
+    IR layout)."""
+    s = (name or "").strip().replace(".", "")
+    s = re.sub(r"[^0-9A-Za-z_-]+", "_", s)
+    return re.sub(r"_+", "_", s).strip("_")
+
+
+_FLAT_CAB_RE = re.compile(
+    r"(^|/)cabs/RC_(?P<key>.+)_(?P<mic>dyn|cond|ribbon|tube)_"
+    r"(?P<pos>cone|edge|offaxis)\.wav$", re.IGNORECASE)
+
+
+def _migrate_flat_cab_ir_path(ir_path):
+    """Self-heal a STALE flat cab IR path → the current per-cab subfolder layout.
+
+    An earlier backfill wrote `cabs/RC_<KEY>_<mic>_<pos>.wav` into preset_pieces;
+    the IRs later moved to `cabs/<Clone>/<mic>_<pos>.wav` and the flat files were
+    removed, so those stored paths now point at nothing and the cab plays silent.
+    Rewrite them here (read/chain-build time) so old DB rows — or a re-seed that
+    resurrects the flat name — keep working with no DB migration. Returns the
+    path unchanged when it isn't an old flat cab path."""
+    if not ir_path:
+        return ir_path
+    m = _FLAT_CAB_RE.search(str(ir_path).replace("\\", "/"))
+    if not m:
+        return ir_path
+    key, mic, pos = m.group("key"), m.group("mic").lower(), m.group("pos").lower()
+    cat = (_load_cached_json("real_cab_catalog.json") or {}).get("cabs", {})
+    # RC_<KEY> was "RC_" + gear.replace("Cab_", "") → recover the gear key.
+    gear = next((g for g in cat if g.replace("Cab_", "") == key), None)
+    if not gear:
+        return ir_path
+    slug = _cab_clone_slug(cat[gear].get("name") or gear)
+    rel = f"cabs/{slug}/{mic}_{pos}.wav"
+    pp = Path(str(ir_path))
+    if pp.is_absolute():
+        # tail was <irs_root>/cabs/RC_....wav → swap the "cabs/…" tail
+        return str(pp.parent.parent.parent / rel)
+    return rel
+
+
 def _apply_cab_override(ir_path):
     """Auto-substitute a Rocksmith cab IR with OUR own equivalent.
 
@@ -2315,6 +2358,11 @@ def _apply_cab_override(ir_path):
     if not ir_path:
         return ir_path
     s = str(ir_path)
+    # Self-heal a stale flat `cabs/RC_..._<mic>_<pos>.wav` → subfolder layout
+    # first (covers our own stored 'ir' pieces, which aren't Rocksmith paths).
+    migrated = _migrate_flat_cab_ir_path(s)
+    if migrated != s:
+        return migrated
     if not _is_rocksmith_ir_file(s):
         return ir_path
     overrides = _load_cab_overrides()
