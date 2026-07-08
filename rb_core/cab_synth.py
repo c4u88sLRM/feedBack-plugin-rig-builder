@@ -303,11 +303,17 @@ def speaker_geom(size_in=12.0):
 
 # ── parámetros del modelo de posición (calibrados, ver prototipo) ────────
 POSITION_PARAMS = {
-    "w_dc_center": 0.72, "w_mid_center": 0.22, "w_ed_center": 0.06,
-    "w_dc_edge": 0.04, "w_mid_edge": 0.32, "w_ed_edge": 0.64,
-    "fc_dustcap": 10500.0, "fc_mid": 2000.0, "fc_edge": 1600.0,
+    # Centre→edge zone weights, COMPRESSED ~30% (user: centre was "mucho más agudo"
+    # than the edge). The direction is physically right — the bright dust-cap (fc
+    # 9.8 kHz) dominates on-axis, the dark cone edge (fc 1.8 kHz) off it — but the
+    # spread was too extreme; softened so it's a real, gentler treble gradient.
+    # Weights still sum to 1.0 per position. To restore the old aggressive contrast,
+    # revert to 0.72/0.22/0.06 → 0.04/0.32/0.64 with fc 10500/1600.
+    "w_dc_center": 0.62, "w_mid_center": 0.25, "w_ed_center": 0.13,
+    "w_dc_edge": 0.14, "w_mid_edge": 0.33, "w_ed_edge": 0.53,
+    "fc_dustcap": 9800.0, "fc_mid": 2000.0, "fc_edge": 1800.0,
     "coherence": 0.35,
-    "f_breakup": 5150.0, "breakup_edge_db": 4.5, "breakup_width_oct": 0.35,
+    "f_breakup": 5150.0, "breakup_edge_db": 3.5, "breakup_width_oct": 0.35,
     "f_decouple": 1500.0, "p_decouple": 0.85,
 }
 
