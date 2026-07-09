@@ -1077,6 +1077,7 @@ if (window.slopsmith && window.slopsmith.audio) {
 let _rbMuteInFlight = false;
 let _rbUnmuteRun = null;     // the pending unmute closure (event-driven trigger)
 let _rbUnmuteTimer = null;   // safety-fallback timer handle
+let _rbUnmuteDeadline = 0;   // when the pending timer fires (coalesce may only extend)
 // Event-driven unmute: a caller that KNOWS the chain finished loading (the
 // mega-chain build awaits loadPreset + getChainState + the VST-param re-apply)
 // calls this so the un-mute fires on the REAL completion instead of a fixed
@@ -1090,23 +1091,6 @@ async function rbPreLoadMute(chainLen, targetGain, opts) {
     const deferUnmute = !!(opts && opts.deferUnmute);
     const pendingTarget = rbClampChainGainTarget(targetGain);
     window.__rbPendingChainGainTarget = pendingTarget;
-    if (_rbMuteInFlight) {
-        // Already muted (e.g. the fetch-interceptor's SHORT timer-based mute
-        // fired first, at song:loaded). If THIS caller (the mega-chain preload)
-        // will signal real completion, UPGRADE the pending unmute to the long
-        // safety net so that short timer can't fire mid-load and let the VST/NAM
-        // load peaks through — the un-mute then comes from rbSignalChainLoaded()
-        // (flag/event-driven, as intended) the moment the load truly finishes.
-        if (deferUnmute && _rbUnmuteRun && _rbUnmuteTimer) {
-            clearTimeout(_rbUnmuteTimer);
-            _rbUnmuteTimer = setTimeout(_rbUnmuteRun, 15000);
-        }
-        return;                            // coalesce rapid tone changes
-    }
-    _rbMuteInFlight = true;
-    const audio = rbAudioApi();
-    if (!audio) { _rbMuteInFlight = false; return; }
-    const target = pendingTarget;   // was 4 — chains can need ~20×
     // Hold the chain muted until the WHOLE chain has loaded AND the post-load
     // VST-param / input-drive re-apply has settled — otherwise the un-mute
     // races the stage-by-stage NAM/VST init and the user hears the load peaks
@@ -1119,6 +1103,34 @@ async function rbPreLoadMute(chainLen, targetGain, opts) {
     const hold = (typeof window.__rbMutePreLoadHold === 'number')
         ? Math.max(20, window.__rbMutePreLoadHold | 0)
         : 250 + 120 * Math.max(1, chainLen | 0);
+    if (_rbMuteInFlight) {
+        // Already muted (e.g. the fetch-interceptor's SHORT timer-based mute
+        // fired first, at song:loaded). If THIS caller (the mega-chain preload)
+        // will signal real completion, UPGRADE the pending unmute to the long
+        // safety net so that short timer can't fire mid-load and let the VST/NAM
+        // load peaks through — the un-mute then comes from rbSignalChainLoaded()
+        // (flag/event-driven, as intended) the moment the load truly finishes.
+        if (deferUnmute && _rbUnmuteRun && _rbUnmuteTimer) {
+            clearTimeout(_rbUnmuteTimer);
+            _rbUnmuteTimer = setTimeout(_rbUnmuteRun, 15000);
+            _rbUnmuteDeadline = Date.now() + 15000;
+        } else if (_rbUnmuteRun && _rbUnmuteTimer
+                   && Date.now() + hold > _rbUnmuteDeadline) {
+            // A coalesced NON-defer caller (e.g. the default-tone reload that
+            // fires 250 ms after the song-exit teardown mute) must EXTEND the
+            // pending unmute to cover its own load — the teardown's short timer
+            // would otherwise fire mid-load and let the load peaks through.
+            // Only ever lengthen (a defer caller's 15 s net is never cut short).
+            clearTimeout(_rbUnmuteTimer);
+            _rbUnmuteTimer = setTimeout(_rbUnmuteRun, hold);
+            _rbUnmuteDeadline = Date.now() + hold;
+        }
+        return;                            // coalesce rapid tone changes
+    }
+    _rbMuteInFlight = true;
+    const audio = rbAudioApi();
+    if (!audio) { _rbMuteInFlight = false; return; }
+    const target = pendingTarget;   // was 4 — chains can need ~20×
     // When the caller will explicitly signal completion (deferUnmute — the
     // mega-chain path awaits the real load), the timer becomes a LONG safety net
     // (the unmute really happens via rbSignalChainLoaded the moment the load
@@ -1170,6 +1182,7 @@ async function rbPreLoadMute(chainLen, targetGain, opts) {
     };
     _rbUnmuteRun = doUnmute;
     _rbUnmuteTimer = setTimeout(doUnmute, fallbackMs);
+    _rbUnmuteDeadline = Date.now() + fallbackMs;
 }
 
 // NOTE: an earlier version of this file tried to monkey-patch
@@ -3228,6 +3241,16 @@ const RbMegaChain = (function () {
         if (!silent) _restoreGuitarStem();
         if (_active) {
             const api = _api();
+            // Mute around the teardown: clearChain removes stages one by one
+            // (the final leveler included), so for a moment the un-leveled
+            // chain hits the output. With the per-stage IR gains actually
+            // applying now (cab makeup + amp-trim x8), that raw level sits
+            // 18-38 dB hotter than before and the once-buried transient became
+            // an audible distorted burst on song exit ("se escucha cómo cambia
+            // de tonos"). Same guard as every other clearChain+load path; the
+            // default-tone reload that follows coalesces into this mute and
+            // extends it to cover its own load.
+            await rbPreLoadMute(8, 1.0).catch(() => {});
             const releasedByHost = await rbReleaseAudioEffectsRouteWithHost('mega-chain-teardown');
             if (!releasedByHost && api && api.clearChain) {
                 try { await api.clearChain(); } catch (_) {}
