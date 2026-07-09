@@ -1,125 +1,130 @@
 # Bass Amp Rework Handoff
 
-Fecha: 2026-06-22
-Branch esperado: `feat/amps-rework`
+Date: 2026-06-22  
+Expected branch: `feat/amps-rework`
 
-Este documento es para quien continue los amps de bajo. La idea es reutilizar el
-framework nuevo de amps reales sin copiar codigo GPL de Guitarix ni volver a hacer
-tablas/tubos desde cero.
+This document is for whoever continues the bass amp work. The idea is to reuse
+the new real-amp framework without copying GPL code from Guitarix or having to
+rebuild tables/tube models from scratch.
 
-## Que ya existe
+## What already exists
 
-Archivos base:
+Base files:
 
-- `vst/src/_shared/tube_stage.hpp`
-  Framework fisico reusable: `TubeStageT`, `PowerAmpPPT`, `ToneStackYeh`,
+- `vst/src/_shared/tube_stage.hpp`  
+  Reusable physical framework: `TubeStageT`, `PowerAmpPPT`, `ToneStackYeh`,
   `TweedTone`, `CouplingCapGridLeak`, `PhaseInverterLTP12AX7`,
   `PhaseInverterCathodyne12AX7`, `MultiNodeBPlus`, `PotTaper`.
-- `vst/src/_shared/koren*_ftube.h`
-  Tablas Koren generadas para 12AX7, 12AY7, EF86, EL84, 6V6, 5881, 6L6GC,
-  KT66 y EL34.
-- `../tubes/*.pdf` en la raiz local de `slopsmith`
-  Datasheets usados para capacitancias Miller y puntos de tabla. Ojo: esa
-  carpeta esta fuera del repo Git `rig_builder`; no viaja con `git push origin
-  feat/amps-rework` salvo que se copie dentro de `rig_builder/` o se comparta por
-  otro medio. Los headers `koren*_ftube.h` si quedan dentro de `rig_builder`.
-- `vst/src/amps/tools/gx_tube.py`
-  Generador/auditoria de tablas Koren.
-- `vst/src/amps/tools/calibrate_amp_core.py`
-  Harness offline para estabilidad, gain sweep, crest, THD aproximado y puntos
-  de espectro. Hoy trae spec para `en30`; agregar specs de bajo ahi.
-- `vst/src/amps/REAL_TUBE_AMP_GUIDE.md`
-  Guia tecnica completa del flujo nuevo.
-- `vst/src/amps/en30/BoxDC30Core.h`
-  Ejemplo piloto avanzado: BOX AC30 con Miller, blocking distortion, LTP,
-  supply multi-nodo GZ34, pot tapers y salida reactiva.
+- `vst/src/_shared/koren*_ftube.h`  
+  Generated Koren tables for 12AX7, 12AY7, EF86, EL84, 6V6, 5881, 6L6GC,
+  KT66, and EL34.
+- `../tubes/*.pdf` in the local root of `slopsmith`  
+  Datasheets used for Miller capacitances and table points. Note that this
+  folder is outside the `rig_builder` Git repo, so it will not be included by
+  `git push origin feat/amps-rework` unless it is copied into `rig_builder/`
+  or shared by some other means. The `koren*_ftube.h` headers do remain inside
+  `rig_builder`.
+- `vst/src/amps/tools/gx_tube.py`  
+  Generator/auditor for Koren tables.
+- `vst/src/amps/tools/calibrate_amp_core.py`  
+  Offline harness for stability, gain sweep, crest factor, approximate THD,
+  and spectral checkpoints. Right now it includes a spec for `en30`; add bass
+  amp specs there.
+- `vst/src/amps/REAL_TUBE_AMP_GUIDE.md`  
+  Complete technical guide for the new workflow.
+- `vst/src/amps/en30/BoxDC30Core.h`  
+  Advanced pilot example: BOX AC30 with Miller effect, blocking distortion,
+  LTP, multi-node GZ34 supply, pot tapers, and reactive output.
 
-Ejemplos de bajo existentes para auditar o portar:
+Existing bass examples to audit or port:
 
 - `vst/src/amps/sampleg_sbtcl/` - SVT-CL style.
 - `vst/src/amps/cs75b_v4b/` - Ampeg V-4B style.
 
-No asumir que esos dos ya estan "terminados" por compilar: revisar esquematico,
-topologia, knobs, loudness, crest y prueba en vivo.
+Do not assume those two are already “finished” just because they compile:
+review schematic, topology, knobs, loudness, crest, and live testing.
 
-## Flujo recomendado para un amp de bajo
+## Recommended workflow for a bass amp
 
-1. Identificar el amp real y conseguir esquematico legible.
-2. Hacer inventario componente a componente:
-   - tubos de preamp y power
-   - caps de acople y grid leaks
-   - cathode resistors/bypass caps
-   - tonestack y switches
+1. Identify the real amp and get a readable schematic.
+2. Make a component-by-component inventory:
+   - preamp and power tubes
+   - coupling caps and grid leaks
+   - cathode resistors / bypass caps
+   - tone stack and switches
    - phase inverter
-   - rectificador/supply
-   - NFB, presence/deep/ultra-low/ultra-high
-   - power amp y carga/speaker esperada
-3. Si aparece un tubo nuevo:
-   - agregar PDF a `tubes/`
-   - agregar constantes en `vst/src/amps/tools/gx_tube.py`
-   - generar `vst/src/_shared/koren_<tube>_ftube.h`
-   - agregar trait en `tube_stage.hpp`
-4. Elegir bloques:
+   - rectifier / supply
+   - NFB, presence / deep / ultra-low / ultra-high
+   - power amp and expected load / speaker
+3. If a new tube appears:
+   - add the PDF to `tubes/`
+   - add constants in `vst/src/amps/tools/gx_tube.py`
+   - generate `vst/src/_shared/koren_<tube>_ftube.h`
+   - add the trait in `tube_stage.hpp`
+4. Choose blocks:
    - Preamp: `TubeStageT<Tube...>`
    - Miller: `MillerLowPassT<Tube...>`
-   - Caps entre etapas: `CouplingCapGridLeak`
-   - Tonestack: `ToneStackYeh` o bloque propio si el circuito no es TMB normal
-   - PI LTP: `PhaseInverterLTP12AX7`
-   - PI cathodyne: `PhaseInverterCathodyne12AX7`
-   - Supply: `MultiNodeBPlus` con perfil propio del amp
+   - Interstage caps: `CouplingCapGridLeak`
+   - Tone stack: `ToneStackYeh` or a custom block if the circuit is not a
+     standard TMB
+   - LTP PI: `PhaseInverterLTP12AX7`
+   - Cathodyne PI: `PhaseInverterCathodyne12AX7`
+   - Supply: `MultiNodeBPlus` with the amp’s own profile
    - Power: `PowerAmpPPT<Tube...>`
    - Knobs: `PotTaper::audio`, `reverseAudio`, `sCurve`, `switchBlend`
-5. Mapear Rocksmith a controles reales. No mapear linealmente por defecto:
-   los potes reales suelen ser audio/log, reverse log o switches.
-6. Agregar spec en `calibrate_amp_core.py` para el amp.
-7. Validar:
-   - estabilidad 48/96/192 kHz sin NaN/inf
-   - gain sweep con crest y THD coherentes
-   - RMS/loudness usable
-   - espectro en puntos graves y medios
-   - prueba en vivo dentro de feedBack
+5. Map Rocksmith controls to real controls. Do not map linearly by default:
+   real pots are often audio/log, reverse log, or switch-like.
+6. Add a spec in `calibrate_amp_core.py` for the amp.
+7. Validate:
+   - stability at 48 / 96 / 192 kHz with no NaN/inf
+   - gain sweep with coherent crest factor and THD
+   - usable RMS/loudness
+   - spectral checkpoints in lows and mids
+   - live testing inside feedBack
 
-## Consideraciones especificas de bajo
+## Bass-specific considerations
 
-- El low-end manda. No uses filtros HP agresivos de guitarra. Revisa los caps de
-  acople reales: muchos amps de bajo usan valores grandes para no adelgazar.
-- El power amp y el OT deben tener headroom y low-frequency behavior creibles.
-  Un bajo puede excitar sag y blocking de manera distinta a guitarra.
-- Los switches tipo Ultra Low / Ultra High / Deep / Bright no son simples EQ
-  genericos: suelen cambiar caps/resistencias concretas alrededor del tonestack o
-  feedback loop.
-- Si el amp real tiene NFB fuerte, modelarlo. En bajo, el damping cambia mucho el
-  ataque y la sensacion de tightness.
-- Validar con DI de bajo, no solo con `ui_public_inputs_Brit - Guitar.wav`.
-  Para el harness, agregar una entrada o excitacion con fundamentales de bajo
-  (aprox. 41, 55, 73, 82, 110, 220, 440 Hz).
-- Separar amp y cab. El amp no debe hornear toda la curva de un cab si feedBack
-  aplicara IR despues; pero si se modela una carga reactiva, debe representar lo
-  que el power amp "ve", no una EQ final decorativa.
+- Low end is king. Do not use aggressive high-pass filters from guitar designs.
+  Check the real coupling caps: many bass amps use large values specifically to
+  avoid thinning out the signal.
+- The power amp and output transformer must have believable headroom and
+  low-frequency behavior. Bass can excite sag and blocking differently from
+  guitar.
+- Ultra Low / Ultra High / Deep / Bright type switches are not generic EQ:
+  they usually alter specific caps/resistors around the tone stack or feedback
+  loop.
+- If the real amp has strong NFB, model it. In bass amps, damping changes the
+  attack and the sense of tightness a lot.
+- Validate with bass DI, not only with `ui_public_inputs_Brit - Guitar.wav`.
+  For the harness, add an input or excitation with bass fundamentals
+  (approx. 41, 55, 73, 82, 110, 220, 440 Hz).
+- Separate amp and cab. The amp should not bake in the entire cab curve if
+  feedBack will apply an IR afterward; but if a reactive load is modeled, it
+  should represent what the power amp “sees,” not a decorative final EQ.
 
-## Checklist de implementacion
+## Implementation checklist
 
-- Crear o auditar `vst/src/amps/<amp>/`.
-- Usar oversampling en el wrapper si hay no-linealidades fuertes.
-- Mantener el core offline-testable, idealmente en `<Amp>Core.h`.
-- Evitar `tanh` generico como sustituto de tubo cuando hay esquematico.
-- Usar `ToneStackYeh` con valores reales cuando aplique.
-- Usar `CouplingCapGridLeak` donde una grilla pueda conducir y cargar el cap.
-- Usar PI correcto por topologia; no entrar directo a `PowerAmpPPT` si el amp
-  tiene phase inverter relevante.
-- Usar `MultiNodeBPlus` o crear un perfil propio de supply por amp.
-- Documentar en `REAL_TUBE_AMP_GUIDE.md` el estado del amp y que falta probar.
-- Recompilar, instalar bundle, firmar y correr harness.
+- Create or audit `vst/src/amps/<amp>/`.
+- Use oversampling in the wrapper if there are strong nonlinearities.
+- Keep the core offline-testable, ideally in `<Amp>Core.h`.
+- Avoid generic `tanh` as a tube substitute when a schematic exists.
+- Use `ToneStackYeh` with real values where applicable.
+- Use `CouplingCapGridLeak` where a grid can conduct and charge the cap.
+- Use the correct PI for the topology; do not go straight into
+  `PowerAmpPPT` if the amp has a relevant phase inverter.
+- Use `MultiNodeBPlus` or create a supply profile specific to the amp.
+- Document the amp’s status and remaining testing in `REAL_TUBE_AMP_GUIDE.md`.
+- Rebuild, install bundle, sign, and run the harness.
 
-## Comandos utiles
+## Useful commands
 
-Compilar un amp:
+Build an amp:
 
 ```bash
 make -C rig_builder/vst/src/amps/<amp_dir> BASE_PATH=/Users/nacho/Files/slopsmith/rig_builder/vst/src/amps/<amp_dir>
 ```
 
-Instalar el binario macOS en el bundle:
+Install the macOS binary into the bundle:
 
 ```bash
 install -m 755 rig_builder/vst/src/amps/<amp_dir>/bin/<Plugin>.vst3/Contents/MacOS/<Plugin> "rig_builder/vst/amps/<Bundle Name>.vst3/Contents/MacOS/<Plugin>"
@@ -127,17 +132,17 @@ codesign --force -s - "rig_builder/vst/amps/<Bundle Name>.vst3"
 codesign --verify --deep --strict --verbose=2 "rig_builder/vst/amps/<Bundle Name>.vst3"
 ```
 
-Validar AC30 como ejemplo:
+Validate AC30 as an example:
 
 ```bash
 python3 rig_builder/vst/src/amps/tools/calibrate_amp_core.py en30
 python3 rig_builder/vst/src/amps/tools/loudness_check.py
 ```
 
-## Que subir al branch para compartir
+## What to push to the branch to share
 
-La rama local actual es `feat/amps-rework`. Para que otro dev pueda reutilizar
-esto, al menos debe llegar al remoto:
+The current local branch is `feat/amps-rework`. For another developer to reuse
+this, at minimum the following must reach the remote:
 
 - `vst/src/_shared/tube_stage.hpp`
 - `vst/src/_shared/koren*_ftube.h`
@@ -145,17 +150,17 @@ esto, al menos debe llegar al remoto:
 - `vst/src/amps/tools/calibrate_amp_core.py`
 - `vst/src/amps/REAL_TUBE_AMP_GUIDE.md`
 - `docs/BASS_AMP_REWORK_HANDOFF.md`
-- los cores/params/plugins que se quieran compartir como referencia
-- PDFs de `tubes/*.pdf` por una de estas vias:
-  - copiarlos dentro de `rig_builder/tubes/` y commitearlos ahi, o
-  - compartir la carpeta `tubes/` fuera de Git, o
-  - convertirlos en un repo/submodulo separado si se van a seguir agregando.
+- any cores / params / plugins intended to be shared as references
+- PDFs from `tubes/*.pdf` via one of these options:
+  - copy them into `rig_builder/tubes/` and commit them there, or
+  - share the `tubes/` folder outside Git, or
+  - convert them into a separate repo/submodule if more will keep being added.
 
-No hacer `git add -A` en este worktree sin revisar: ahora hay muchos bundles
-macOS modificados, payloads Windows/Linux borrados y directorios `bin/` no
-trackeados. Para un push limpio, stagear solo lo necesario.
+Do not run `git add -A` in this worktree without reviewing it first: there are
+currently many modified macOS bundles, deleted Windows/Linux payloads, and
+untracked `bin/` directories. For a clean push, stage only what is needed.
 
-Ejemplo de push selectivo:
+Example of a selective push:
 
 ```bash
 git -C rig_builder status --short --branch
@@ -173,10 +178,10 @@ git -C rig_builder commit -m "Document amp rework framework for bass ports"
 git -C rig_builder push origin feat/amps-rework
 ```
 
-Si tambien se quiere compartir el BOX AC30 piloto, agregar sus archivos de
-mapeo/core/bundle de forma explicita, revisando el diff antes de commitear.
+If you also want to share the BOX AC30 pilot, add its mapping/core/bundle files
+explicitly, reviewing the diff before committing.
 
-Si tambien se quieren subir los PDFs al mismo branch, copiar primero:
+If you also want to upload the PDFs on the same branch, copy them first:
 
 ```bash
 mkdir -p rig_builder/tubes
