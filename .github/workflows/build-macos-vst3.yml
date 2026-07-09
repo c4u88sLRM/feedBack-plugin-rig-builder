@@ -1,16 +1,16 @@
 name: Build macOS VST3 binaries
 
-# Why: the bundled effects in vst/*.vst3 ship with Windows (Contents/x86_64-win)
-# and Linux (Contents/x86_64-linux) binaries built by the sibling workflows, and
-# a committed macOS binary at Contents/MacOS/<Name>. When a plugin's source
+# Why: the bundled effects in vst/{amps,pedals,racks}/*.vst3 ship with Windows
+# (Contents/x86_64-win) and Linux (Contents/x86_64-linux) binaries, plus a
+# committed macOS binary at Contents/MacOS/<Name>. When a plugin's source
 # changes (e.g. a renamed DISTRHO_PLUGIN_NAME), the committed macOS binary goes
 # stale. This workflow rebuilds every DPF plugin for macOS as a UNIVERSAL binary
 # (arm64 + x86_64) and injects it back into Contents/MacOS/<Name>, mirroring
 # build-linux-vst3.yml / build-windows-vst3.yml.
 #
 # Run it manually from the Actions tab (workflow_dispatch). It ad-hoc signs each
-# bundle (so Gatekeeper/the host doesn't reject the re-written binary) and
-# commits the result back to the branch it ran on.
+# rewritten bundle (so Gatekeeper/the host doesn't reject it) and commits the
+# result back to the branch it ran on.
 
 on:
   workflow_dispatch:
@@ -24,8 +24,7 @@ permissions:
 
 jobs:
   macos:
-    # macos-14 is an Apple-Silicon runner; clang cross-compiles the x86_64 slice
-    # too, so a single host produces the universal binary.
+    # macos-14 is Apple Silicon; clang can emit both slices for a universal bin.
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -41,31 +40,67 @@ jobs:
           set +e
           DPF="$GITHUB_WORKSPACE/dpf"
           ARCHS="-arch x86_64 -arch arm64"
-          # Seven effect Makefiles hardcode `include ../../DPF/...` (ignoring
-          # DPF_PATH), so expose DPF at the relative path they expect: vst/DPF.
+
+          # Legacy/path-quirk compatibility:
+          # Some Makefiles ignore DPF_PATH and/or expect old relative layouts.
           ln -sfn "$DPF" "$GITHUB_WORKSPACE/vst/DPF"
+
           cd "$GITHUB_WORKSPACE/vst/src"
+
+          # Post-reorg the effects moved to <cat>/<name>/ and many include
+          # "../_shared/...". After the split that must resolve to <cat>/_shared.
+          for cat in amps pedals racks; do
+            [ -d "$cat" ] && [ -d _shared ] && ln -sfn ../_shared "$cat/_shared"
+          done
+
+          # Extra compatibility for Makefiles that resolve ../DPF from inside
+          # <cat>/<name>/ rather than honoring the passed DPF_PATH.
+          for cat in amps pedals racks; do
+            [ -d "$cat" ] && ln -sfn "$DPF" "$cat/DPF"
+          done
+
           fail=""
           build() {
-            ( cd "$1" && rm -rf build bin \
-                && make -j3 DPF_PATH="$DPF" DPF_BUILD_DIR="$PWD/build" DPF_TARGET_DIR="$PWD/bin" \
-                        CFLAGS="$ARCHS" CXXFLAGS="$ARCHS" LDFLAGS="$ARCHS" vst3 ) \
-              || fail="$fail $1"
+            (
+              cd "$1" &&
+              rm -rf build bin &&
+              make -j3 \
+                DPF_PATH="$DPF" \
+                DPF_BUILD_DIR="$PWD/build" \
+                DPF_TARGET_DIR="$PWD/bin" \
+                CFLAGS="$ARCHS" \
+                CXXFLAGS="$ARCHS" \
+                LDFLAGS="$ARCHS" \
+                vst3
+            ) || fail="$fail $1"
           }
-          # root Makefile builds AutoSweep (the QTron envelope filter)
+
+          # Root Makefile builds AutoSweep (the QTron envelope filter)
           [ -f Makefile ] && build .
-          for mk in */Makefile; do
+
+          # Effects are now TWO levels deep: <cat>/<name>/Makefile
+          for mk in */*/Makefile; do
             d=$(dirname "$mk")
-            case "$d" in DPF|_shared) continue;; esac
+            case "$d" in
+              DPF/*|*/DPF|*/_shared|*/mark_shared|RBFinalLeveler/*|*/build) continue;;
+            esac
             echo "==== building $d ===="
             build "$d"
           done
+
+          for cat in amps pedals racks; do
+            rm -f "$cat/_shared"
+            rm -f "$cat/DPF"
+          done
           rm -f "$GITHUB_WORKSPACE/vst/DPF"
+
           echo "FAILED DIRS:$fail"
+          test -z "$fail"
 
       - name: Inject macOS binaries into the committed bundles (+ ad-hoc sign)
         run: |
           cd "$GITHUB_WORKSPACE"
+
           # A few committed bundle folders use hyphens/spaces while the DPF
           # NAME (and built bundle) does not — map built name -> committed dir.
           alias_of() {
@@ -155,24 +190,33 @@ jobs:
               EN30.vst3)               echo "BOX DC30.vst3";;
               TW22.vst3)               echo "BENDER SUPERNOVA 22.vst3";;
               TW26.vst3)               echo "BENDER DELUXE.vst3";;
-              *)              echo "$1";;
+              *) echo "$1";;
             esac
           }
+
           count=0
-          # DPF writes the built bundle under each plugin dir (bin/<Name>.vst3).
-          while IFS= read -r macbin; do
-            built=$(basename "$(dirname "$(dirname "$macbin")")")   # <Name>.vst3
+          while IFS= read -r macdir; do
+            built=$(basename "$(dirname "$(dirname "$macdir")")")   # <Name>.vst3
             name="${built%.vst3}"
             bundle=$(alias_of "$built")
-            if [ -d "vst/$bundle" ]; then
-              cp -f "$macbin/$name" "vst/$bundle/Contents/MacOS/$name"
-              codesign --force --sign - "vst/$bundle" || true
-              echo "injected: $built -> $bundle"
+
+            # Committed bundles live under vst/{amps,pedals,racks}/ after the reorg.
+            dst=""
+            for cat in amps pedals racks; do
+              [ -d "vst/$cat/$bundle" ] && dst="vst/$cat/$bundle" && break
+            done
+
+            if [ -n "$dst" ]; then
+              mkdir -p "$dst/Contents/MacOS"
+              cp -f "$macdir/$name" "$dst/Contents/MacOS/$name"
+              codesign --force --sign - "$dst" || true
+              echo "injected: $built -> $dst"
               count=$((count+1))
             else
-              echo "WARNING: built $built but no committed bundle vst/$bundle"
+              echo "WARNING: built $built but no committed bundle vst/{amps,pedals,racks}/$bundle"
             fi
           done < <(find vst/src -type d -path '*/bin/*.vst3/Contents/MacOS')
+
           echo "injected $count bundles"
 
       - name: Commit the macOS binaries
@@ -180,12 +224,17 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           git config user.name  "macos-vst-bot"
           git config user.email "macos-vst-bot@users.noreply.github.com"
-          git add 'vst/*/Contents/MacOS/*' 'vst/*/Contents/_CodeSignature/*' || true
+          git add 'vst/*/*/Contents/MacOS/*' 'vst/*/*/Contents/_CodeSignature/*' || true
           if git diff --cached --quiet; then
             echo "No macOS binaries to commit (check the build log for failures)."
           else
             git commit -m "Rebuild macOS (universal) VST3 binaries for bundled effects"
-            git push
+            for i in 1 2 3 4 5; do
+              git pull --rebase origin "${{ github.ref_name }}" || true
+              git push && break
+              echo "push attempt $i failed (remote moved?) — retrying"
+              sleep 5
+            done
           fi
 
       - name: Upload as artifact too
