@@ -38,6 +38,7 @@ jobs:
       - name: Build every VST3 for macOS (universal arm64 + x86_64)
         run: |
           set +e
+          shopt -s nullglob
           DPF="$GITHUB_WORKSPACE/dpf"
           ARCHS="-arch x86_64 -arch arm64"
 
